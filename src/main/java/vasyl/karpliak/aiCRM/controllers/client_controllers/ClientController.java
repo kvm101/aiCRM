@@ -1,30 +1,60 @@
-package vasyl.karpliak.aiCRM.controllers.client_controllers;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import vasyl.karpliak.aiCRM.dto.ClientDTO;
+import org.springframework.web.bind.annotation.*;
+import vasyl.karpliak.aiCRM.dto.clientDTO.ClientDTO;
+import vasyl.karpliak.aiCRM.services.ClientService;
 
 import java.util.List;
+import java.util.Optional;
 
+@RestController
+@RequestMapping("/clients")
 public class ClientController {
 
-    public ResponseEntity<ClientDTO> CreateClient() {
-        return null;
+    private final ClientService clientService;
+
+    public ClientController(ClientService clientService) {
+        this.clientService = clientService;
     }
 
-    public List<ClientDTO> ListOfClients() {
-        return null;
+    // Створення нового клієнта
+    @PostMapping
+    public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO clientDTO) {
+        ClientDTO createdClient = clientService.createClient(clientDTO);
+        return new ResponseEntity<>(createdClient, HttpStatus.CREATED);
     }
 
-    public ResponseEntity<ClientDTO> ReadClient() {
-        return null;
+    // Отримати всіх клієнтів або фільтрованих
+    @GetMapping("/filtered")
+    public ResponseEntity<List<ClientDTO>> listOfClients(@RequestParam(required = false) String name) {
+        List<ClientDTO> clients = clientService.getAllClients(name);
+        return ResponseEntity.ok(clients);
     }
 
-    public ResponseEntity<ClientDTO> UpdateClient() {
-        return null;
+    // Отримати конкретного клієнта за id
+    @GetMapping("/{id}")
+    public ResponseEntity<ClientDTO> readClient(@PathVariable Long id) {
+        Optional<ClientDTO> client = clientService.getClientById(id);
+        return client.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
+    // Оновлення клієнта
+    @PutMapping("/{id}")
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @RequestBody ClientDTO clientDTO) {
+        Optional<ClientDTO> updatedClient = clientService.updateClient(id, clientDTO);
+        return updatedClient.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-    public ResponseEntity<ClientDTO> DeleteClient() {
-        return null;
+    // Видалення клієнта
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
+        boolean deleted = clientService.deleteClient(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
