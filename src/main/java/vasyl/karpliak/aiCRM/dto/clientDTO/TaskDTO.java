@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class TaskDTO {
-    Long Id;
-    String title;
-    String description;
-    LocalDateTime deadline;
+    private Long id;
+    private String title;
+    private String description;
+    private LocalDateTime deadline;
 }

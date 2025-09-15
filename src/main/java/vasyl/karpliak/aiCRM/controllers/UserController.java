@@ -1,31 +1,83 @@
 package vasyl.karpliak.aiCRM.controllers;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import vasyl.karpliak.aiCRM.dto.ClientDTO;
+import org.springframework.web.bind.annotation.*;
+import vasyl.karpliak.aiCRM.domain.User;
+import vasyl.karpliak.aiCRM.services.UserService;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
+@RequestMapping("/users")
 public class UserController {
-    public ResponseEntity<ClientDTO> CreateUser() {
-        return null;
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    public List<ClientDTO> ListOfUsers() {
-        return null;
+    // Створення нового користувача
+    @PostMapping
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        User createdUser = userService.createUser(user);
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
-    public ResponseEntity<ClientDTO> ReadUser() {
-        return null;
+    // Отримати всіх користувачів або фільтрованих
+    @GetMapping("/filtered")
+    public ResponseEntity<List<User>> listOfUsers(@RequestParam(required = false) String name) {
+        List<User> users;
+        if (name != null) {
+            users = userService.getAllUsers().stream()
+                    .filter(u -> u.getName().equalsIgnoreCase(name))
+                    .toList();
+        } else {
+            users = userService.getAllUsers();
+        }
+        return ResponseEntity.ok(users);
     }
 
-    public ResponseEntity<ClientDTO> UpdateUser() {
-        return null;
+    // Отримати користувача за id
+    @GetMapping("/{id}")
+    public ResponseEntity<User> readUser(@PathVariable Long id) {
+        Optional<User> user = userService.getUserById(id);
+        return user.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
+    // Оновити користувача
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+        Optional<User> existingUser = userService.getUserById(id);
+        if (existingUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
 
-    public ResponseEntity<ClientDTO> DeleteUser() {
-        return null;
+        User user = existingUser.get();
+        user.setName(userDetails.getName());
+        user.setLogin(userDetails.getLogin());
+        user.setPassword(userDetails.getPassword());
+        user.setCompany(userDetails.getCompany());
+        user.setEmail(userDetails.getEmail());
+        user.setPhone(userDetails.getPhone());
+        user.setRole(userDetails.getRole());
+        user.setLastEnter(userDetails.getLastEnter());
+
+        User updatedUser = userService.updateUser(user);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    // Видалити користувача
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        Optional<User> user = userService.getUserById(id);
+        if (user.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }
