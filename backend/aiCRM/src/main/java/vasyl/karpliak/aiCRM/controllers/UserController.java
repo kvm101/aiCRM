@@ -19,14 +19,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    // Створення нового користувача
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.createUser(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-    }
-
-    // Отримати всіх користувачів або фільтрованих
     @GetMapping("/filtered")
     public ResponseEntity<List<User>> listOfUsers(@RequestParam(required = false) String name) {
         List<User> users;
@@ -70,7 +62,6 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    // Видалити користувача
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         Optional<User> user = userService.getUserById(id);

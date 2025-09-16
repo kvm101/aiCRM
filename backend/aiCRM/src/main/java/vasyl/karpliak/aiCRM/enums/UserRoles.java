@@ -1,10 +1,10 @@
 package vasyl.karpliak.aiCRM.enums;
 
 public enum UserRoles {
-    Admin,
-    Manager,
-    Account_Manager,
-    Marketing,
-    Support,
-    Finance
+    ADMIN,
+    MANAGER,
+    ACCOUNT_MANAGER,
+    MARKETING,
+    SUPPORT,
+    FINANCE
 }
