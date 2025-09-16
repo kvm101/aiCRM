@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="70c722d5-8f33-4829-ae8b-106602825ff8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/controllers/client_controllers/ClientController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/controllers/client_controllers/ClientController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/dto/UserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/dto/UserDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/repository/client_repositories/ClientRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/repository/client_repositories/ClientRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/repository/client_repositories/TaskRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/repository/client_repositories/TaskRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/services/ClientService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/services/ClientService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,10 +22,10 @@
       </MavenGeneralSettings>
     </option>
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 8
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 8
+}</component>
   <component name="ProjectId" id="32k7V7QV3AerB07oCAUMe6QK9lQ" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -39,16 +35,19 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main"
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/home/omni/Desktop/Projects/aiCRM/frontend"
   }
 }]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
+        <option value="bundled-python-sdk-14705d77f0bb-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.25659.43" />
       </set>
     </attachedChunks>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="70c722d5-8f33-4829-ae8b-106602825ff8" name="Changes" comment="" />
