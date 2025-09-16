@@ -1,9 +1,7 @@
 package vasyl.karpliak.aiCRM.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import vasyl.karpliak.aiCRM.domain.client_domain.Client;
 import vasyl.karpliak.aiCRM.domain.client_domain.Task;
 import vasyl.karpliak.aiCRM.enums.UserRoles;
@@ -13,11 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
+
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,10 +50,12 @@ public class User {
     @Column(name = "last_enter", nullable = false)
     private LocalDateTime lastEnter;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id")  // створить колонку user_id у таблиці task
     private List<Task> tasks = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id")
     private List<Client> clients = new ArrayList<>();
 
     @PrePersist

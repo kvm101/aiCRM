@@ -2,55 +2,63 @@ package vasyl.karpliak.aiCRM.services;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import vasyl.karpliak.aiCRM.domain.User;
 import vasyl.karpliak.aiCRM.domain.client_domain.Task;
+import vasyl.karpliak.aiCRM.repository.UserRepository;
 import vasyl.karpliak.aiCRM.repository.client_repositories.TaskRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
     }
 
-    /** Створити нове завдання */
-    public Task createTask(Task task) {
-        return taskRepository.save(task);
+    public Task createTask(Task task, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        task.setUser(user);                 // прив’язка до користувача
+        Task savedTask = taskRepository.save(task);
+
+        user.getTasks().add(savedTask);
+        userRepository.save(user);
+
+        return savedTask;
     }
 
-    /** Отримати всі завдання */
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<Task> getAllTasks(Long userId) {
+        return taskRepository.findByUserId(userId);
     }
 
-    /** Отримати завдання до певного дедлайну */
-    public List<Task> getTasksBeforeDeadline(LocalDateTime deadline) {
-        return taskRepository.findByDeadlineBefore(deadline);
+    public List<Task> getTasksBeforeDeadline(Long userId, LocalDateTime deadline) {
+        return taskRepository.findByUserIdAndDeadlineBefore(userId, deadline);
     }
 
-    /** Отримати конкретне завдання */
-    public Task getTask(Long id) {
-        return taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found: " + id));
+    public Task getTask(Long userId, Long taskId) {
+        return taskRepository.findByIdAndUserId(taskId, userId)
+                .orElseThrow(() -> new RuntimeException("Task not found or does not belong to user"));
     }
 
-    /** Оновити завдання */
-    public Task updateTask(Long id, Task updated) {
-        Task existing = getTask(id);
+    public Task updateTask(Long userId, Long taskId, Task updated) {
+        Task existing = getTask(userId, taskId);
         existing.setTitle(updated.getTitle());
         existing.setDescription(updated.getDescription());
         existing.setDeadline(updated.getDeadline());
+        existing.setTag(updated.getTag());
         return taskRepository.save(existing);
     }
 
-    /** Видалити завдання */
-    public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
+    public void deleteTask(Long userId, Long taskId) {
+        Task existing = getTask(userId, taskId);
+        taskRepository.delete(existing);
     }
 }

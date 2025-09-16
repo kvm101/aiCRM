@@ -8,7 +8,6 @@ import vasyl.karpliak.aiCRM.domain.User;
 
 import java.time.LocalDateTime;
 
-
 @Entity
 @Table(name = "task")
 @Data
@@ -28,4 +27,11 @@ public class Task {
 
     @Column(name = "deadline")
     private LocalDateTime deadline;
+
+    @Column(name = "tag")
+    private String tag;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

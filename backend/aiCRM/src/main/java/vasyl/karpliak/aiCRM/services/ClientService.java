@@ -1,7 +1,9 @@
 package vasyl.karpliak.aiCRM.services;
 
 import org.springframework.stereotype.Service;
+import vasyl.karpliak.aiCRM.domain.User;
 import vasyl.karpliak.aiCRM.domain.client_domain.Client;
+import vasyl.karpliak.aiCRM.repository.UserRepository;
 import vasyl.karpliak.aiCRM.repository.client_repositories.ClientRepository;
 
 import java.util.List;
@@ -10,29 +12,50 @@ import java.util.List;
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final UserRepository userRepository;
 
-    public ClientService(ClientRepository clientRepository) {
+    public ClientService(ClientRepository clientRepository, UserRepository userRepository) {
         this.clientRepository = clientRepository;
+        this.userRepository = userRepository;
     }
 
-    public Client createClient(Client client) {
-        return clientRepository.save(client);
-    }
+    public Client createClient(Client client, Long user_id) {
+        User user = userRepository.findById(user_id).orElseThrow(() -> new RuntimeException("User not found"));
 
-    public List<Client> getAllClients(String name) {
+        user.getClients().add(client);
+        userRepository.save(user);
+
+        return client;
+    }
+    public List<Client> getAllClients(Long userId, String name) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Client> clients = user.getClients();
+
         if (name != null && !name.isBlank()) {
-            return clientRepository.findByNameContainingIgnoreCase(name);
+            return clients.stream()
+                    .filter(c -> c.getName().toLowerCase().contains(name.toLowerCase()))
+                    .toList();
         }
-        return clientRepository.findAll();
+
+        return clients;
     }
 
-    public Client getClientById(Long id) {
-        return clientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Client not found: " + id));
+    // Отримати конкретного клієнта по id для користувача
+    public Client getClientById(Long userId, Long clientId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return user.getClients().stream()
+                .filter(c -> c.getId().equals(clientId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Client not found: " + clientId));
     }
 
-    public Client updateClient(Long id, Client updated) {
-        Client existing = getClientById(id);
+    // Оновлення клієнта конкретного користувача
+    public Client updateClient(Long userId, Long clientId, Client updated) {
+        Client existing = getClientById(userId, clientId);
 
         existing.setName(updated.getName());
         existing.setEmail(updated.getEmail());
@@ -43,18 +66,25 @@ public class ClientService {
         if (updated.getNotes() != null) {
             existing.setNotes(updated.getNotes());
         }
-        if (updated.getTasks() != null) {
-            existing.setTasks(updated.getTasks());
-        }
-
         return clientRepository.save(existing);
     }
 
-    public boolean deleteClient(Long id) {
-        if (clientRepository.existsById(id)) {
-            clientRepository.deleteById(id);
+    // Видалення клієнта конкретного користувача
+    public boolean deleteClient(Long userId, Long clientId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Client client = user.getClients().stream()
+                .filter(c -> c.getId().equals(clientId))
+                .findFirst()
+                .orElse(null);
+
+        if (client != null) {
+            user.getClients().remove(client); // orphanRemoval видалить клієнта з бази
+            userRepository.save(user);
             return true;
         }
+
         return false;
     }
 }

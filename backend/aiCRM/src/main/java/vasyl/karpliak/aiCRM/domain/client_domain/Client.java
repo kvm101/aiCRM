@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import vasyl.karpliak.aiCRM.enums.ClientStatus;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 @Entity
 @Table(name = "client")
 @Data
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Client {
@@ -40,7 +42,4 @@ public class Client {
     @CollectionTable(name = "client_notes", joinColumns = @JoinColumn(name = "client_id"))
     @Column(name = "note", nullable = false)
     private List<String> notes = new ArrayList<>();
-
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Task> tasks = new ArrayList<>();
 }
