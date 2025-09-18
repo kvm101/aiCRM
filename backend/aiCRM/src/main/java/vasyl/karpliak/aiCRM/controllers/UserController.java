@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vasyl.karpliak.aiCRM.domain.User;
+import vasyl.karpliak.aiCRM.dto.UserDTO;
 import vasyl.karpliak.aiCRM.services.UserService;
 
 import java.util.List;
@@ -17,6 +18,14 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping
+    public ResponseEntity<UserDTO> getUser(@CookieValue(name = "user_id") String user_id) {
+        Optional<User> user = userService.getUserById(Long.parseLong(user_id));
+
+
+        return ResponseEntity.ok(UserDTO.toDTO(user.get()));
     }
 
     @GetMapping("/filtered")
