@@ -4,6 +4,20 @@
     <data-source name="my_postgres" uuid="040953a5-192c-48fb-801f-77834aeccfd9" type="POSTGRES">
       <base-info connect-type="DB_DEFAULT" product="PostgreSQL" version="17.4 (Debian 17.4-1.pgdg120+2)" major-version="17" minor-version="4" jdbc-name="PostgreSQL JDBC Driver" jdbc-version="42.7.3" jdbc-major-version="42" jdbc-minor-version="7" />
       <user-name>postgres</user-name>
+      <schema-mapping>
+        <introspection-scope>
+          <node negative="1">
+            <node kind="database" qname="postgres" operator="@">
+              <node kind="schema">
+                <name qname="information_schema" />
+                <name qname="pg_catalog" />
+                <name qname="pg_toast" />
+                <name qname="public" />
+              </node>
+            </node>
+          </node>
+        </introspection-scope>
+      </schema-mapping>
       <choose-schema-mapping>
         <introspection-scope>
           <node negative="1">

@@ -6,6 +6,7 @@ import vasyl.karpliak.aiCRM.domain.client_domain.Client;
 import vasyl.karpliak.aiCRM.repository.UserRepository;
 import vasyl.karpliak.aiCRM.repository.client_repositories.ClientRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,14 +20,19 @@ public class ClientService {
         this.userRepository = userRepository;
     }
 
-    public Client createClient(Client client, Long user_id) {
-        User user = userRepository.findById(user_id).orElseThrow(() -> new RuntimeException("User not found"));
+    public Client createClient(Client client, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.getClients().add(client);
+        Client savedClient = clientRepository.save(client);
+
+        user.getClients().add(savedClient);
         userRepository.save(user);
 
-        return client;
+        return savedClient;
     }
+
+
     public List<Client> getAllClients(Long userId, String name) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -42,7 +48,6 @@ public class ClientService {
         return clients;
     }
 
-    // Отримати конкретного клієнта по id для користувача
     public Client getClientById(Long userId, Long clientId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -53,23 +58,25 @@ public class ClientService {
                 .orElseThrow(() -> new RuntimeException("Client not found: " + clientId));
     }
 
-    // Оновлення клієнта конкретного користувача
-    public Client updateClient(Long userId, Long clientId, Client updated) {
+    public Client updateClient(Long userId, Long clientId, Client patchClient) {
         Client existing = getClientById(userId, clientId);
 
-        existing.setName(updated.getName());
-        existing.setEmail(updated.getEmail());
-        existing.setPhone(updated.getPhone());
-        existing.setCompany(updated.getCompany());
-        existing.setStatus(updated.getStatus());
+        if (patchClient.getName() != null) existing.setName(patchClient.getName());
+        if (patchClient.getEmail() != null) existing.setEmail(patchClient.getEmail());
+        if (patchClient.getPhone() != null) existing.setPhone(patchClient.getPhone());
+        if (patchClient.getCompany() != null) existing.setCompany(patchClient.getCompany());
+        if (patchClient.getStatus() != null) existing.setStatus(patchClient.getStatus());
 
-        if (updated.getNotes() != null) {
-            existing.setNotes(updated.getNotes());
+        if (patchClient.getNotes() != null && !patchClient.getNotes().isEmpty()) {
+            List<String> updatedNotes = existing.getNotes() != null ? existing.getNotes() : new ArrayList<>();
+            updatedNotes.addAll(patchClient.getNotes());
+            existing.setNotes(updatedNotes);
         }
+
         return clientRepository.save(existing);
     }
 
-    // Видалення клієнта конкретного користувача
+
     public boolean deleteClient(Long userId, Long clientId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

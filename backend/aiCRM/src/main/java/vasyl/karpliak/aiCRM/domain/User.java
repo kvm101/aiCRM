@@ -1,7 +1,10 @@
 package vasyl.karpliak.aiCRM.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.http.HttpStatusCode;
 import vasyl.karpliak.aiCRM.domain.client_domain.Client;
 import vasyl.karpliak.aiCRM.domain.client_domain.Task;
 import vasyl.karpliak.aiCRM.enums.UserRoles;
@@ -17,9 +20,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
-
-
+public class User{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,11 +52,11 @@ public class User {
     private LocalDateTime lastEnter;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id")  // створить колонку user_id у таблиці task
+    @JoinColumn(name = "task_user_id")  // створить колонку user_id у таблиці task
     private List<Task> tasks = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "client_user_id")
     private List<Client> clients = new ArrayList<>();
 
     @PrePersist

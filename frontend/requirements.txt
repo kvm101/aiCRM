@@ -1,4 +1,6 @@
+python-dotenv
 streamlit~=1.49.1
 pandas~=2.3.2
 streamlit_shadcn_ui
 streamlit_option_menu
+streamlit_cookies_manager

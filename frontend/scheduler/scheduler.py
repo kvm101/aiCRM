@@ -1,21 +1,41 @@
 import streamlit as st
-import datetime
+import requests
+from datetime import datetime
 
-def scheduler():
-    st.title("Календар")
+BASE_URL = "http://localhost:8081/mail/reminder"
 
-    t = st.time_input("Set an alarm for", value=None)
+def scheduler(cookies: dict = None):
+    st.set_page_config(page_title="Нагадування", page_icon="📧", layout="centered")
+    st.title("📧 Створити нагадування поштою")
 
-    today = datetime.datetime.now()
-    next_year = today.year + 1
-    jan_1 = datetime.date(next_year, 1, 1)
-    dec_31 = datetime.date(next_year, 12, 31)
+    # ===== Cookie user_id =====
+    if not cookies or "user_id" not in cookies:
+        user_id = "1"
+        cookies = {"user_id": user_id}
 
-    d = st.date_input(
-        "Select your vacation for next year",
-        (jan_1, datetime.date(next_year, 1, 7)),
-        jan_1,
-        dec_31,
-        format="MM.DD.YYYY",
-    )
-    d
+    # ===== Форма нагадування =====
+    with st.form("reminder_form"):
+        subject = st.text_input("Тема листа")
+        text = st.text_area("Текст нагадування")
+        date = st.date_input("Дата нагадування", min_value=datetime.now().date())
+        time = st.time_input("Час нагадування", value=datetime.now().time())
+        submitted = st.form_submit_button("Надіслати нагадування")
+
+        if submitted:
+            when = datetime.combine(date, time)
+            payload = {
+                "subject": subject,
+                "text": text,
+                "when": when.isoformat()
+            }
+            try:
+                resp = requests.post(
+                    BASE_URL,
+                    json=payload,
+                    cookies=cookies,
+                    timeout=5
+                )
+                resp.raise_for_status()
+                st.success("Нагадування успішно створено та відправлено!")
+            except requests.RequestException as e:
+                st.error(f"Помилка при відправленні нагадування: {e}")
