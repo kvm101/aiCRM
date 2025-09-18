@@ -21,12 +21,13 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<UserDTO> getUser(@CookieValue(name = "user_id") String user_id) {
-        Optional<User> user = userService.getUserById(Long.parseLong(user_id));
-
-
-        return ResponseEntity.ok(UserDTO.toDTO(user.get()));
+    public ResponseEntity<UserDTO> getUser(@CookieValue(name = "user_id", defaultValue = "1") String user_id) {
+        return userService.getUserById(Long.parseLong(user_id))
+                .map(UserDTO::toDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
+
 
     @GetMapping("/filtered")
     public ResponseEntity<List<User>> listOfUsers(@RequestParam(required = false) String name) {
