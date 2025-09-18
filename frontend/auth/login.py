@@ -4,13 +4,10 @@ import streamlit as st
 def login(cookies):
     st.title("Авторизація")
 
-    # Поле для логіна
     login_value = st.text_input("Логін", placeholder="Введіть логін")
 
-    # Поле для пароля
     password_value = st.text_input("Пароль", placeholder="Введіть пароль", type="password")
 
-    # Кнопка входу
     if st.button("Ввійти"):
         url = "http://localhost:8081/auth/login"
         data = {

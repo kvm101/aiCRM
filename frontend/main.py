@@ -9,11 +9,15 @@ from tasks.tasks import tasks
 from scheduler.scheduler import scheduler
 from streamlit_cookies_manager import EncryptedCookieManager
 from dotenv import load_dotenv
+from streamlit_cookies_manager import encrypted_cookie_manager
 import os
 
 load_dotenv()
 
-cookies = EncryptedCookieManager(prefix="aiCRM", password=os.getenv("SECRET_COOKIES"))
+cookies = encrypted_cookie_manager.EncryptedCookieManager(
+    prefix="aiCRM",
+    password=os.getenv("SECRET_COOKIES")
+)
 
 st.set_page_config(
         page_title="✦ aiCRM",
