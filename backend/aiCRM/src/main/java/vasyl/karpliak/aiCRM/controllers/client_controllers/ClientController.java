@@ -19,7 +19,6 @@ public class ClientController {
         this.clientService = clientService;
     }
 
-    // ---- Створення нового клієнта ----
     @PostMapping
     public ResponseEntity<Client> createClient(
             @RequestBody Client client,
@@ -29,7 +28,6 @@ public class ClientController {
         return new ResponseEntity<>(createdClient, HttpStatus.CREATED);
     }
 
-    // ---- Список клієнтів ----
     @GetMapping("/filtered")
     public ResponseEntity<List<Client>> listOfClients(
             @RequestParam(required = false) String name,
@@ -39,7 +37,6 @@ public class ClientController {
         return ResponseEntity.ok(clients);
     }
 
-    // ---- Отримати клієнта за id ----
     @GetMapping("/{id}")
     public ResponseEntity<Client> readClient(
             @PathVariable Long id,
@@ -50,7 +47,6 @@ public class ClientController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // ---- Часткове оновлення клієнта (PATCH) ----
     @PatchMapping("/{id}")
     public ResponseEntity<Client> updateClient(
             @PathVariable Long id,
@@ -63,7 +59,6 @@ public class ClientController {
                 : ResponseEntity.notFound().build();
     }
 
-    // ---- Видалення клієнта ----
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteClient(
             @PathVariable Long id,
