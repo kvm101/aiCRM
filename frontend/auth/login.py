@@ -5,15 +5,11 @@ def login(cookies):
     st.title("Авторизація")
 
     login_value = st.text_input("Логін", placeholder="Введіть логін")
-
     password_value = st.text_input("Пароль", placeholder="Введіть пароль", type="password")
 
     if st.button("Ввійти"):
         url = "http://localhost:8081/auth/login"
-        data = {
-            "login": login_value,
-            "password": password_value
-        }
+        data = {"login": login_value, "password": password_value}
 
         try:
             response = requests.post(url, json=data)
@@ -22,7 +18,10 @@ def login(cookies):
             cookies.save()
 
             if cookies.get("user_id"):
-                st.switch_page(page="main")
+                st.session_state.page = "main"
+                return
+
             st.write("Відповідь сервера:", response.text)
+
         except requests.exceptions.RequestException as e:
             st.error(f"Помилка запиту: {e}")

@@ -61,20 +61,32 @@ public class ClientService {
     public Client updateClient(Long userId, Long clientId, Client patchClient) {
         Client existing = getClientById(userId, clientId);
 
-        if (patchClient.getName() != null) existing.setName(patchClient.getName());
-        if (patchClient.getEmail() != null) existing.setEmail(patchClient.getEmail());
-        if (patchClient.getPhone() != null) existing.setPhone(patchClient.getPhone());
-        if (patchClient.getCompany() != null) existing.setCompany(patchClient.getCompany());
-        if (patchClient.getStatus() != null) existing.setStatus(patchClient.getStatus());
+        if (patchClient.getName() != null && !patchClient.getName().isBlank()) {
+            existing.setName(patchClient.getName());
+        }
+        if (patchClient.getEmail() != null && !patchClient.getEmail().isBlank()) {
+            existing.setEmail(patchClient.getEmail());
+        }
+        if (patchClient.getPhone() != null && !patchClient.getPhone().isBlank()) {
+            existing.setPhone(patchClient.getPhone());
+        }
+        if (patchClient.getCompany() != null && !patchClient.getCompany().isBlank()) {
+            existing.setCompany(patchClient.getCompany());
+        }
+        if (patchClient.getStatus() != null) {
+            existing.setStatus(patchClient.getStatus());
+        }
 
         if (patchClient.getNotes() != null && !patchClient.getNotes().isEmpty()) {
-            List<String> updatedNotes = existing.getNotes() != null ? existing.getNotes() : new ArrayList<>();
-            updatedNotes.addAll(patchClient.getNotes());
-            existing.setNotes(updatedNotes);
+            if (existing.getNotes() == null) {
+                existing.setNotes(new ArrayList<>());
+            }
+            existing.getNotes().addAll(patchClient.getNotes());
         }
 
         return clientRepository.save(existing);
     }
+
 
 
     public boolean deleteClient(Long userId, Long clientId) {

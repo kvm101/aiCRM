@@ -21,7 +21,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<UserDTO> getUser(@CookieValue(name = "user_id", defaultValue = "1") String user_id) {
+    public ResponseEntity<UserDTO> getUser(@CookieValue(name = "user_id") String user_id) {
         return userService.getUserById(Long.parseLong(user_id))
                 .map(UserDTO::toDTO)
                 .map(ResponseEntity::ok)
