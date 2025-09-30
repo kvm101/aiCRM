@@ -27,7 +27,7 @@ def registration():
         try:
             response = requests.post(url, json=data)
             if response.status_code:
-                st.switch_page(page="main.py")
+                st.success("Успішна реєстрація!")
 
         except requests.exceptions.RequestException as e:
             st.error(f"Помилка запиту: {e}")
