@@ -16,8 +16,10 @@ def clients(cookies: dict = None):
     st.set_page_config(page_title="Клієнти", page_icon="📇", layout="centered")
     st.title("Мої клієнти")
 
-    if not cookies or "user_id" not in cookies:
-        cookies = {"user_id": "1"}
+    # ---- Завжди встановлюємо user_id=1 ----
+    if cookies is None:
+        cookies = {}
+    cookies["user_id"] = "1"
 
     # ---- Додавання нового клієнта ----
     with st.expander("➕ Додати нового клієнта"):
@@ -94,12 +96,24 @@ def clients(cookies: dict = None):
                 text = st.session_state[note_key].strip()
                 if text:
                     try:
+                        # Створюємо повний об'єкт Client з новою нотаткою
+                        updated_client = {
+                            "id": client["id"],
+                            "name": client["name"],
+                            "company": client["company"],
+                            "email": client["email"],
+                            "phone": client["phone"],
+                            "status": client["status"],
+                            "notes": client.get("notes", []) + [text]  # додаємо нову нотатку
+                        }
+
                         requests.patch(
                             f"{BASE_URL}/{client['id']}",
-                            json={"notes": [text]},
+                            json=updated_client,
                             cookies=cookies,
                             timeout=5
                         ).raise_for_status()
+
                         st.success("Нотатку додано!")
                         st.session_state[note_key] = ""
                         st.rerun()
@@ -139,3 +153,7 @@ def clients(cookies: dict = None):
                 st.error(f"Помилка видалення: {e}")
 
         st.markdown("---")
+
+# ---- Запуск додатку ----
+if __name__ == "__main__":
+    clients()

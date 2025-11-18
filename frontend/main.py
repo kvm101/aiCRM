@@ -43,7 +43,7 @@ def main():
     elif selected == "Розс.":
         mail()
     elif selected == "Профіль":
-        profile(cookies)
+        profile(cookies=cookies)
 
 
 if __name__ == "__main__":

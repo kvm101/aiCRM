@@ -1,12 +1,10 @@
 package vasyl.karpliak.aiCRM.controllers;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vasyl.karpliak.aiCRM.domain.MailData;
 import vasyl.karpliak.aiCRM.domain.User;
-import vasyl.karpliak.aiCRM.dto.MailDataReminderDTO;
 import vasyl.karpliak.aiCRM.services.MailService;
 import vasyl.karpliak.aiCRM.services.UserService;
 
@@ -24,33 +22,21 @@ public class MailController {
         this.userService = userService;
     }
 
-    @PostMapping("/reminder")
-    public ResponseEntity<MailData> Reminder(@RequestBody MailDataReminderDTO mailReminder,
+
+    @PostMapping("/mail")
+    public ResponseEntity<MailData> SendMail(@RequestBody MailData mailData,
                                              @CookieValue(name = "user_id") String user_id) {
-        Optional<User> user = userService.getUserById(Long.parseLong(user_id));
-        List<String> to = List.of(user.get().getEmail());
-        MailData mailData = new MailData();
-        mailData.setTo(to);
-        mailData.setSubject(mailReminder.getSubject());
-        mailData.setText(mailReminder.getText());
-        mailData.setWhen(mailReminder.getWhen());
 
-        mailService.SendToMail(mailData);
+        Optional<User> userOpt = userService.getUserById(Long.parseLong(user_id));
 
-        return new ResponseEntity<>(mailData, HttpStatus.OK);
-    }
+        userOpt.ifPresent(
+                user -> {
+                    mailService.SendToMail(mailData, user.getEmail());
+                }
+        );
 
-    @PostMapping("/send")
-    public ResponseEntity<MailData> SendTo(@RequestBody MailData mailData,
-                                           @CookieValue(name = "user_id") String user_id) {
-
-        Optional<User> user = userService.getUserById(Long.parseLong(user_id));
-        if (!user.get().getEmail().isEmpty()) {
-            mailData.setText(mailData.getText() + "\nfrom: " + user.get().getEmail());
-            mailService.SendToMail(mailData);
-            return new ResponseEntity<>(mailData, HttpStatus.OK);
-        }  else {
-            return new ResponseEntity<>(mailData, HttpStatus.NOT_FOUND);
-        }
+        return userOpt.isPresent()
+                ? new ResponseEntity<>(mailData, HttpStatus.OK)
+                : ResponseEntity.notFound().build();
     }
 }
