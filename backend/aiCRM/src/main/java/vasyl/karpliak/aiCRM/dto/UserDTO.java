@@ -33,7 +33,7 @@ public class UserDTO {
         dto.setPhone(user.getPhone());
         dto.setLastEnter(user.getLastEnter());
 
-        // маппимо tasks
+
         List<TaskDTO> taskDTOs = user.getTasks().stream()
                 .map(task -> {
                     TaskDTO t = new TaskDTO();
