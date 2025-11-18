@@ -1,6 +1,5 @@
 package vasyl.karpliak.aiCRM.controllers;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vasyl.karpliak.aiCRM.domain.User;
@@ -42,7 +41,6 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    // Отримати користувача за id
     @GetMapping("/{id}")
     public ResponseEntity<User> readUser(@PathVariable Long id) {
         Optional<User> user = userService.getUserById(id);
@@ -50,7 +48,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Оновити користувача
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
         Optional<User> existingUser = userService.getUserById(id);
