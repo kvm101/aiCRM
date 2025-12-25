@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import vasyl.karpliak.aiCRM.domain.User;
 import vasyl.karpliak.aiCRM.domain.client_domain.Task;
+import vasyl.karpliak.aiCRM.dto.clientDTO.TaskDTO;
 import vasyl.karpliak.aiCRM.repository.UserRepository;
 import vasyl.karpliak.aiCRM.repository.client_repositories.TaskRepository;
 

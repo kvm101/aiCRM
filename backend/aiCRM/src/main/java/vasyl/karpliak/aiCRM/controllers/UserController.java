@@ -19,9 +19,11 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping
-    public ResponseEntity<UserDTO> getUser(@CookieValue(name = "user_id") String user_id) {
-        return userService.getUserById(Long.parseLong(user_id))
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUser(@CookieValue(name = "user_id") String user_id, @PathVariable Long id) {
+
+
+        return userService.getUserById((id != null) ? id : Long.parseLong(user_id))
                 .map(UserDTO::toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -41,13 +43,6 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> readUser(@PathVariable Long id) {
-        Optional<User> user = userService.getUserById(id);
-        return user.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
         Optional<User> existingUser = userService.getUserById(id);
@@ -55,17 +50,8 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
-        User user = existingUser.get();
-        user.setName(userDetails.getName());
-        user.setLogin(userDetails.getLogin());
-        user.setPassword(userDetails.getPassword());
-        user.setCompany(userDetails.getCompany());
-        user.setEmail(userDetails.getEmail());
-        user.setPhone(userDetails.getPhone());
-        user.setRole(userDetails.getRole());
-        user.setLastEnter(userDetails.getLastEnter());
-
-        User updatedUser = userService.updateUser(user);
+        User oldUser = existingUser.get();
+        User updatedUser = userService.updateUser(oldUser, userDetails);
         return ResponseEntity.ok(updatedUser);
     }
 
