@@ -46,7 +46,16 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User updateUser(User user) {
+    public User updateUser(User user, User newUser) {
+        user.setName(newUser.getName());
+        user.setLogin(newUser.getLogin());
+        user.setPassword(newUser.getPassword());
+        user.setCompany(newUser.getCompany());
+        user.setEmail(newUser.getEmail());
+        user.setPhone(newUser.getPhone());
+        user.setRole(newUser.getRole());
+        user.setLastEnter(newUser.getLastEnter());
+
         return userRepository.save(user);
     }
 
