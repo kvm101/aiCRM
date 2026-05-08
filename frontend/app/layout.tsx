@@ -4,6 +4,7 @@ import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { GlobalAIChat } from "@/components/ai/GlobalAIChat";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
               <Header />
               <main className="flex-1 overflow-y-auto p-6">{children}</main>
             </div>
+            <GlobalAIChat />
           </div>
         </QueryProvider>
       </body>

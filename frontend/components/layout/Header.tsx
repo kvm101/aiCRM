@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Sparkles } from "lucide-react";
 import { useAuthStore, Role } from "@/store/useAuthStore";
+import { useAIStore } from "@/store/useAIStore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Header() {
   const { currentUser, switchUser } = useAuthStore();
+  const { toggleOpen } = useAIStore();
 
   const getInitials = (name: string) => {
     return name
@@ -39,6 +41,16 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
+        <Button 
+          onClick={toggleOpen}
+          variant="outline" 
+          size="sm" 
+          className="gap-2 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 rounded-full"
+        >
+          <Sparkles className="h-4 w-4" />
+          Ask AI
+        </Button>
+
         <Button variant="ghost" size="icon" className="relative text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
           <Bell className="h-5 w-5" />
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />

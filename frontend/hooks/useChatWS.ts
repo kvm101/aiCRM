@@ -1,25 +1,66 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/services/apiClient";
 
 export type ChatMessage = {
-  id: string;
-  chatId: string;
-  sender: "user" | "client";
+  id: string | number;
+  chatId?: string | number;
+  senderType?: "OPERATOR" | "CLIENT" | "SYSTEM";
+  sender?: "user" | "client"; // kept for backward compatibility with frontend
   text: string;
-  timestamp: string;
+  createdAt?: string;
+  timestamp?: string; // kept for backward compatibility
+};
+
+export type ChatSessionType = {
+  id: number;
+  externalChatId: string;
+  clientName: string;
+  status: string;
+  channelType: string;
 };
 
 export type WSEvent = 
   | { type: "NEW_MESSAGE"; payload: ChatMessage }
   | { type: "CHAT_ASSIGNED"; payload: { chatId: string; assignedTo: string } };
 
+export const useChats = () => {
+  return useQuery({
+    queryKey: ['chats'],
+    queryFn: async (): Promise<ChatSessionType[]> => {
+      const { data } = await apiClient.get('/chats', { withCredentials: true });
+      return data;
+    },
+  });
+};
+
+export const useChatMessages = (chatId: number | null) => {
+  return useQuery({
+    queryKey: ['messages', chatId],
+    queryFn: async (): Promise<ChatMessage[]> => {
+      if (!chatId) return [];
+      const { data } = await apiClient.get(`/chats/${chatId}/messages`, { withCredentials: true });
+      // Transform backend format to frontend format
+      return data.map((msg: any) => ({
+        id: msg.id,
+        chatId: msg.session?.id || chatId,
+        sender: msg.senderType === "OPERATOR" ? "user" : "client",
+        text: msg.text,
+        timestamp: msg.createdAt,
+      }));
+    },
+    enabled: !!chatId,
+  });
+};
+
 export function useChatWS(wsUrl: string = "ws://localhost:8080/ws/chats") {
   const { currentUser } = useAuthStore();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const queryClient = useQueryClient();
+  const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    // Connect to WebSocket with User ID as query param (for backend assignment logic)
     const ws = new WebSocket(`${wsUrl}?userId=${currentUser.id}`);
     wsRef.current = ws;
 
@@ -29,11 +70,24 @@ export function useChatWS(wsUrl: string = "ws://localhost:8080/ws/chats") {
 
     ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data) as WSEvent;
+        const data = JSON.parse(event.data);
         console.log("[WebSocket] Received:", data);
 
-        if (data.type === "NEW_MESSAGE") {
-          setMessages((prev) => [...prev, data.payload]);
+        // If backend sends a message, invalidate queries to fetch the latest
+        if (data.type === "NEW_MESSAGE" || data.status === "received") {
+          queryClient.invalidateQueries({ queryKey: ['messages'] });
+          queryClient.invalidateQueries({ queryKey: ['chats'] });
+          if (data.payload) {
+             const payload = data.payload;
+             const mappedPayload: ChatMessage = {
+               id: payload.id,
+               chatId: payload.chatId,
+               sender: payload.senderType === "OPERATOR" ? "user" : "client",
+               text: payload.text,
+               timestamp: payload.createdAt
+             };
+             setLiveMessages((prev) => [...prev, mappedPayload]);
+          }
         }
       } catch (e) {
         console.error("[WebSocket] Parse error:", e);
@@ -47,26 +101,30 @@ export function useChatWS(wsUrl: string = "ws://localhost:8080/ws/chats") {
     return () => {
       ws.close();
     };
-  }, [wsUrl, currentUser.id, currentUser.name]);
+  }, [wsUrl, currentUser.id, currentUser.name, queryClient]);
 
-  const sendMessage = (chatId: string, text: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      const msg: WSEvent = {
-        type: "NEW_MESSAGE",
-        payload: {
-          id: Date.now().toString(),
-          chatId,
-          sender: "user",
-          text,
-          timestamp: new Date().toISOString(),
-        },
-      };
-      // Optimistic update
-      setMessages((prev) => [...prev, msg.payload]);
-      // The backend will probably ignore the ID/Timestamp and generate its own, but we send it for now.
-      wsRef.current.send(JSON.stringify(msg));
+  const { mutate: sendMessage } = useMutation({
+    mutationFn: async ({ chatId, text }: { chatId: string | number, text: string }) => {
+      const { data } = await apiClient.post(`/chats/${chatId}/messages`, { text }, { withCredentials: true });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['messages', variables.chatId] });
     }
-  };
+  });
 
-  return { messages, sendMessage };
+  return { liveMessages, sendMessage };
+}
+
+export const useDeleteChat = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (chatId: number) => {
+      await apiClient.delete(`/chats/${chatId}`, { withCredentials: true });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
+    }
+  });
 }

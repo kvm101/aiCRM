@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Plus, MessageSquare, Trash2, UserPlus } from "lucide-react";
+import { Search, Plus, MessageSquare, Trash2, UserPlus, Pencil } from "lucide-react";
 
 import { useClients, useCreateClient, useUpdateClient, useDeleteClient, Client } from "@/hooks/useSales";
 import { Loader2 } from "lucide-react";
@@ -83,8 +83,13 @@ export default function ContactsPage() {
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Клієнти</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Керуйте вашими лідами та активними клієнтами.</p>
+          <div className="flex items-baseline gap-3">
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Клієнти</h1>
+            <Badge variant="secondary" className="text-sm rounded-full px-3 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">
+              Всього: {clients.length}
+            </Badge>
+          </div>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Керуйте вашими лідами та активними клієнтами.</p>
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-72">
@@ -155,12 +160,20 @@ export default function ContactsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-zinc-100 dark:bg-zinc-900">
-          {Object.entries(STATUS_MAP).map(([key, label]) => (
-            <TabsTrigger key={key} value={key} className="data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800">
-              {label}
-            </TabsTrigger>
-          ))}
+        <TabsList className="grid w-full grid-cols-4 bg-zinc-100 dark:bg-zinc-900 h-auto p-1">
+          {Object.entries(STATUS_MAP).map(([key, label]) => {
+            const count = clients.filter((c) => c.status === key).length;
+            return (
+              <TabsTrigger key={key} value={key} className="data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 py-2.5 transition-all">
+                <div className="flex items-center gap-2">
+                  {label}
+                  <Badge variant="secondary" className="bg-zinc-200/60 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 ml-1">
+                    {count}
+                  </Badge>
+                </div>
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         <div className="mt-6">
@@ -189,6 +202,8 @@ function ClientCard({ client }: { client: Client }) {
   const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
   const [newNote, setNewNote] = useState("");
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editForm, setEditForm] = useState<Partial<Client>>({});
 
   const handleAddNote = () => {
     if (!newNote.trim()) return;
@@ -201,6 +216,22 @@ function ClientCard({ client }: { client: Client }) {
 
   const handleStatusChange = (status: string) => {
     updateClient.mutate({ id: client.id, status: status as any });
+  };
+
+  const openEditDialog = () => {
+    setEditForm({
+      name: client.name,
+      company: client.company,
+      email: client.email,
+      phone: client.phone,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSave = () => {
+    updateClient.mutate({ id: client.id, ...editForm }, {
+      onSuccess: () => setIsEditDialogOpen(false)
+    });
   };
 
   return (
@@ -223,6 +254,14 @@ function ClientCard({ client }: { client: Client }) {
                   ))}
                 </SelectContent>
               </Select>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-zinc-500 hover:text-indigo-600 hover:bg-indigo-50"
+                onClick={openEditDialog}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -274,6 +313,41 @@ function ClientCard({ client }: { client: Client }) {
           </div>
         </div>
       </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Редагувати клієнта</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Input
+              placeholder="Ім'я"
+              value={editForm.name || ""}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            />
+            <Input
+              placeholder="Компанія"
+              value={editForm.company || ""}
+              onChange={(e) => setEditForm({ ...editForm, company: e.target.value })}
+            />
+            <Input
+              placeholder="Email"
+              value={editForm.email || ""}
+              onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+            />
+            <Input
+              placeholder="Телефон"
+              value={editForm.phone || ""}
+              onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={handleEditSave} disabled={updateClient.isPending}>
+              {updateClient.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Зберегти"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

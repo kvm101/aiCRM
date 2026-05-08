@@ -5,18 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="70c722d5-8f33-4829-ae8b-106602825ff8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/aiCRM/src/test/java/vasyl/karpliak/aiCRM/AuthControllerTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/aiCRM/src/test/java/vasyl/karpliak/aiCRM/ClientControllerTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/aiCRM/src/test/java/vasyl/karpliak/aiCRM/MailControllerTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/aiCRM/src/test/java/vasyl/karpliak/aiCRM/TaskControllerTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/aiCRM/src/test/java/vasyl/karpliak/aiCRM/UserControllerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/aiCRM.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/aiCRM.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/aiCRM/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/aiCRM/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/aiCRM/src/main/java/vasyl/karpliak/aiCRM/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/aiCRM/src/main/java/vasyl/karpliak/aiCRM/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/aiCRM/src/main/java/vasyl/karpliak/aiCRM/controllers/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/aiCRM/src/main/java/vasyl/karpliak/aiCRM/controllers/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/aiCRM/src/main/java/vasyl/karpliak/aiCRM/controllers/client_controllers/ClientController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/aiCRM/src/main/java/vasyl/karpliak/aiCRM/controllers/client_controllers/ClientController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/aiCRM/src/main/java/vasyl/karpliak/aiCRM/dto/UserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/aiCRM/src/main/java/vasyl/karpliak/aiCRM/dto/UserDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,12 +41,19 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "new__branch",
+    "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/vasyl/Documents/GitHub/aiCRM"
+    "last_opened_file_path": "C:/Users/vasyl/OneDrive/Документы/GitHub/aiCRM"
   }
 }]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.32098.37" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

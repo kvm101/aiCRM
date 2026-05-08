@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/apiClient';
 
 export interface Client {
-  id: string;
+  id: number;
   name: string;
   company: string;
   email: string;
@@ -12,7 +12,7 @@ export interface Client {
 }
 
 export interface Task {
-  id: string;
+  id: number;
   title: string;
   description: string;
   deadline: string;
@@ -49,7 +49,7 @@ export const useCreateClient = () => {
 export const useUpdateClient = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...patch }: Partial<Client> & { id: string }) => {
+    mutationFn: async ({ id, ...patch }: Partial<Client> & { id: number }) => {
       const { data } = await apiClient.patch(`/clients/${id}`, patch, { withCredentials: true });
       return data;
     },
@@ -62,7 +62,7 @@ export const useUpdateClient = () => {
 export const useDeleteClient = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       await apiClient.delete(`/clients/${id}`, { withCredentials: true });
     },
     onSuccess: () => {
@@ -98,7 +98,7 @@ export const useCreateTask = () => {
 export const useUpdateTask = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...task }: Partial<Task> & { id: string }) => {
+    mutationFn: async ({ id, ...task }: Partial<Task> & { id: number }) => {
       const { data } = await apiClient.put(`/tasks/${id}`, task, { withCredentials: true });
       return data;
     },
@@ -111,7 +111,7 @@ export const useUpdateTask = () => {
 export const useDeleteTask = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       await apiClient.delete(`/tasks/${id}`, { withCredentials: true });
     },
     onSuccess: () => {
@@ -131,7 +131,7 @@ export const useDeals = () => {
 export const useUpdateDealStage = () => {
     const updateClient = useUpdateClient();
     return {
-        mutate: ({ dealId, newStage }: { dealId: string; newStage: string }) => 
+        mutate: ({ dealId, newStage }: { dealId: number; newStage: string }) => 
             updateClient.mutate({ id: dealId, status: newStage as any })
     };
 };

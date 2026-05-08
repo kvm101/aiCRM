@@ -22,7 +22,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { GripVertical, Loader2, Calendar, Plus } from "lucide-react";
+import { GripVertical, Loader2, Calendar, Plus, Pencil } from "lucide-react";
 import { useTasks, useUpdateTask, useCreateTask, Task } from "@/hooks/useSales";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,12 +44,12 @@ const COLUMN_NAMES: Record<Task['tag'], string> = {
 };
 
 export function KanbanBoard() {
-  const { data: serverTasks = [], isLoading } = useTasks();
+  const { data: serverTasks, isLoading } = useTasks();
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: createTask } = useCreateTask();
 
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<number | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState<Partial<Task>>({
     title: "",
@@ -58,8 +58,13 @@ export function KanbanBoard() {
     tag: "PLANNED",
   });
 
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
   useEffect(() => {
-    setTasks(serverTasks);
+    if (serverTasks) {
+      setTasks(serverTasks);
+    }
   }, [serverTasks]);
 
   const sensors = useSensors(
@@ -68,7 +73,7 @@ export function KanbanBoard() {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
+    setActiveId(event.active.id as number);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -76,20 +81,20 @@ export function KanbanBoard() {
     const { active, over } = event;
     if (!over) return;
 
-    const activeIdStr = active.id as string;
-    const overIdStr = over.id as string;
+    const activeIdNum = active.id as number;
+    const overId = over.id;
 
-    const activeTask = tasks.find((t) => t.id === activeIdStr);
+    const activeTask = tasks.find((t) => t.id === activeIdNum);
     if (!activeTask) return;
 
     let targetTag: Task['tag'] | null = null;
 
-    if (COLUMNS.includes(overIdStr as Task['tag'])) {
-      if (activeTask.tag !== overIdStr) {
-        targetTag = overIdStr as Task['tag'];
+    if (typeof overId === 'string' && COLUMNS.includes(overId as Task['tag'])) {
+      if (activeTask.tag !== overId) {
+        targetTag = overId as Task['tag'];
       }
     } else {
-      const overTask = tasks.find((t) => t.id === overIdStr);
+      const overTask = tasks.find((t) => t.id === overId);
       if (overTask && activeTask.tag !== overTask.tag) {
         targetTag = overTask.tag;
       }
@@ -97,8 +102,8 @@ export function KanbanBoard() {
 
     if (targetTag) {
       // Optimistic update
-      setTasks(tasks.map(t => t.id === activeIdStr ? { ...t, tag: targetTag as Task['tag'] } : t));
-      updateTask({ id: activeIdStr, tag: targetTag });
+      setTasks(tasks.map(t => t.id === activeIdNum ? { ...t, tag: targetTag as Task['tag'] } : t));
+      updateTask({ id: activeIdNum, tag: targetTag });
     }
   };
 
@@ -109,6 +114,21 @@ export function KanbanBoard() {
         setNewTask({ title: "", description: "", deadline: new Date().toISOString(), tag: "PLANNED" });
       },
     });
+  };
+
+  const handleEditTaskSave = () => {
+    if (!editingTask) return;
+    updateTask(editingTask, {
+      onSuccess: () => {
+        setIsEditDialogOpen(false);
+        setEditingTask(null);
+      },
+    });
+  };
+
+  const openEditDialog = (task: Task) => {
+    setEditingTask(task);
+    setIsEditDialogOpen(true);
   };
 
   const activeTask = activeId ? tasks.find((t) => t.id === activeId) : null;
@@ -156,6 +176,37 @@ export function KanbanBoard() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Task Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Редагувати завдання</DialogTitle>
+            </DialogHeader>
+            {editingTask && (
+              <div className="grid gap-4 py-4">
+                <Input
+                  placeholder="Назва"
+                  value={editingTask.title}
+                  onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                />
+                <Textarea
+                  placeholder="Опис"
+                  value={editingTask.description}
+                  onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
+                />
+                <Input
+                  type="datetime-local"
+                  value={editingTask.deadline?.slice(0, 16)}
+                  onChange={(e) => setEditingTask({ ...editingTask, deadline: new Date(e.target.value).toISOString() })}
+                />
+              </div>
+            )}
+            <DialogFooter>
+              <Button onClick={handleEditTaskSave}>Зберегти</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex h-full w-full gap-4 overflow-x-auto pb-4">
@@ -170,6 +221,7 @@ export function KanbanBoard() {
               key={columnId}
               columnId={columnId}
               tasks={tasks.filter((t) => t.tag === columnId)}
+              onEditTask={openEditDialog}
             />
           ))}
           <DragOverlay>
@@ -185,7 +237,7 @@ export function KanbanBoard() {
   );
 }
 
-function Column({ columnId, tasks }: { columnId: Task['tag']; tasks: Task[] }) {
+function Column({ columnId, tasks, onEditTask }: { columnId: Task['tag']; tasks: Task[]; onEditTask: (t: Task) => void }) {
   const { setNodeRef } = useDroppable({
     id: columnId,
   });
@@ -204,7 +256,7 @@ function Column({ columnId, tasks }: { columnId: Task['tag']; tasks: Task[] }) {
       <div ref={setNodeRef} className="flex-1 min-h-[500px] space-y-3">
         <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
-            <SortableTaskCard key={task.id} task={task} />
+            <SortableTaskCard key={task.id} task={task} onEditTask={onEditTask} />
           ))}
         </SortableContext>
       </div>
@@ -212,7 +264,7 @@ function Column({ columnId, tasks }: { columnId: Task['tag']; tasks: Task[] }) {
   );
 }
 
-function SortableTaskCard({ task }: { task: Task }) {
+function SortableTaskCard({ task, onEditTask }: { task: Task; onEditTask: (t: Task) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
   });
@@ -225,12 +277,12 @@ function SortableTaskCard({ task }: { task: Task }) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <TaskCard task={task} />
+      <TaskCard task={task} onEditTask={onEditTask} />
     </div>
   );
 }
 
-function TaskCard({ task, isOverlay = false }: { task: Task; isOverlay?: boolean }) {
+function TaskCard({ task, isOverlay = false, onEditTask }: { task: Task; isOverlay?: boolean; onEditTask?: (t: Task) => void }) {
   return (
     <Card className={`cursor-grab active:cursor-grabbing hover:border-indigo-500/50 transition-all ${isOverlay ? 'shadow-xl border-indigo-500' : ''}`}>
       <CardContent className="p-4 space-y-3">
@@ -238,7 +290,20 @@ function TaskCard({ task, isOverlay = false }: { task: Task; isOverlay?: boolean
           <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm leading-tight">
             {task.title}
           </span>
-          <GripVertical className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+          <div className="flex items-center gap-1">
+            {onEditTask && (
+              <button 
+                className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
+                onPointerDown={(e) => {
+                  e.stopPropagation(); // Запобігаємо DND
+                  onEditTask(task);
+                }}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            )}
+            <GripVertical className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+          </div>
         </div>
         
         {task.description && (

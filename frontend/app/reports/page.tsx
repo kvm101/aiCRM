@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { apiClient } from "@/services/apiClient";
+import { generateReportAction } from "./actions";
 import {
   Table,
   TableBody,
@@ -52,17 +52,16 @@ export default function ReportsPage() {
     setIsGenerating(true);
 
     try {
-      // Assuming endpoint POST /api/v1/reporting/generate
-      const response = await apiClient.post('/reporting/generate');
+      // Call our Next.js Server Action (BFF Pattern)
+      const result = await generateReportAction(reportName, "SALES_SUMMARY");
       
-      // Mock parsing ID since backend returns text "Запит на генерацію... ID звіту: <id>"
-      const newReportId = response.data?.match(/ID звіту: (.*)/)?.[1] || `rep_${Date.now()}`;
+      if (!result.success) throw new Error(result.error);
 
       const newReport: Report = {
-        id: newReportId,
+        id: result.reportId as string,
         name: reportName,
         type: "SALES_SUMMARY",
-        dateGenerated: new Date().toISOString(),
+        dateGenerated: result.dateGenerated as string,
         status: "Processing"
       };
 
@@ -70,9 +69,9 @@ export default function ReportsPage() {
       setIsDialogOpen(false);
       setReportName("");
 
-      // Simulate async completion
+      // Simulate async completion where we would normally poll or receive a WebSocket event
       setTimeout(() => {
-        setReports(current => current.map(r => r.id === newReportId ? { ...r, status: "Completed" } : r));
+        setReports(current => current.map(r => r.id === result.reportId ? { ...r, status: "Completed" } : r));
       }, 5000);
 
     } catch (error) {

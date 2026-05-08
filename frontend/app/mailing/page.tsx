@@ -26,7 +26,7 @@ export default function MailingPage() {
         to: recipients,
         subject,
         text,
-        when: new Date(when).toISOString(),
+        when: new Date(when).toISOString().split('.')[0], // Removes .000Z to match Java LocalDateTime
       }, { withCredentials: true });
       
       alert("Листи успішно надіслано!");
