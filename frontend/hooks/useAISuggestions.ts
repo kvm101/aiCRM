@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 
-// In a real app this would come from process.env.NEXT_PUBLIC_API_URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+// Uses the same base URL as the rest of the app
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export function useAISuggestions() {
   const [suggestion, setSuggestion] = useState<string>("");

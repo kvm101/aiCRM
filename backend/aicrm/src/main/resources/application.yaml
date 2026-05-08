@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: aiCRM
+
+  threads:
+    virtual:
+      enabled: true # Важливо для масштабування SSE-з'єднань MCP-сервера
+
+  ai:
+    mcp:
+      server:
+        enabled: true
+        name: aicrm-mcp-server
+        version: 1.0.0
+        transport: SSE
+        sse-endpoint: /mcp/sse
+        message-endpoint: /mcp/message
+        
+    google:
+      genai:
+        api-key: AIzaSyABaMRAbypXDyxv0dOoQb0DvO2aGcAgO7k
+        chat:
+          options:
+            model: gemini-2.5-flash
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mydatabase
+    username: myuser
+    password: secret
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: vasyl.karpliak.pp.2022@lpnu.ua
+    password: qtwo ylfy fttu bgzr
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: user
+    password: password
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+springdoc:
+  api-docs:
+    version: OPENAPI_3_0
