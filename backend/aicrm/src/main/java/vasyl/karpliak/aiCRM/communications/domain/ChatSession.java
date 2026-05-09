@@ -33,4 +33,7 @@ public class ChatSession {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private SessionStatus status;
+
+    @Column(name = "unread_count", nullable = false)
+    private int unreadCount = 0;
 }

@@ -5,58 +5,102 @@ export interface DashboardStat {
   value: string;
   change: string;
   trend: 'up' | 'down';
+  icon: string; // ключ для іконки
 }
 
 export interface DashboardData {
   stats: DashboardStat[];
+  totalDeals: number;
+  activeDeals: number;
+  wonDeals: number;
+  unreadMessages: number;
 }
 
 interface BackendDashboardStats {
   totalContacts: number;
   totalTasks: number;
   openChats: number;
+  totalDeals: number;
+  activeDeals: number;
+  wonDeals: number;
+  unreadMessages: number;
 }
 
 /**
  * BFF Aggregation Service for the Dashboard.
- * Fetches real data from the backend /dashboard/stats endpoint
- * and transforms it into a format suitable for the frontend UI.
+ * Fetches real data from the backend /dashboard/stats endpoint.
  */
 export async function getDashboardStats(): Promise<DashboardData> {
   try {
-    const backendStats = await serverFetch<BackendDashboardStats>('/dashboard/stats');
+    const s = await serverFetch<BackendDashboardStats>('/dashboard/stats');
 
     const stats: DashboardStat[] = [
       {
-        title: "Total Contacts",
-        value: backendStats.totalContacts.toLocaleString(),
-        change: "+12%", // TODO: calculate from historical data
+        title: "Контакти",
+        value: s.totalContacts.toLocaleString(),
+        change: `${s.totalContacts} загалом`,
         trend: "up",
+        icon: "users",
       },
       {
-        title: "Active Tasks",
-        value: backendStats.totalTasks.toLocaleString(),
-        change: "+5",
+        title: "Активні задачі",
+        value: s.totalTasks.toLocaleString(),
+        change: "на Kanban-дошці",
         trend: "up",
+        icon: "tasks",
       },
       {
-        title: "Open Chats",
-        value: backendStats.openChats.toLocaleString(),
-        change: backendStats.openChats > 0 ? `${backendStats.openChats}` : "0",
-        trend: backendStats.openChats > 5 ? "up" : "down",
+        title: "Відкриті чати",
+        value: s.openChats.toLocaleString(),
+        change: s.openChats > 0 ? `${s.openChats} активних` : "Немає активних",
+        trend: s.openChats > 0 ? "up" : "down",
+        icon: "chats",
+      },
+      {
+        title: "Непрочитані повідомлення",
+        value: s.unreadMessages.toLocaleString(),
+        change: s.unreadMessages > 0 ? "Потребують уваги" : "Все прочитано",
+        trend: s.unreadMessages > 0 ? "up" : "down",
+        icon: "unread",
+      },
+      {
+        title: "Усього угод",
+        value: s.totalDeals.toLocaleString(),
+        change: `${s.activeDeals} активних`,
+        trend: "up",
+        icon: "deals",
+      },
+      {
+        title: "Виграні угоди",
+        value: s.wonDeals.toLocaleString(),
+        change: s.totalDeals > 0 ? `${Math.round((s.wonDeals / s.totalDeals) * 100)}% win rate` : "0%",
+        trend: s.wonDeals > 0 ? "up" : "down",
+        icon: "won",
       },
     ];
 
-    return { stats };
+    return {
+      stats,
+      totalDeals: s.totalDeals,
+      activeDeals: s.activeDeals,
+      wonDeals: s.wonDeals,
+      unreadMessages: s.unreadMessages,
+    };
   } catch (error) {
-    console.error("BFF Dashboard aggregation failed, using fallback:", error);
-    // Fallback data when backend is unavailable
+    console.error("BFF Dashboard aggregation failed:", error);
     return {
       stats: [
-        { title: "Total Contacts", value: "N/A", change: "0%", trend: "up" },
-        { title: "Active Tasks", value: "N/A", change: "0%", trend: "up" },
-        { title: "Open Chats", value: "N/A", change: "0", trend: "down" },
+        { title: "Контакти", value: "N/A", change: "—", trend: "up", icon: "users" },
+        { title: "Активні задачі", value: "N/A", change: "—", trend: "up", icon: "tasks" },
+        { title: "Відкриті чати", value: "N/A", change: "—", trend: "down", icon: "chats" },
+        { title: "Непрочитані повідомлення", value: "N/A", change: "—", trend: "down", icon: "unread" },
+        { title: "Усього угод", value: "N/A", change: "—", trend: "up", icon: "deals" },
+        { title: "Виграні угоди", value: "N/A", change: "—", trend: "down", icon: "won" },
       ],
+      totalDeals: 0,
+      activeDeals: 0,
+      wonDeals: 0,
+      unreadMessages: 0,
     };
   }
 }

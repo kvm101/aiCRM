@@ -99,4 +99,12 @@ public class CommunicationsAITools {
 
         return "Повідомлення успішно відправлено клієнту в Telegram.";
     }
+
+    @Tool(description = "Отримати всі вхідні повідомлення від клієнтів за вказаний період (since — ISO дата-час початку, наприклад '2026-05-01T00:00:00'). Використовується для сумаризації активності за день, тиждень або місяць.")
+    public List<MessageResponse> getMessagesSince(String sinceIso) {
+        LocalDateTime since = LocalDateTime.parse(sinceIso);
+        return messageRepository.findByCreatedAtAfterOrderByCreatedAtAsc(since).stream()
+                .map(this::mapToMessageResponse)
+                .collect(Collectors.toList());
+    }
 }

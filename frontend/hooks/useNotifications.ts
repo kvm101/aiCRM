@@ -16,7 +16,7 @@ export const useNotifications = () => {
       const { data } = await apiClient.get('/notifications', { withCredentials: true });
       return data;
     },
-    refetchInterval: 30000, // Poll every 30 seconds
+    refetchInterval: 15000, // Poll every 15 seconds as fallback
   });
 };
 
@@ -27,7 +27,7 @@ export const useUnreadNotifications = () => {
       const { data } = await apiClient.get('/notifications/unread', { withCredentials: true });
       return data;
     },
-    refetchInterval: 10000, // Poll unread more frequently
+    refetchInterval: 5000, // Poll unread every 5s as fallback (WS handles instant updates)
   });
 };
 

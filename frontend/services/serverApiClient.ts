@@ -28,6 +28,7 @@ export async function serverFetch<T>(endpoint: string, options: FetchOptions = {
   const config: RequestInit = {
     ...options,
     headers,
+    cache: 'no-store', // Завжди отримувати свіжі дані з бекенду
   };
 
   const response = await fetch(url, config);

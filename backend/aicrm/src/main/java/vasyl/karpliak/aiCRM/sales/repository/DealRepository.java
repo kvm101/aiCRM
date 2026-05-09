@@ -8,12 +8,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface DealRepository extends JpaRepository<Deal, Long> {
     List<Deal> findByUserId(Long userId);
     List<Deal> findByUserIdAndStatus(Long userId, vasyl.karpliak.aiCRM.sales.enums.DealStatus status);
+    
+    // Угоди за статусом у діапазоні дат (для місячної аналітики)
+    List<Deal> findByUserIdAndStatusAndUpdatedAtBetween(
+            Long userId, 
+            vasyl.karpliak.aiCRM.sales.enums.DealStatus status,
+            LocalDateTime from, 
+            LocalDateTime to);
     
     long countByUserIdAndStatus(Long userId, vasyl.karpliak.aiCRM.sales.enums.DealStatus status);
     

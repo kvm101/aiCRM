@@ -48,6 +48,12 @@ public class User{
     @Column(name = "role", nullable = false)
     private UserRoles role;
 
+    @Column(name = "target_revenue")
+    private java.math.BigDecimal targetRevenue;
+
+    @Column(name = "target_currency")
+    private String targetCurrency;
+
     @Column(name = "last_enter", nullable = false)
     private LocalDateTime lastEnter;
 

@@ -19,6 +19,7 @@ export type ChatSessionType = {
   clientName: string;
   status: string;
   channelType: string;
+  unreadCount: number;
 };
 
 export type WSEvent = 
@@ -128,3 +129,16 @@ export const useDeleteChat = () => {
     }
   });
 }
+
+export const useMarkChatRead = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (chatId: number) => {
+      await apiClient.patch(`/chats/${chatId}/read`, {}, { withCredentials: true });
+    },
+    onSuccess: (_, chatId) => {
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
+    }
+  });
+};

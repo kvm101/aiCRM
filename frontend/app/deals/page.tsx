@@ -245,10 +245,18 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
   const { data: events = [] } = useDealEvents(deal.id);
   const createNote = useCreateDealNote();
   const createTask = useCreateTask();
+  const updateDeal = useUpdateDeal();
+  const deleteDeal = useDeleteDeal();
   
   const [inputText, setInputText] = useState("");
   const [mode, setMode] = useState<"note" | "task">("note");
   const [taskDays, setTaskDays] = useState("1");
+
+  // Edit state
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState(deal.title);
+  const [editBudget, setEditBudget] = useState(deal.budget);
+  const [editCurrency, setEditCurrency] = useState(deal.currency || "USD");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -272,6 +280,28 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
     setMode("note");
   };
 
+  const handleSaveEdit = () => {
+    updateDeal.mutate(
+      { id: deal.id, title: editTitle, budget: editBudget, currency: editCurrency },
+      {
+        onSuccess: () => {
+          setIsEditOpen(false);
+          // Оновлюємо локальний стан deal
+          deal.title = editTitle;
+          deal.budget = editBudget;
+          deal.currency = editCurrency;
+        },
+      }
+    );
+  };
+
+  const handleDelete = () => {
+    if (!confirm("Ви впевнені, що хочете видалити цю угоду?")) return;
+    deleteDeal.mutate(deal.id, {
+      onSuccess: () => onClose(),
+    });
+  };
+
   return (
     <div className="flex flex-col md:flex-row h-full w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
       
@@ -281,6 +311,14 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
           <Button variant="ghost" size="sm" onClick={onClose} className="h-8 px-2 -ml-2 text-zinc-500 hover:text-zinc-900">
             &larr; Назад
           </Button>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-indigo-600" onClick={() => { setEditTitle(deal.title); setEditBudget(deal.budget); setEditCurrency(deal.currency || "USD"); setIsEditOpen(true); }}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-600" onClick={handleDelete} disabled={deleteDeal.isPending}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <div>
@@ -451,6 +489,56 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
         </div>
 
       </div>
+
+      {/* Edit Deal Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Редагувати угоду</DialogTitle>
+            <DialogDescription>Змініть деталі угоди та натисніть &quot;Зберегти&quot;.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Назва</label>
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Назва угоди"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Бюджет</label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  value={editBudget || ""}
+                  onChange={(e) => setEditBudget(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <Select value={editCurrency} onValueChange={setEditCurrency}>
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="UAH">UAH ₴</SelectItem>
+                    <SelectItem value="USD">USD $</SelectItem>
+                    <SelectItem value="EUR">EUR €</SelectItem>
+                    <SelectItem value="GBP">GBP £</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Скасувати</Button>
+            <Button onClick={handleSaveEdit} disabled={updateDeal.isPending || !editTitle.trim()}>
+              {updateDeal.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Зберегти
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+

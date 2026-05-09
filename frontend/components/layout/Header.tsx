@@ -68,7 +68,9 @@ export function Header() {
             <Button variant="ghost" size="icon" className="relative text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
               <Bell className="h-5 w-5" />
               {unreadNotifications.length > 0 && (
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  {unreadNotifications.length > 9 ? "9+" : unreadNotifications.length}
+                </span>
               )}
             </Button>
           </PopoverTrigger>

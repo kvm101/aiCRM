@@ -191,6 +191,7 @@ export const useCreateDeal = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
     },
   });
 };
@@ -204,6 +205,7 @@ export const useUpdateDeal = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
     },
   });
 };
@@ -220,6 +222,7 @@ export const useUpdateDealStatus = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
     },
   });
 };
@@ -232,6 +235,7 @@ export const useDeleteDeal = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
     },
   });
 };
@@ -244,15 +248,32 @@ export const useFunnelAnalytics = () => {
       const { data } = await apiClient.get('/analytics/funnel', { withCredentials: true });
       return data;
     },
+    staleTime: 0,
+    refetchInterval: 30000, // Автооновлення кожні 30 сек
   });
 };
 
 export const useGoalsAnalytics = () => {
   return useQuery({
     queryKey: ['analytics', 'goals'],
-    queryFn: async (): Promise<{ achievedRevenue: number; targetRevenue: number }> => {
+    queryFn: async (): Promise<{ achievedRevenue: number; targetRevenue: number; currency: string }> => {
       const { data } = await apiClient.get('/analytics/goals', { withCredentials: true });
       return data;
+    },
+    staleTime: 0,
+    refetchInterval: 30000,
+  });
+};
+
+export const useUpdateGoalsAnalytics = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (goals: { targetRevenue: string; currency: string }) => {
+      const { data } = await apiClient.put('/analytics/goals', goals, { withCredentials: true });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['analytics', 'goals'] });
     },
   });
 };

@@ -1,16 +1,28 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useChatWS, useChats, useChatMessages, useDeleteChat } from "@/hooks/useChatWS";
+import { useChatWS, useChats, useChatMessages, useDeleteChat, useMarkChatRead } from "@/hooks/useChatWS";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Loader2, Trash2 } from "lucide-react";
+import { Send, Bot, User, Loader2, Trash2, BarChart2, ChevronDown, Sparkles } from "lucide-react";
+import { useAIStore, SummaryPeriod, ChatContextMessage } from "@/store/useAIStore";
+import { useAuthStore } from "@/store/useAuthStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function ChatPage() {
   const { data: chats = [], isLoading: isLoadingChats } = useChats();
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const { requestSummary, analyzeChat } = useAIStore();
+  const { currentUser } = useAuthStore();
   
   // Set first chat as active by default when loaded
   useEffect(() => {
@@ -22,6 +34,7 @@ export default function ChatPage() {
   const { data: serverMessages = [], isLoading: isLoadingMessages } = useChatMessages(activeChatId);
   const { liveMessages, sendMessage } = useChatWS();
   const { mutate: deleteChat } = useDeleteChat();
+  const { mutate: markChatRead } = useMarkChatRead();
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -43,6 +56,16 @@ export default function ChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [allMessages]);
+
+  // Mark chat as read when active
+  useEffect(() => {
+    if (activeChatId) {
+      const chat = chats.find(c => c.id === activeChatId);
+      if (chat && chat.unreadCount > 0) {
+        markChatRead(activeChatId);
+      }
+    }
+  }, [activeChatId, chats, markChatRead]);
 
   const handleSend = () => {
     if (!inputText.trim() || !activeChatId) return;
@@ -92,8 +115,17 @@ export default function ChatPage() {
               </Avatar>
               <div className="flex-1 overflow-hidden">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-medium text-sm text-zinc-900 dark:text-zinc-50 truncate">{chat.clientName || chat.externalChatId}</h3>
-                  <span className="text-[10px] text-zinc-400 font-bold">{chat.channelType}</span>
+                  <h3 className="font-medium text-sm text-zinc-900 dark:text-zinc-50 truncate">
+                    {chat.clientName || chat.externalChatId}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    {chat.unreadCount > 0 && (
+                      <span className="bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {chat.unreadCount}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-zinc-400 font-bold">{chat.channelType}</span>
+                  </div>
                 </div>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-1">{chat.status}</p>
               </div>
@@ -118,10 +150,69 @@ export default function ChatPage() {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button 
+            {/* Кнопка сумаризації */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 rounded-full text-xs"
+                  disabled={!activeChatId}
+                >
+                  <BarChart2 className="h-3.5 w-3.5" />
+                  Сумаризація
+                  <ChevronDown className="h-3 w-3 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel className="text-xs text-zinc-500">Проаналізувати за</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {(["day", "week", "month"] as SummaryPeriod[]).map((period) => (
+                  <DropdownMenuItem
+                    key={period}
+                    onClick={() => requestSummary(period, currentUser.id)}
+                    className="cursor-pointer"
+                  >
+                    {period === "day" && "📅 За день"}
+                    {period === "week" && "📆 За тиждень"}
+                    {period === "month" && "🗓️ За місяць"}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Кнопка AI-аналізу поточного чату */}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!activeChatId}
+              onClick={() => {
+                if (!activeChat) return;
+                const ctx: ChatContextMessage[] = allMessages.map((m) => ({
+                  sender: m.sender,
+                  text: m.text ?? "",
+                  timestamp: m.timestamp,
+                }));
+                analyzeChat({
+                  sessionId: activeChat.id,
+                  clientName: activeChat.clientName || "",
+                  channelType: activeChat.channelType,
+                  externalChatId: activeChat.externalChatId,
+                  userId: currentUser.id,
+                  recentMessages: ctx,
+                });
+              }}
+              className="gap-1.5 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/50 rounded-full text-xs"
+              title="Відкрити AI з контекстом цього чату"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Ask AI
+            </Button>
+
+            <Button
               onClick={handleDeleteChat}
-              variant="ghost" 
-              size="icon" 
+              variant="ghost"
+              size="icon"
               className="text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
               disabled={!activeChatId}
               title="Видалити чат"

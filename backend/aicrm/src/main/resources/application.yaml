@@ -15,13 +15,35 @@ spring:
         transport: SSE
         sse-endpoint: /mcp/sse
         message-endpoint: /mcp/message
-        
+
     google:
       genai:
-        api-key: AIzaSyABaMRAbypXDyxv0dOoQb0DvO2aGcAgO7k
+        api-key: ${GEMINI_API_KEY:AIzaSyABaMRAbypXDyxv0dOoQb0DvO2aGcAgO7k}
         chat:
           options:
             model: gemini-2.5-flash
+
+    # OpenAI auto-config вимкнено — ми керуємо бінами вручну (Groq, GitHub, Mistral)
+    openai:
+      api-key: "disabled"
+      chat:
+        enabled: false
+
+    retry:
+      max-attempts: 2
+      initial-interval: 3000
+      multiplier: 2.0
+      max-interval: 10000
+
+    # Ключ для Groq (безкоштовний провайдер)
+    groq:
+      api-key: ${GROQ_API_KEY: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}
+      
+    github:
+      api-key: ${GITHUB_TOKEN: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}
+      
+    mistralai:
+      api-key: ${MISTRAL_API_KEY:QjnXYGwjeawhXw6mmX0cEKBOg8ShG5WV}
 
   datasource:
     url: jdbc:postgresql://localhost:5432/mydatabase
