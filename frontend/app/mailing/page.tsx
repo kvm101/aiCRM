@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send, Loader2, Calendar, Inbox, Paperclip, Search, Clock, Plus } from "lucide-react";
+import { Mail, Send, Loader2, Calendar, Inbox, Paperclip, Search, Clock, Plus, Check } from "lucide-react";
 import { apiClient } from "@/services/apiClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFolderEmails, useMarkEmailAsRead } from "@/hooks/useMail";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function MailingPage() {
   const [to, setTo] = useState("");
@@ -24,6 +25,7 @@ export default function MailingPage() {
   const { data: inboxEmails = [] } = useFolderEmails("INBOX");
   const { mutate: markAsRead } = useMarkEmailAsRead();
   const [timeFilter, setTimeFilter] = useState<"day" | "3days" | "week" | "all">("all");
+  const { currentUser } = useAuthStore();
 
   const filterDate = new Date();
   if (timeFilter === "day") {
@@ -147,8 +149,8 @@ export default function MailingPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800">
-          <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 px-4 pt-4 rounded-t-xl shrink-0">
-            <TabsList className="w-full justify-start h-10 bg-transparent p-0 gap-6">
+          <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 px-4 pt-4 rounded-t-xl shrink-0 flex items-center justify-between">
+            <TabsList className="justify-start h-10 bg-transparent p-0 gap-6">
               <TabsTrigger value="inbox" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-2 pb-3 pt-2 text-sm relative">
                 <Inbox className="h-4 w-4 mr-2" /> Вхідні
               </TabsTrigger>
@@ -159,6 +161,28 @@ export default function MailingPage() {
                 <Plus className="h-4 w-4 mr-2" /> Написати
               </TabsTrigger>
             </TabsList>
+            <div className="ml-auto pb-3">
+              {currentUser?.isGmailConnected ? (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-sm font-medium border border-green-200 dark:border-green-900/50">
+                  <Check className="w-4 h-4" />
+                  Gmail підключено
+                </div>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-900/50"
+                  onClick={() => {
+                    if (currentUser?.id) {
+                      window.location.href = `http://localhost:8080/iam/oauth2/google/login?userId=${currentUser.id}`;
+                    }
+                  }}
+                >
+                  <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="Google" />
+                  Підключити Gmail
+                </Button>
+              )}
+            </div>
           </div>
 
           <TabsContent value="inbox" className="flex-1 flex min-h-0 m-0 overflow-hidden">

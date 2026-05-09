@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 @Setter
 public class UserDTO {
+    private Long id;
     private String name;
     private String login;
     private String company;
@@ -22,9 +23,11 @@ public class UserDTO {
     private String phone;
     private UserRoles role;
     private LocalDateTime lastEnter;  // camelCase
+    private boolean isGmailConnected;
 
     public static UserDTO toDTO(User user) {
         UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
         dto.setName(user.getName());
         dto.setLogin(user.getLogin());
         dto.setEmail(user.getEmail());
@@ -32,6 +35,7 @@ public class UserDTO {
         dto.setCompany(user.getCompany());
         dto.setPhone(user.getPhone());
         dto.setLastEnter(user.getLastEnter());
+        dto.setGmailConnected(user.getGoogleAccessToken() != null);
 
 
         List<TaskDTO> taskDTOs = user.getTasks().stream()

@@ -48,4 +48,14 @@ public class AuthController {
             return ResponseEntity.ofNullable("Login is bad");
         }
     }
+    @PostMapping("/logout")
+    public ResponseEntity<String> Logout() {
+        ResponseCookie cookie = ResponseCookie.from("user_id", "")
+                .path("/")
+                .maxAge(0)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body("Logout successful");
+    }
 }

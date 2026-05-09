@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { GlobalAIChat } from "@/components/ai/GlobalAIChat";
 import { GlobalWSProvider } from "@/components/providers/GlobalWSProvider";
+import { AuthGuard } from "@/components/providers/AuthGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +40,9 @@ export default function RootLayout({
             <Sidebar />
             <div className="flex flex-1 flex-col overflow-hidden">
               <Header />
-              <main className="flex-1 overflow-y-auto p-6">{children}</main>
+              <main className="flex-1 overflow-y-auto p-6">
+                <AuthGuard>{children}</AuthGuard>
+              </main>
             </div>
             <GlobalAIChat />
           </div>

@@ -89,3 +89,11 @@ management:
 springdoc:
   api-docs:
     version: OPENAPI_3_0
+
+google:
+  client:
+    id: "998568744065-ssu9da6p7naqsk7mbvi6ahpk9djtimkj.apps.googleusercontent.com"
+    secret: "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"
+  redirect:
+    uri: "http://localhost:8080/iam/oauth2/google/callback"
+    system-uri: "http://localhost:8080/auth/oauth2/google/callback"

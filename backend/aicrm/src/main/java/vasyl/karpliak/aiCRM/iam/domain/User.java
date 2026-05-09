@@ -57,6 +57,18 @@ public class User{
     @Column(name = "last_enter", nullable = false)
     private LocalDateTime lastEnter;
 
+    @Column(name = "google_email")
+    private String googleEmail;
+
+    @Column(name = "google_access_token", length = 2048)
+    private String googleAccessToken;
+
+    @Column(name = "google_refresh_token", length = 2048)
+    private String googleRefreshToken;
+
+    @Column(name = "google_token_expiry")
+    private LocalDateTime googleTokenExpiry;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "task_user_id")  // створить колонку user_id у таблиці task
     private List<Task> tasks = new ArrayList<>();

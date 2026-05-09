@@ -223,7 +223,7 @@ export default function ChatPage() {
                 {(["day", "week", "month"] as SummaryPeriod[]).map((period) => (
                   <DropdownMenuItem
                     key={period}
-                    onClick={() => requestSummary(period, currentUser.id)}
+                    onClick={() => requestSummary(period, currentUser?.id || "")}
                     className="cursor-pointer"
                   >
                     {period === "day" && "📅 За день"}
@@ -251,7 +251,7 @@ export default function ChatPage() {
                   clientName: activeChat.clientName || "",
                   channelType: activeChat.channelType,
                   externalChatId: activeChat.externalChatId,
-                  userId: currentUser.id,
+                  userId: currentUser?.id || "",
                   recentMessages: ctx,
                 });
               }}
