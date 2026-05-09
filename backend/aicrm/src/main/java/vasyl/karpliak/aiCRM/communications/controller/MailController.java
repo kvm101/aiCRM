@@ -44,7 +44,14 @@ public class MailController {
     @GetMapping("/folder/{folder}")
     public ResponseEntity<List<EmailMessageDto>> getFolderEmails(
             @PathVariable String folder,
-            @RequestHeader(name = "X-User-Id") String userId) {
-        return ResponseEntity.ok(mailService.getFolderEmails(Long.parseLong(userId), folder.toUpperCase()));
+            @RequestHeader(name = "X-User-Id") String userId,
+            @RequestHeader(name = "X-User-Role", defaultValue = "USER") String userRole) {
+        return ResponseEntity.ok(mailService.getFolderEmails(Long.parseLong(userId), folder.toUpperCase(), userRole));
+    }
+
+    @PutMapping("/{id}/read")
+    public ResponseEntity<Void> markEmailAsRead(@PathVariable Long id) {
+        mailService.markEmailAsRead(id);
+        return ResponseEntity.ok().build();
     }
 }

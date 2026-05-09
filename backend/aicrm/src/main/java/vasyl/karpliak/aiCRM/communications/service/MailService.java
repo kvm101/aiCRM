@@ -73,8 +73,15 @@ public class MailService {
         return mailData;
     }
 
-    public List<EmailMessageDto> getFolderEmails(Long userId, String folder) {
-        return emailMessageRepository.findByUserIdAndFolderOrderByTimestampDesc(userId, folder).stream()
+    public List<EmailMessageDto> getFolderEmails(Long userId, String folder, String role) {
+        List<EmailMessage> messages;
+        if ("TeamLead".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role)) {
+            messages = emailMessageRepository.findByFolderOrderByTimestampDesc(folder);
+        } else {
+            messages = emailMessageRepository.findByUserIdAndFolderOrderByTimestampDesc(userId, folder);
+        }
+        
+        return messages.stream()
                 .map(msg -> new EmailMessageDto(
                         msg.getId(),
                         msg.getSender(),
@@ -85,5 +92,12 @@ public class MailService {
                         msg.isRead(),
                         msg.getTimestamp()
                 )).collect(Collectors.toList());
+    }
+
+    public void markEmailAsRead(Long emailId) {
+        emailMessageRepository.findById(emailId).ifPresent(msg -> {
+            msg.setRead(true);
+            emailMessageRepository.save(msg);
+        });
     }
 }

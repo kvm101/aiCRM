@@ -36,4 +36,7 @@ public class ChatSession {
 
     @Column(name = "unread_count", nullable = false)
     private int unreadCount = 0;
+
+    @Column(name = "client_name")
+    private String clientName;
 }

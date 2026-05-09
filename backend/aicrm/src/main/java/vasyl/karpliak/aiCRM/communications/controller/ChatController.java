@@ -22,13 +22,16 @@ public class ChatController {
     private final ChatSessionRepository chatSessionRepository;
     private final MessageRepository messageRepository;
     private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public ChatController(ChatSessionRepository chatSessionRepository,
                           MessageRepository messageRepository,
-                          org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate) {
+                          org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate,
+                          org.springframework.context.ApplicationEventPublisher eventPublisher) {
         this.chatSessionRepository = chatSessionRepository;
         this.messageRepository = messageRepository;
         this.rabbitTemplate = rabbitTemplate;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -46,6 +49,31 @@ public class ChatController {
             sessions = chatSessionRepository.findByAssignedUserId(Long.parseLong(userId));
         }
         return ResponseEntity.ok(sessions);
+    }
+
+    /**
+     * POST /chats — create a new internal team chat session
+     */
+    @PostMapping
+    public ResponseEntity<ChatSession> createChat(
+            @RequestBody Map<String, String> body,
+            @RequestHeader(name = "X-User-Id") String userId) {
+        
+        String title = body.get("title");
+        if (title == null || title.trim().isEmpty()) {
+            title = "Командний чат";
+        }
+        
+        ChatSession session = new ChatSession();
+        session.setExternalChatId("internal-" + java.util.UUID.randomUUID().toString());
+        session.setChannelType(vasyl.karpliak.aiCRM.communications.enums.ChannelType.INTERNAL);
+        session.setTeamId(1L); // Default team ID
+        session.setAssignedUserId(Long.parseLong(userId));
+        session.setStatus(SessionStatus.OPEN);
+        session.setClientName(title);
+        
+        ChatSession saved = chatSessionRepository.save(session);
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
 
     /**
@@ -83,35 +111,43 @@ public class ChatController {
                 .map(session -> {
                     String text = body.getOrDefault("text", "");
                     
-                    // Відправляємо у RabbitMQ для доставки в зовнішній канал
-                    vasyl.karpliak.aiCRM.communications.dto.UnifiedMessage unifiedMessage = new vasyl.karpliak.aiCRM.communications.dto.UnifiedMessage(
-                            null, // Немає external_id для вихідного повідомлення
-                            session.getExternalChatId(),
-                            session.getChannelType(),
-                            session.getTeamId(),
-                            text,
-                            SenderType.OPERATOR,
-                            LocalDateTime.now()
-                    );
-                    
-                    rabbitTemplate.convertAndSend(
-                            vasyl.karpliak.aiCRM.communications.config.RabbitMQConfig.EXCHANGE, 
-                            vasyl.karpliak.aiCRM.communications.config.RabbitMQConfig.OUTBOUND_QUEUE, 
-                            unifiedMessage
-                    );
+                    // Відправляємо у RabbitMQ для доставки в зовнішній канал, якщо це не внутрішній чат
+                    if (session.getChannelType() != vasyl.karpliak.aiCRM.communications.enums.ChannelType.INTERNAL) {
+                        vasyl.karpliak.aiCRM.communications.dto.UnifiedMessage unifiedMessage = new vasyl.karpliak.aiCRM.communications.dto.UnifiedMessage(
+                                null, // Немає external_id для вихідного повідомлення
+                                session.getExternalChatId(),
+                                session.getChannelType(),
+                                session.getTeamId(),
+                                text,
+                                SenderType.OPERATOR,
+                                LocalDateTime.now()
+                        );
+                        
+                        rabbitTemplate.convertAndSend(
+                                vasyl.karpliak.aiCRM.communications.config.RabbitMQConfig.EXCHANGE, 
+                                vasyl.karpliak.aiCRM.communications.config.RabbitMQConfig.OUTBOUND_QUEUE, 
+                                unifiedMessage
+                        );
+                    }
 
                     // Також зберігаємо відразу в БД, щоб фронтенд отримав миттєву відповідь
                     Message message = new Message();
                     message.setSession(session);
                     message.setSenderType(SenderType.OPERATOR);
                     message.setText(text);
-                    message.setCreatedAt(unifiedMessage.timestamp());
+                    message.setCreatedAt(LocalDateTime.now());
                     
                     // Reset unread count since operator replied
                     session.setUnreadCount(0);
                     chatSessionRepository.save(session);
                     
                     Message saved = messageRepository.save(message);
+
+                    // Відправляємо подію для WebSocket, щоб інші учасники командного чату миттєво побачили повідомлення
+                    if (session.getChannelType() == vasyl.karpliak.aiCRM.communications.enums.ChannelType.INTERNAL) {
+                        eventPublisher.publishEvent(new vasyl.karpliak.aiCRM.communications.service.InboundMessageEvent(this, saved, session.getAssignedUserId()));
+                    }
+
                     return new ResponseEntity<>(saved, HttpStatus.CREATED);
                 })
                 .orElse(ResponseEntity.notFound().build());
