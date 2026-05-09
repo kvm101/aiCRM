@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vasyl.karpliak.aiCRM.communications.domain.MailData;
+import vasyl.karpliak.aiCRM.communications.dto.EmailMessageDto;
 import vasyl.karpliak.aiCRM.iam.domain.User;
 import vasyl.karpliak.aiCRM.communications.service.MailService;
 import vasyl.karpliak.aiCRM.iam.service.UserService;
@@ -38,5 +39,12 @@ public class MailController {
         return userOpt.isPresent()
                 ? new ResponseEntity<>(mailData, HttpStatus.OK)
                 : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/folder/{folder}")
+    public ResponseEntity<List<EmailMessageDto>> getFolderEmails(
+            @PathVariable String folder,
+            @RequestHeader(name = "X-User-Id") String userId) {
+        return ResponseEntity.ok(mailService.getFolderEmails(Long.parseLong(userId), folder.toUpperCase()));
     }
 }

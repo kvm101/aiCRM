@@ -22,19 +22,21 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { GripVertical, Loader2, Calendar, Plus, Pencil } from "lucide-react";
-import { useTasks, useUpdateTask, useCreateTask, Task } from "@/hooks/useSales";
+import { GripVertical, Loader2, Calendar, Plus, Pencil, CheckCircle2, User } from "lucide-react";
+import { useTasks, useUpdateTask, useCreateTask, Task, useDeals, useClients } from "@/hooks/useSales";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const COLUMNS: Task['tag'][] = ["PLANNED", "IN_WORK", "DONE"];
 const COLUMN_NAMES: Record<Task['tag'], string> = {
@@ -45,6 +47,9 @@ const COLUMN_NAMES: Record<Task['tag'], string> = {
 
 export function KanbanBoard() {
   const { data: serverTasks, isLoading } = useTasks();
+  const { data: deals = [] } = useDeals();
+  const { data: clients = [] } = useClients();
+  
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: createTask } = useCreateTask();
 
@@ -56,10 +61,18 @@ export function KanbanBoard() {
     description: "",
     deadline: new Date().toISOString(),
     tag: "PLANNED",
+    dealId: undefined,
+    clientId: undefined,
   });
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  const [taskToComplete, setTaskToComplete] = useState<{ id: number; tag: Task['tag'] } | null>(null);
+  const [taskResult, setTaskResult] = useState("");
+  const [createFollowup, setCreateFollowup] = useState(false);
+  const [followupTitle, setFollowupTitle] = useState("");
+  const [followupDays, setFollowupDays] = useState("1");
 
   useEffect(() => {
     if (serverTasks) {
@@ -101,17 +114,54 @@ export function KanbanBoard() {
     }
 
     if (targetTag) {
-      // Optimistic update
-      setTasks(tasks.map(t => t.id === activeIdNum ? { ...t, tag: targetTag as Task['tag'] } : t));
-      updateTask({ id: activeIdNum, tag: targetTag });
+      if (targetTag === "DONE" && activeTask.tag !== "DONE") {
+        // Замість миттєвого оновлення, відкриваємо модалку для введення результату
+        setTaskToComplete({ id: activeIdNum, tag: targetTag });
+      } else {
+        // Optimistic update
+        setTasks(tasks.map(t => t.id === activeIdNum ? { ...t, tag: targetTag as Task['tag'] } : t));
+        updateTask({ id: activeIdNum, tag: targetTag });
+      }
     }
+  };
+
+  const handleCompleteTaskSave = () => {
+    if (!taskToComplete) return;
+    
+    // Оновлюємо стейт оптимістично
+    setTasks(tasks.map(t => t.id === taskToComplete.id ? { ...t, tag: taskToComplete.tag } : t));
+    
+    updateTask({ id: taskToComplete.id, tag: taskToComplete.tag, result: taskResult }, {
+      onSuccess: () => {
+        // Якщо потрібно створити наступне завдання
+        if (createFollowup && followupTitle.trim()) {
+          const originalTask = tasks.find(t => t.id === taskToComplete.id);
+          const nextDeadline = new Date();
+          nextDeadline.setDate(nextDeadline.getDate() + parseInt(followupDays));
+          
+          createTask({
+            title: followupTitle,
+            description: `Створено автоматично як продовження завдання "${originalTask?.title || ''}"`,
+            tag: "PLANNED",
+            deadline: nextDeadline.toISOString(),
+            dealId: originalTask?.dealId,
+            clientId: originalTask?.clientId,
+          } as any);
+        }
+        
+        setTaskToComplete(null);
+        setTaskResult("");
+        setCreateFollowup(false);
+        setFollowupTitle("");
+      }
+    });
   };
 
   const handleCreateTask = () => {
     createTask(newTask as any, {
       onSuccess: () => {
         setIsAddDialogOpen(false);
-        setNewTask({ title: "", description: "", deadline: new Date().toISOString(), tag: "PLANNED" });
+        setNewTask({ title: "", description: "", deadline: new Date().toISOString(), tag: "PLANNED", dealId: undefined, clientId: undefined });
       },
     });
   };
@@ -170,6 +220,34 @@ export function KanbanBoard() {
                 value={newTask.deadline?.slice(0, 16)}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTask({ ...newTask, deadline: new Date(e.target.value).toISOString() })}
               />
+              <Select
+                value={newTask.dealId ? String(newTask.dealId) : "none"}
+                onValueChange={(v) => setNewTask({ ...newTask, dealId: v === "none" ? undefined : Number(v) })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Прив'язати до Угоди (необов'язково)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Без угоди</SelectItem>
+                  {deals.map(d => (
+                    <SelectItem key={d.id} value={String(d.id)}>{d.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={newTask.clientId ? String(newTask.clientId) : "none"}
+                onValueChange={(v) => setNewTask({ ...newTask, clientId: v === "none" ? undefined : Number(v) })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Прив'язати до Контакту (необов'язково)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Без контакту</SelectItem>
+                  {clients.map(c => (
+                    <SelectItem key={c.id} value={String(c.id)}>{c.name} {c.company ? `(${c.company})` : ""}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <DialogFooter>
               <Button onClick={handleCreateTask}>Створити</Button>
@@ -200,10 +278,99 @@ export function KanbanBoard() {
                   value={editingTask.deadline?.slice(0, 16)}
                   onChange={(e) => setEditingTask({ ...editingTask, deadline: new Date(e.target.value).toISOString() })}
                 />
+                <Select
+                  value={editingTask.dealId ? String(editingTask.dealId) : "none"}
+                  onValueChange={(v) => setEditingTask({ ...editingTask, dealId: v === "none" ? undefined : Number(v) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Прив'язати до Угоди (необов'язково)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Без угоди</SelectItem>
+                    {deals.map(d => (
+                      <SelectItem key={d.id} value={String(d.id)}>{d.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={editingTask.clientId ? String(editingTask.clientId) : "none"}
+                  onValueChange={(v) => setEditingTask({ ...editingTask, clientId: v === "none" ? undefined : Number(v) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Прив'язати до Контакту (необов'язково)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Без контакту</SelectItem>
+                    {clients.map(c => (
+                      <SelectItem key={c.id} value={String(c.id)}>{c.name} {c.company ? `(${c.company})` : ""}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
             <DialogFooter>
               <Button onClick={handleEditTaskSave}>Зберегти</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Complete Task Modal */}
+        <Dialog open={!!taskToComplete} onOpenChange={(open) => !open && setTaskToComplete(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Завершення завдання</DialogTitle>
+              <DialogDescription>
+                Опишіть результат виконання цього завдання (наприклад, "Клієнт погодився на зустріч").
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <Textarea
+                placeholder="Результат завдання..."
+                value={taskResult}
+                onChange={(e) => setTaskResult(e.target.value)}
+                className="min-h-[100px]"
+              />
+              
+              <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="flex items-center gap-2 mb-3">
+                  <input 
+                    type="checkbox" 
+                    id="followup" 
+                    checked={createFollowup} 
+                    onChange={(e) => setCreateFollowup(e.target.checked)}
+                    className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label htmlFor="followup" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    Створити наступне завдання
+                  </label>
+                </div>
+                
+                {createFollowup && (
+                  <div className="grid gap-3 pl-6 border-l-2 border-indigo-100 dark:border-indigo-900 ml-1">
+                    <Input 
+                      placeholder="Що потрібно зробити?" 
+                      value={followupTitle}
+                      onChange={(e) => setFollowupTitle(e.target.value)}
+                    />
+                    <Select value={followupDays} onValueChange={setFollowupDays}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Коли?" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">На завтра</SelectItem>
+                        <SelectItem value="3">Через 3 дні</SelectItem>
+                        <SelectItem value="7">Через тиждень</SelectItem>
+                        <SelectItem value="14">Через 2 тижні</SelectItem>
+                        <SelectItem value="30">Через місяць</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setTaskToComplete(null)}>Скасувати</Button>
+              <Button onClick={handleCompleteTaskSave}>Зберегти результат</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -312,9 +479,27 @@ function TaskCard({ task, isOverlay = false, onEditTask }: { task: Task; isOverl
           </p>
         )}
 
-        <div className="flex items-center gap-2 text-[10px] text-zinc-400 font-medium">
-          <Calendar className="h-3 w-3" />
-          {new Date(task.deadline).toLocaleDateString()}
+        <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          {task.dealTitle && (
+            <div className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded w-fit">
+              Угода: {task.dealTitle}
+            </div>
+          )}
+          {task.clientName && (
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded w-fit">
+              <User className="h-3 w-3" /> {task.clientName}
+            </div>
+          )}
+          <div className="flex items-center gap-2 text-[10px] text-zinc-400 font-medium">
+            <Calendar className="h-3 w-3" />
+            {new Date(task.dueDate || task.deadline).toLocaleDateString()}
+          </div>
+          {task.result && (
+            <div className="flex items-start gap-1 mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 p-1.5 rounded">
+              <CheckCircle2 className="h-3 w-3 flex-shrink-0 mt-0.5" />
+              <span>{task.result}</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

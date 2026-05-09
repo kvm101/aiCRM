@@ -27,7 +27,7 @@ public class TaskController {
             @RequestHeader(name = "X-User-Id") String userId) {
 
         Task task = dtoToEntity(taskDTO);
-        Task createdTask = taskService.createTask(task, Long.parseLong(userId));
+        Task createdTask = taskService.createTask(task, Long.parseLong(userId), taskDTO.getDealId(), taskDTO.getClientId());
         return new ResponseEntity<>(entityToDto(createdTask), HttpStatus.CREATED);
     }
 
@@ -77,7 +77,7 @@ public class TaskController {
 
         Long userId = Long.parseLong(userIdStr);
         Task updatedTask = dtoToEntity(taskDTO);
-        Task task = taskService.updateTask(userId, id, updatedTask);
+        Task task = taskService.updateTask(userId, id, updatedTask, taskDTO.getDealId(), taskDTO.getClientId());
         return ResponseEntity.ok(entityToDto(task));
     }
 
@@ -97,6 +97,13 @@ public class TaskController {
         task.setDescription(dto.getDescription());
         task.setDeadline(dto.getDeadline());
         task.setTag(dto.getTag());
+        if (dto.getType() != null) {
+            task.setType(vasyl.karpliak.aiCRM.sales.enums.TaskType.valueOf(dto.getType()));
+        }
+        task.setDueDate(dto.getDueDate() != null ? dto.getDueDate() : dto.getDeadline());
+        task.setResult(dto.getResult());
+        // Note: dealId mapping requires DealRepository, but we can skip it for update/create for now if not sent, 
+        // or let TaskService handle Deal attachment. Currently we only create tasks with Deal attached from somewhere else.
         return task;
     }
 
@@ -107,6 +114,13 @@ public class TaskController {
         dto.setDescription(task.getDescription());
         dto.setDeadline(task.getDeadline());
         dto.setTag(task.getTag());
+        dto.setDealId(task.getDeal() != null ? task.getDeal().getId() : null);
+        dto.setDealTitle(task.getDeal() != null ? task.getDeal().getTitle() : null);
+        dto.setClientId(task.getClient() != null ? task.getClient().getId() : null);
+        dto.setClientName(task.getClient() != null ? task.getClient().getName() : null);
+        dto.setType(task.getType() != null ? task.getType().name() : null);
+        dto.setDueDate(task.getDueDate() != null ? task.getDueDate() : task.getDeadline());
+        dto.setResult(task.getResult());
         return dto;
     }
 }

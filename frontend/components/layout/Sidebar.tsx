@@ -11,15 +11,17 @@ import {
   FileBarChart,
   Settings,
   Mail,
+  Briefcase,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Contacts", href: "/contacts", icon: Users },
+  { name: "Clients", href: "/clients", icon: Users },
+  { name: "Deals", href: "/deals", icon: Briefcase },
   { name: "Kanban", href: "/kanban", icon: KanbanSquare },
   { name: "Chat", href: "/chat", icon: MessageSquare },
   { name: "Mailing", href: "/mailing", icon: Mail },
-  { name: "Reports", href: "/reports", icon: FileBarChart },
+  { name: "Analytics", href: "/analytics", icon: FileBarChart },
 ];
 
 export function Sidebar() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search, Sparkles } from "lucide-react";
+import { Bell, Search, Sparkles, Check } from "lucide-react";
 import { useAuthStore, Role } from "@/store/useAuthStore";
 import { useAIStore } from "@/store/useAIStore";
 import {
@@ -13,10 +13,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useUnreadNotifications, useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/useNotifications";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const { currentUser, switchUser } = useAuthStore();
   const { toggleOpen } = useAIStore();
+  const { data: unreadNotifications = [] } = useUnreadNotifications();
+  const { data: notifications = [] } = useNotifications();
+  const markAsRead = useMarkNotificationRead();
+  const markAllAsRead = useMarkAllNotificationsRead();
 
   const getInitials = (name: string) => {
     return name
@@ -51,10 +63,64 @@ export function Header() {
           Ask AI
         </Button>
 
-        <Button variant="ghost" size="icon" className="relative text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
-        </Button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
+              <Bell className="h-5 w-5" />
+              {unreadNotifications.length > 0 && (
+                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent side="bottom" align="end" className="w-80 p-0">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
+              <h3 className="font-semibold text-sm">Сповіщення</h3>
+              {unreadNotifications.length > 0 && (
+                <button 
+                  onClick={() => markAllAsRead.mutate()}
+                  className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center"
+                >
+                  <Check className="h-3 w-3 mr-1" />
+                  Прочитано
+                </button>
+              )}
+            </div>
+            <ScrollArea className="h-[300px]">
+              {notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-32 text-zinc-500">
+                  <Bell className="h-6 w-6 opacity-20 mb-2" />
+                  <p className="text-sm">Немає нових сповіщень</p>
+                </div>
+              ) : (
+                <div className="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {notifications.map((notif) => (
+                    <div 
+                      key={notif.id} 
+                      className={cn(
+                        "p-4 flex flex-col gap-1 transition-colors cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900",
+                        !notif.read ? "bg-indigo-50/50 dark:bg-indigo-900/10" : ""
+                      )}
+                      onClick={() => {
+                        if (!notif.read) markAsRead.mutate(notif.id);
+                      }}
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className={cn("text-sm font-medium", !notif.read ? "text-indigo-900 dark:text-indigo-100" : "text-zinc-900 dark:text-zinc-100")}>
+                          {notif.title}
+                        </span>
+                        {!notif.read && <span className="h-2 w-2 rounded-full bg-indigo-500 shrink-0 mt-1" />}
+                      </div>
+                      <p className="text-xs text-zinc-500 line-clamp-2">{notif.message}</p>
+                      <span className="text-[10px] text-zinc-400 mt-1">
+                        {new Date(notif.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </PopoverContent>
+        </Popover>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
