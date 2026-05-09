@@ -2,12 +2,15 @@ package vasyl.karpliak.aiCRM.shared.config;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import vasyl.karpliak.aiCRM.communications.domain.Message;
 import vasyl.karpliak.aiCRM.communications.service.InboundMessageEvent;
+import vasyl.karpliak.aiCRM.communications.service.NewNotificationEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -73,6 +76,25 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             broadcast(objectMapper.writeValueAsString(wsEvent));
         } catch (Exception e) {
             System.err.println("Error broadcasting InboundMessageEvent: " + e.getMessage());
+        }
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleNewNotificationEvent(NewNotificationEvent event) {
+        try {
+            ObjectNode payload = objectMapper.createObjectNode();
+            payload.put("id", event.getNotificationId());
+            payload.put("title", event.getTitle());
+            payload.put("message", event.getMessage());
+            payload.put("userId", event.getUserId());
+
+            ObjectNode wsEvent = objectMapper.createObjectNode();
+            wsEvent.put("type", "NEW_NOTIFICATION");
+            wsEvent.set("payload", payload);
+
+            broadcast(objectMapper.writeValueAsString(wsEvent));
+        } catch (Exception e) {
+            System.err.println("Error broadcasting NewNotificationEvent: " + e.getMessage());
         }
     }
 }

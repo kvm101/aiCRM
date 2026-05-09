@@ -31,5 +31,8 @@ public class EmailMessage {
     
     private boolean isRead;
     
+    @Column(unique = true)
+    private String externalMessageId; // Message-ID заголовок для дедуплікації IMAP
+    
     private LocalDateTime timestamp;
 }

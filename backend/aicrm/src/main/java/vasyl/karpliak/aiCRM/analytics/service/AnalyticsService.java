@@ -1,20 +1,28 @@
 package vasyl.karpliak.aiCRM.analytics.service;
 
 import org.springframework.stereotype.Service;
+import vasyl.karpliak.aiCRM.iam.domain.User;
+import vasyl.karpliak.aiCRM.iam.repository.UserRepository;
+import vasyl.karpliak.aiCRM.sales.domain.Deal;
 import vasyl.karpliak.aiCRM.sales.enums.DealStatus;
 import vasyl.karpliak.aiCRM.sales.repository.DealRepository;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AnalyticsService {
 
     private final DealRepository dealRepository;
+    private final UserRepository userRepository;
 
-    public AnalyticsService(DealRepository dealRepository) {
+    public AnalyticsService(DealRepository dealRepository, UserRepository userRepository) {
         this.dealRepository = dealRepository;
+        this.userRepository = userRepository;
     }
 
     public Map<String, Long> getFunnel(Long userId) {
@@ -27,13 +35,74 @@ public class AnalyticsService {
 
     public Map<String, Object> getGoals(Long userId) {
         Map<String, Object> goals = new HashMap<>();
-        BigDecimal totalRevenue = dealRepository.sumBudgetByUserIdAndStatus(userId, DealStatus.DONE);
-        if (totalRevenue == null) {
-            totalRevenue = BigDecimal.ZERO;
+        
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            goals.put("achievedRevenue", 0);
+            goals.put("targetRevenue", 0);
+            goals.put("currency", "USD");
+            return goals;
         }
-        goals.put("achievedRevenue", totalRevenue);
-        // Тут можна додати логіку для отримання цілі (target goal) користувача
-        goals.put("targetRevenue", new BigDecimal("50000.00")); // Hardcoded для прикладу
+        
+        User user = userOpt.get();
+        BigDecimal targetRevenue = user.getTargetRevenue() != null ? user.getTargetRevenue() : new BigDecimal("50000.00");
+        String targetCurrency = user.getTargetCurrency() != null ? user.getTargetCurrency() : "USD";
+
+        // Межі поточного місяця
+        java.time.LocalDateTime startOfMonth = java.time.LocalDate.now().withDayOfMonth(1).atStartOfDay();
+        java.time.LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
+
+        // Fetch DONE deals тільки за поточний місяць
+        List<Deal> doneDeals = dealRepository.findByUserIdAndStatusAndUpdatedAtBetween(
+                userId, DealStatus.DONE, startOfMonth, endOfMonth);
+        BigDecimal achievedRevenue = BigDecimal.ZERO;
+        
+        for (Deal deal : doneDeals) {
+            if (deal.getBudget() != null) {
+                achievedRevenue = achievedRevenue.add(convertToTargetCurrency(deal.getBudget(), deal.getCurrency(), targetCurrency));
+            }
+        }
+
+        goals.put("achievedRevenue", achievedRevenue.setScale(2, RoundingMode.HALF_UP));
+        goals.put("targetRevenue", targetRevenue.setScale(2, RoundingMode.HALF_UP));
+        goals.put("currency", targetCurrency);
+        
         return goals;
+    }
+
+    public Map<String, Object> updateGoals(Long userId, BigDecimal targetRevenue, String currency) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setTargetRevenue(targetRevenue);
+            user.setTargetCurrency(currency != null ? currency.toUpperCase() : "USD");
+            userRepository.save(user);
+        }
+        return getGoals(userId);
+    }
+
+    // A simple hardcoded exchange rate converter for demonstration purposes.
+    // In a real application, this should use a live exchange rate API.
+    private BigDecimal convertToTargetCurrency(BigDecimal amount, String sourceCurrency, String targetCurrency) {
+        if (sourceCurrency == null || targetCurrency == null || sourceCurrency.equalsIgnoreCase(targetCurrency)) {
+            return amount;
+        }
+
+        // Base currency is USD
+        BigDecimal amountInUsd = amount;
+        switch (sourceCurrency.toUpperCase()) {
+            case "UAH": amountInUsd = amount.divide(new BigDecimal("41.5"), 4, RoundingMode.HALF_UP); break;
+            case "EUR": amountInUsd = amount.divide(new BigDecimal("0.95"), 4, RoundingMode.HALF_UP); break;
+            case "GBP": amountInUsd = amount.divide(new BigDecimal("0.78"), 4, RoundingMode.HALF_UP); break;
+        }
+
+        BigDecimal convertedAmount = amountInUsd;
+        switch (targetCurrency.toUpperCase()) {
+            case "UAH": convertedAmount = amountInUsd.multiply(new BigDecimal("41.5")); break;
+            case "EUR": convertedAmount = amountInUsd.multiply(new BigDecimal("0.95")); break;
+            case "GBP": convertedAmount = amountInUsd.multiply(new BigDecimal("0.78")); break;
+        }
+
+        return convertedAmount;
     }
 }

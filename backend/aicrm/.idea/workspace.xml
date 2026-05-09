@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="24395c60-8504-4a9d-8346-0ac082d0bea7" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/DatabaseToolSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/ai/controller/AIChatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/ai/controller/AIChatController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/ai/service/AIChatService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/ai/service/AIChatService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/ai/tools/CommunicationsAITools.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/ai/tools/CommunicationsAITools.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/ai/tools/SalesAITools.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/ai/tools/SalesAITools.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/analytics/controller/AnalyticsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/analytics/controller/AnalyticsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/analytics/service/AnalyticsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/analytics/service/AnalyticsService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/controller/ChatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/controller/ChatController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/domain/ChatSession.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/domain/ChatSession.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/repository/MessageRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/repository/MessageRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/service/MessageDispatcherService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/service/MessageDispatcherService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/iam/domain/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/iam/domain/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/sales/repository/DealRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/sales/repository/DealRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/shared/config/ChatWebSocketHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/shared/config/ChatWebSocketHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/shared/controller/DashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/shared/controller/DashboardController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/ai/controller/AIChatController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/ai/controller/AIChatController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/ai/service/AIChatService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/ai/service/AIChatService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/ai/tools/CommunicationsAITools.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/ai/tools/CommunicationsAITools.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/ai/tools/SalesAITools.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/ai/tools/SalesAITools.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/analytics/controller/AnalyticsController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/analytics/controller/AnalyticsController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/analytics/service/AnalyticsService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/analytics/service/AnalyticsService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/controller/ChatController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/controller/ChatController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/domain/ChatSession.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/domain/ChatSession.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/repository/MessageRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/repository/MessageRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/service/MessageDispatcherService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/service/MessageDispatcherService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/domain/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/domain/User.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/sales/repository/DealRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/sales/repository/DealRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/shared/config/ChatWebSocketHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/shared/config/ChatWebSocketHandler.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/shared/controller/DashboardController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/shared/controller/DashboardController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/vasyl/karpliak/aiCRM/AuthControllerTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/vasyl/karpliak/aiCRM/ClientControllerTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/vasyl/karpliak/aiCRM/MailControllerTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/vasyl/karpliak/aiCRM/TaskControllerTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/vasyl/karpliak/aiCRM/UserControllerTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/app/analytics/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/app/chat/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/app/chat/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/components/DashboardGreeting.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/components/DashboardGreeting.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/components/ai/GlobalAIChat.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/components/ai/GlobalAIChat.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/components/layout/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/components/layout/Header.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/components/layout/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/components/layout/Sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/hooks/useChatWS.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/hooks/useChatWS.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/hooks/useNotifications.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/hooks/useNotifications.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/hooks/useSales.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/hooks/useSales.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/services/dashboard.server.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/services/dashboard.server.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/store/useAIStore.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/store/useAIStore.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+    <option name="showPreview" value="true" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3DK9zzKu0iDw74oLBTvZlfmT85d" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.AiCrmApplication.executor": "Run",
+    "JUnit.AuthControllerTest.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.AiCrmApplication.executor": "Run",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/vasyl/OneDrive/Documents/GitHub/aiCRM/backend/aicrm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM" />
+      <recent name="C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\resources" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.32098.37" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="24395c60-8504-4a9d-8346-0ac082d0bea7" name="Changes" comment="" />
+      <created>1778020160553</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1778020160553</updated>
+    </task>
+    <servers />
+  </component>
+</project>

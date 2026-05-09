@@ -106,6 +106,11 @@ public class ChatController {
                     message.setSenderType(SenderType.OPERATOR);
                     message.setText(text);
                     message.setCreatedAt(unifiedMessage.timestamp());
+                    
+                    // Reset unread count since operator replied
+                    session.setUnreadCount(0);
+                    chatSessionRepository.save(session);
+                    
                     Message saved = messageRepository.save(message);
                     return new ResponseEntity<>(saved, HttpStatus.CREATED);
                 })
@@ -138,5 +143,17 @@ public class ChatController {
         stats.put("openChats", openChats);
         stats.put("totalChats", totalChats);
         return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * PATCH /chats/{id}/read — reset unread count for a chat session
+     */
+    @PatchMapping("/{id}/read")
+    public ResponseEntity<Void> markChatAsRead(@PathVariable Long id) {
+        return chatSessionRepository.findById(id).map(session -> {
+            session.setUnreadCount(0);
+            chatSessionRepository.save(session);
+            return ResponseEntity.ok().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

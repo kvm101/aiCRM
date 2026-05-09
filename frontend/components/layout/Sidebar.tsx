@@ -13,19 +13,23 @@ import {
   Mail,
   Briefcase,
 } from "lucide-react";
+import { useChats } from "@/hooks/useChatWS";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Clients", href: "/clients", icon: Users },
-  { name: "Deals", href: "/deals", icon: Briefcase },
-  { name: "Kanban", href: "/kanban", icon: KanbanSquare },
-  { name: "Chat", href: "/chat", icon: MessageSquare },
-  { name: "Mailing", href: "/mailing", icon: Mail },
-  { name: "Analytics", href: "/analytics", icon: FileBarChart },
+  { name: "Дашборд", href: "/", icon: LayoutDashboard },
+  { name: "Клієнти", href: "/clients", icon: Users },
+  { name: "Угоди", href: "/deals", icon: Briefcase },
+  { name: "Канбан", href: "/kanban", icon: KanbanSquare },
+  { name: "Чати", href: "/chat", icon: MessageSquare },
+  { name: "Пошта", href: "/mailing", icon: Mail },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: chats = [] } = useChats();
+
+  // Сума всіх непрочитаних повідомлень по всіх чатах
+  const totalUnread = chats.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-zinc-950 text-zinc-50">
@@ -43,25 +47,33 @@ export function Sidebar() {
         <nav className="space-y-1 px-3">
           {navigation.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href));
+            const isChat = item.href === "/chat";
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "group flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   isActive
                     ? "bg-zinc-800 text-white"
                     : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
                 )}
               >
-                <item.icon
-                  className={cn(
-                    "mr-3 h-5 w-5 flex-shrink-0",
-                    isActive ? "text-white" : "text-zinc-500 group-hover:text-white"
-                  )}
-                  aria-hidden="true"
-                />
-                {item.name}
+                <div className="flex items-center">
+                  <item.icon
+                    className={cn(
+                      "mr-3 h-5 w-5 flex-shrink-0",
+                      isActive ? "text-white" : "text-zinc-500 group-hover:text-white"
+                    )}
+                    aria-hidden="true"
+                  />
+                  {item.name}
+                </div>
+                {isChat && totalUnread > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-500 px-1.5 text-[10px] font-bold text-white">
+                    {totalUnread > 99 ? "99+" : totalUnread}
+                  </span>
+                )}
               </Link>
             );
           })}

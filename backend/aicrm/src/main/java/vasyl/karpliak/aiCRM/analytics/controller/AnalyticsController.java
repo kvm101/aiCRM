@@ -29,7 +29,19 @@ public class AnalyticsController {
     }
 
     @GetMapping("/goals")
-    public ResponseEntity<Map<String, Object>> getGoals(@RequestHeader(name = "X-User-Id") String userId) {
+    public ResponseEntity<Map<String, Object>> getGoals(@RequestHeader(name = "X-User-Id", defaultValue = "1") String userId) {
         return ResponseEntity.ok(analyticsService.getGoals(getUserId(userId)));
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/goals")
+    public ResponseEntity<Map<String, Object>> updateGoals(
+            @RequestHeader(name = "X-User-Id", defaultValue = "1") String userId,
+            @org.springframework.web.bind.annotation.RequestBody Map<String, String> payload) {
+        
+        java.math.BigDecimal targetRevenue = payload.containsKey("targetRevenue") ? 
+            new java.math.BigDecimal(payload.get("targetRevenue")) : null;
+        String currency = payload.get("currency");
+        
+        return ResponseEntity.ok(analyticsService.updateGoals(getUserId(userId), targetRevenue, currency));
     }
 }
