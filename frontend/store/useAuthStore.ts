@@ -1,24 +1,41 @@
 import { create } from "zustand";
+import { apiClient } from "@/services/apiClient";
 
-export type Role = "TeamLead" | "Sales";
+export type Role = "ADMIN" | "MANAGER" | "ACCOUNT_MANAGER" | "MARKETING" | "SUPPORT" | "FINANCE" | "TeamLead" | "Sales";
 
-interface User {
+export interface User {
   id: string;
   name: string;
+  email: string;
   role: Role;
+  isGmailConnected?: boolean;
 }
 
 interface AuthState {
-  currentUser: User;
-  switchUser: (role: Role) => void;
+  currentUser: User | null;
+  isLoading: boolean;
+  fetchCurrentUser: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
-const USERS: Record<Role, User> = {
-  TeamLead: { id: "1", name: "Team Lead (ID 1)", role: "TeamLead" },
-  Sales: { id: "2", name: "Sales Rep (ID 2)", role: "Sales" },
-};
-
 export const useAuthStore = create<AuthState>((set) => ({
-  currentUser: USERS.TeamLead,
-  switchUser: (role) => set({ currentUser: USERS[role] }),
+  currentUser: null,
+  isLoading: true,
+  fetchCurrentUser: async () => {
+    try {
+      const response = await apiClient.get("/users/me", { withCredentials: true });
+      set({ currentUser: response.data, isLoading: false });
+    } catch (error) {
+      set({ currentUser: null, isLoading: false });
+    }
+  },
+  logout: async () => {
+    try {
+      await apiClient.post("/auth/logout", {}, { withCredentials: true });
+      set({ currentUser: null });
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  },
 }));

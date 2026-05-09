@@ -21,10 +21,14 @@ export function GlobalWSProvider() {
   useEffect(() => {
     let isMounted = true;
 
+    // Якщо користувач не залогований, не підключаємо WS
+    if (!currentUser?.id) return;
+
     function connect() {
       if (!isMounted) return;
 
-      const ws = new WebSocket(`${WS_URL}?userId=${currentUser.id}`);
+      // Підключаємось до WS
+      const ws = new WebSocket(`ws://localhost:8080/ws/notifications?userId=${currentUser.id}`);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -68,7 +72,7 @@ export function GlobalWSProvider() {
       if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current);
       wsRef.current?.close();
     };
-  }, [currentUser.id, queryClient]);
+  }, [currentUser?.id, queryClient]);
 
   // Цей компонент нічого не рендерить — він тільки слухає WS
   return null;

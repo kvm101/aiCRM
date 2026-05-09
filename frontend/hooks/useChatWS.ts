@@ -62,6 +62,8 @@ export function useChatWS(wsUrl: string = "ws://localhost:8080/ws/chats") {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    if (!currentUser?.id) return;
+
     const ws = new WebSocket(`${wsUrl}?userId=${currentUser.id}`);
     wsRef.current = ws;
 
@@ -102,7 +104,7 @@ export function useChatWS(wsUrl: string = "ws://localhost:8080/ws/chats") {
     return () => {
       ws.close();
     };
-  }, [wsUrl, currentUser.id, currentUser.name, queryClient]);
+  }, [wsUrl, currentUser?.id, currentUser?.name, queryClient]);
 
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ chatId, text }: { chatId: string | number, text: string }) => {

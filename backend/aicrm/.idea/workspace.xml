@@ -6,22 +6,20 @@
   <component name="ChangeListManager">
     <list default="true" id="24395c60-8504-4a9d-8346-0ac082d0bea7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ARCHITECTURE.md" beforeDir="false" afterPath="$PROJECT_DIR$/ARCHITECTURE.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/controller/ChatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/controller/ChatController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/controller/MailController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/controller/MailController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/domain/ChatSession.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/domain/ChatSession.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/enums/ChannelType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/enums/ChannelType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/repository/EmailMessageRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/repository/EmailMessageRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/service/MailService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/communications/service/MailService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/iam/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/iam/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/iam/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/iam/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/iam/domain/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/iam/domain/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/iam/dto/UserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vasyl/karpliak/aiCRM/iam/dto/UserDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/controller/ChatController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/controller/ChatController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/controller/MailController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/controller/MailController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/domain/ChatSession.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/domain/ChatSession.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/enums/ChannelType.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/enums/ChannelType.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/repository/EmailMessageRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/repository/EmailMessageRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/service/MailService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/communications/service/MailService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/controller/AuthController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/controller/AuthController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/controller/UserController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/controller/UserController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/domain/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/domain/User.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/dto/UserDTO$UserDTOBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/dto/UserDTO$UserDTOBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/dto/UserDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vasyl/karpliak/aiCRM/iam/dto/UserDTO.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../frontend/app/chat/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/app/chat/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/app/layout.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../frontend/hooks/useChatWS.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/hooks/useChatWS.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

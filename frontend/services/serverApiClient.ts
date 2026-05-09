@@ -16,14 +16,14 @@ export async function serverFetch<T>(endpoint: string, options: FetchOptions = {
   const headers = new Headers(options.headers);
   headers.set('Content-Type', 'application/json');
 
-  // In a real app, you would read the auth token or user info from cookies here:
-  // const cookieStore = await cookies();
-  // const token = cookieStore.get('auth-token')?.value;
-  // if (token) headers.set('Authorization', `Bearer ${token}`);
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('user_id')?.value;
   
-  // Since we use mock user headers in the client app, we can mock them here as well
-  headers.set('X-User-Id', '1');
-  headers.set('X-User-Role', 'TeamLead');
+  if (userId) {
+    headers.set('X-User-Id', userId);
+    // Для BFF можна тимчасово передавати дефолтну роль, оскільки бекенд має доступ до бази
+    headers.set('X-User-Role', 'MANAGER');
+  }
 
   const config: RequestInit = {
     ...options,

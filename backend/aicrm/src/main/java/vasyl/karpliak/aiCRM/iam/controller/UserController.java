@@ -30,6 +30,17 @@ public class UserController {
     }
 
 
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getMe(@CookieValue(name = "user_id", required = false) String userId) {
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.status(401).build();
+        }
+        return userService.getUserById(Long.parseLong(userId))
+                .map(UserDTO::toDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(401).build());
+    }
+
     @GetMapping("/filtered")
     public ResponseEntity<List<User>> listOfUsers(@RequestParam(required = false) String name) {
         List<User> users;
