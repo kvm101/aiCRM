@@ -18,14 +18,29 @@ public class SalesAITools {
 
     private final TaskService taskService;
     private final ClientService clientService;
+    private final vasyl.karpliak.aiCRM.sales.service.DealService dealService;
 
-    public SalesAITools(TaskService taskService, ClientService clientService) {
+    public SalesAITools(TaskService taskService, ClientService clientService, vasyl.karpliak.aiCRM.sales.service.DealService dealService) {
         this.taskService = taskService;
         this.clientService = clientService;
+        this.dealService = dealService;
     }
 
     private TaskResponse mapToTaskResponse(Task t) {
-        return new TaskResponse(t.getId(), t.getTitle(), t.getDescription(), t.getDeadline(), t.getTag());
+        return new TaskResponse(
+            t.getId(), 
+            t.getTitle(), 
+            t.getDescription(), 
+            t.getDeadline(), 
+            t.getTag(),
+            t.getDeal() != null ? t.getDeal().getId() : null,
+            t.getDeal() != null ? t.getDeal().getTitle() : null,
+            t.getClient() != null ? t.getClient().getId() : null,
+            t.getClient() != null ? t.getClient().getName() : null,
+            t.getType() != null ? t.getType().name() : null,
+            t.getDueDate(),
+            t.getResult()
+        );
     }
 
     private ClientResponse mapToClientResponse(Client c) {
@@ -46,8 +61,8 @@ public class SalesAITools {
                 .collect(Collectors.toList());
     }
 
-    @Tool(description = "Створити нову задачу (task) в Kanban-дошці. ВАЖЛИВО: параметр tag повинен бути тільки 'PLANNED', 'IN_WORK' або 'DONE'.")
-    public TaskResponse createTask(Long userId, String title, String description, String tag) {
+    @Tool(description = "Створити нову задачу (task) в Kanban-дошці. ВАЖЛИВО: параметр tag повинен бути тільки 'PLANNED', 'IN_WORK' або 'DONE'. Параметри dealId та clientId необов'язкові.")
+    public TaskResponse createTask(Long userId, String title, String description, String tag, Long dealId, Long clientId) {
         Task task = new Task();
         task.setTitle(title);
         task.setDescription(description);
@@ -60,14 +75,14 @@ public class SalesAITools {
         }
         
         task.setTag(tag);
-        return mapToTaskResponse(taskService.createTask(task, userId));
+        return mapToTaskResponse(taskService.createTask(task, userId, dealId, clientId));
     }
 
     @Tool(description = "Оновити статус (тег) задачі. Можливі значення: 'PLANNED', 'IN_WORK', 'DONE'.")
     public TaskResponse updateTaskStatus(Long userId, Long taskId, String newTag) {
         Task patch = new Task();
         patch.setTag(newTag);
-        return mapToTaskResponse(taskService.updateTask(userId, taskId, patch));
+        return mapToTaskResponse(taskService.updateTask(userId, taskId, patch, null, null));
     }
 
     @Tool(description = "Створити нового клієнта (контакт/лід) в CRM системі.")
@@ -88,8 +103,8 @@ public class SalesAITools {
         return mapToClientResponse(clientService.updateClient(userId, clientId, patch));
     }
 
-    @Tool(description = "Редагувати існуючу задачу (назву, опис, дедлайн). Будь-який параметр може бути null, якщо його не потрібно змінювати. Формат дедлайну ISO, наприклад '2026-12-31T23:59:00'")
-    public TaskResponse updateTaskDetails(Long userId, Long taskId, String title, String description, String deadlineIso) {
+    @Tool(description = "Редагувати існуючу задачу (назву, опис, дедлайн, прив'язку до угоди або клієнта). Будь-який параметр може бути null, якщо його не потрібно змінювати. Формат дедлайну ISO, наприклад '2026-12-31T23:59:00'")
+    public TaskResponse updateTaskDetails(Long userId, Long taskId, String title, String description, String deadlineIso, Long dealId, Long clientId) {
         Task patch = new Task();
         patch.setTitle(title);
         patch.setDescription(description);
@@ -100,7 +115,7 @@ public class SalesAITools {
                 // Якщо AI передав неправильний формат, ігноруємо оновлення дедлайну
             }
         }
-        return mapToTaskResponse(taskService.updateTask(userId, taskId, patch));
+        return mapToTaskResponse(taskService.updateTask(userId, taskId, patch, dealId, clientId));
     }
 
     @Tool(description = "Редагувати дані існуючого клієнта (контакту). Будь-який параметр може бути null, якщо його не потрібно змінювати.")
@@ -111,5 +126,27 @@ public class SalesAITools {
         patch.setPhone(phone);
         patch.setCompany(company);
         return mapToClientResponse(clientService.updateClient(userId, clientId, patch));
+    }
+
+    private vasyl.karpliak.aiCRM.ai.dto.DealResponse mapToDealResponse(vasyl.karpliak.aiCRM.sales.domain.Deal d) {
+        return new vasyl.karpliak.aiCRM.ai.dto.DealResponse(
+                d.getId(),
+                d.getTitle(),
+                d.getBudget(),
+                d.getCurrency() != null ? d.getCurrency() : "USD",
+                d.getStatus() != null ? d.getStatus().name() : null,
+                d.getClient() != null ? d.getClient().getId() : null,
+                d.getClient() != null ? d.getClient().getName() : null,
+                d.getCreatedAt(),
+                d.getUpdatedAt()
+        );
+    }
+
+    @Tool(description = "Створити нову угоду (deal) з клієнтом. Бюджет (budget) має бути числовим значенням, валюта (currency) - 'UAH', 'USD', 'EUR', 'GBP'.")
+    public vasyl.karpliak.aiCRM.ai.dto.DealResponse createDeal(Long userId, Long clientId, String title, java.math.BigDecimal budget, String currency) {
+        vasyl.karpliak.aiCRM.sales.dto.DealCreateRequest request = new vasyl.karpliak.aiCRM.sales.dto.DealCreateRequest(title, budget, currency != null ? currency : "USD", clientId);
+        // Використовуємо DealService (який треба заінжектити), але оскільки його ще немає в цьому класі, я додам його зараз
+        // Wait, I will use dealService
+        return mapToDealResponse(dealService.createDeal(userId, request));
     }
 }

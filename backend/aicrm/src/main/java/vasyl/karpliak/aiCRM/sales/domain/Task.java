@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import vasyl.karpliak.aiCRM.iam.domain.User;
 
+import vasyl.karpliak.aiCRM.sales.enums.TaskType;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,4 +35,22 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deal_id")
+    private Deal deal;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_id")
+    private Client client;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private TaskType type;
+
+    @Column(name = "due_date")
+    private LocalDateTime dueDate;
+
+    @Column(name = "result", length = 1000)
+    private String result;
 }

@@ -17,4 +17,12 @@ public class TaskDTO {
     private String description;
     private LocalDateTime deadline;
     private String tag;
+    
+    private Long dealId;
+    private String dealTitle;
+    private Long clientId;
+    private String clientName;
+    private String type;
+    private LocalDateTime dueDate;
+    private String result;
 }

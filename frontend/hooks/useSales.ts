@@ -17,6 +17,25 @@ export interface Task {
   description: string;
   deadline: string;
   tag: 'PLANNED' | 'IN_WORK' | 'DONE';
+  dealId?: number;
+  dealTitle?: string;
+  clientId?: number;
+  clientName?: string;
+  type?: 'CALL' | 'MEETING' | 'EMAIL';
+  dueDate?: string;
+  result?: string;
+}
+
+export interface Deal {
+  id: number;
+  title: string;
+  budget: number;
+  currency: string;
+  status: 'NEW' | 'QUALIFICATION' | 'DELIVERY' | 'DONE' | 'LOST';
+  clientId: number;
+  clientName?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Clients Hooks
@@ -120,18 +139,122 @@ export const useDeleteTask = () => {
   });
 };
 
-// Keep existing hooks for compatibility if needed, or redirect them
-export const useContacts = useClients;
+// Deals Hooks
 export const useDeals = () => {
-    // Redirect deals to clients or tasks depending on how user perceives them
-    // For now, let's keep it mapped to clients but filtered for 'IN_WORK' maybe?
-    // Actually, let's just return all clients for the Kanban if it's meant to be a client pipeline.
-    return useClients();
+  return useQuery({
+    queryKey: ['deals'],
+    queryFn: async (): Promise<Deal[]> => {
+      const { data } = await apiClient.get('/deals', { withCredentials: true });
+      return data;
+    },
+  });
 };
-export const useUpdateDealStage = () => {
-    const updateClient = useUpdateClient();
-    return {
-        mutate: ({ dealId, newStage }: { dealId: number; newStage: string }) => 
-            updateClient.mutate({ id: dealId, status: newStage as any })
-    };
+
+export interface DealEvent {
+  id: number;
+  dealId: number;
+  eventType: string;
+  description: string;
+  createdAt: string;
+}
+
+export const useDealEvents = (dealId: number) => {
+  return useQuery({
+    queryKey: ['deals', dealId, 'events'],
+    queryFn: async (): Promise<DealEvent[]> => {
+      const { data } = await apiClient.get(`/deals/${dealId}/events`, { withCredentials: true });
+      return data;
+    },
+    enabled: !!dealId,
+  });
 };
+
+export const useCreateDealNote = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ dealId, text }: { dealId: number; text: string }) => {
+      const { data } = await apiClient.post(`/deals/${dealId}/notes`, { text }, { withCredentials: true });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['deals', variables.dealId, 'events'] });
+    },
+  });
+};
+
+export const useCreateDeal = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (deal: { title: string; budget: number; currency: string; clientId: number }) => {
+      const { data } = await apiClient.post('/deals', deal, { withCredentials: true });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+    },
+  });
+};
+
+export const useUpdateDeal = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...patch }: Partial<Deal> & { id: number }) => {
+      const { data } = await apiClient.patch(`/deals/${id}`, patch, { withCredentials: true });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+    },
+  });
+};
+
+export const useUpdateDealStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const { data } = await apiClient.patch(`/deals/${id}/status`, null, { 
+        params: { status },
+        withCredentials: true 
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+    },
+  });
+};
+
+export const useDeleteDeal = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await apiClient.delete(`/deals/${id}`, { withCredentials: true });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+    },
+  });
+};
+
+// Analytics Hooks
+export const useFunnelAnalytics = () => {
+  return useQuery({
+    queryKey: ['analytics', 'funnel'],
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data } = await apiClient.get('/analytics/funnel', { withCredentials: true });
+      return data;
+    },
+  });
+};
+
+export const useGoalsAnalytics = () => {
+  return useQuery({
+    queryKey: ['analytics', 'goals'],
+    queryFn: async (): Promise<{ achievedRevenue: number; targetRevenue: number }> => {
+      const { data } = await apiClient.get('/analytics/goals', { withCredentials: true });
+      return data;
+    },
+  });
+};
+
+export const useContacts = useClients;

@@ -7,5 +7,12 @@ public record TaskResponse(
         String title,
         String description,
         LocalDateTime deadline,
-        String tag
+        String tag,
+        Long dealId,
+        String dealTitle,
+        Long clientId,
+        String clientName,
+        String type,
+        LocalDateTime dueDate,
+        String result
 ) {}
