@@ -142,3 +142,17 @@ export const useMarkChatRead = () => {
     }
   });
 };
+
+export const useCreateTeamChat = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (title: string) => {
+      const { data } = await apiClient.post('/chats', { title }, { withCredentials: true });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
+    }
+  });
+};

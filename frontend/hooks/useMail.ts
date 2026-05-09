@@ -20,5 +20,21 @@ export const useFolderEmails = (folder: string) => {
       return data;
     },
     enabled: !!folder,
+    staleTime: 0,
+    refetchInterval: folder === 'INBOX' ? 30000 : undefined, // Вхідні оновлюються кожні 30с
+  });
+};
+
+export const useMarkEmailAsRead = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (emailId: number) => {
+      await apiClient.put(`/mail/${emailId}/read`, {}, { withCredentials: true });
+    },
+    onSuccess: () => {
+      // Refresh inbox when an email is marked as read
+      queryClient.invalidateQueries({ queryKey: ['emails', 'INBOX'] });
+    }
   });
 };

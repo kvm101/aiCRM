@@ -1,5 +1,5 @@
 package vasyl.karpliak.aiCRM.communications.enums;
 
 public enum ChannelType {
-    TELEGRAM, EMAIL, VIBER
+    TELEGRAM, EMAIL, VIBER, INTERNAL
 }

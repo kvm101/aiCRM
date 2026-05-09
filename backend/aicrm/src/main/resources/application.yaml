@@ -61,6 +61,9 @@ spring:
     port: 587
     username: vasyl.karpliak.pp.2022@lpnu.ua
     password: qtwo ylfy fttu bgzr
+    imap:
+      host: imap.gmail.com
+      port: 993
     properties:
       mail:
         smtp:
