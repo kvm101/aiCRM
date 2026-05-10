@@ -2,7 +2,6 @@ package vasyl.karpliak.aiCRM.iam.dto;
 
 import lombok.*;
 import vasyl.karpliak.aiCRM.iam.domain.User;
-import vasyl.karpliak.aiCRM.sales.dto.ClientDTO;
 import vasyl.karpliak.aiCRM.sales.dto.TaskDTO;
 import vasyl.karpliak.aiCRM.iam.enums.UserRoles;
 

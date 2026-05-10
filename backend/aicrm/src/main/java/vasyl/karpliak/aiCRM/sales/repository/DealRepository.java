@@ -13,18 +13,18 @@ import java.util.List;
 
 @Repository
 public interface DealRepository extends JpaRepository<Deal, Long> {
-    List<Deal> findByUserId(Long userId);
-    List<Deal> findByUserIdAndStatus(Long userId, vasyl.karpliak.aiCRM.sales.enums.DealStatus status);
+    List<Deal> findByProjectId(Long projectId);
+    List<Deal> findByProjectIdAndStatus(Long projectId, vasyl.karpliak.aiCRM.sales.enums.DealStatus status);
     
     // Угоди за статусом у діапазоні дат (для місячної аналітики)
-    List<Deal> findByUserIdAndStatusAndUpdatedAtBetween(
-            Long userId, 
+    List<Deal> findByProjectIdAndStatusAndUpdatedAtBetween(
+            Long projectId, 
             vasyl.karpliak.aiCRM.sales.enums.DealStatus status,
             LocalDateTime from, 
             LocalDateTime to);
     
-    long countByUserIdAndStatus(Long userId, vasyl.karpliak.aiCRM.sales.enums.DealStatus status);
+    long countByProjectIdAndStatus(Long projectId, vasyl.karpliak.aiCRM.sales.enums.DealStatus status);
     
-    @Query("SELECT SUM(d.budget) FROM Deal d WHERE d.user.id = :userId AND d.status = :status")
-    BigDecimal sumBudgetByUserIdAndStatus(@Param("userId") Long userId, @Param("status") vasyl.karpliak.aiCRM.sales.enums.DealStatus status);
+    @Query("SELECT SUM(d.budget) FROM Deal d WHERE d.project.id = :projectId AND d.status = :status")
+    BigDecimal sumBudgetByProjectIdAndStatus(@Param("projectId") Long projectId, @Param("status") vasyl.karpliak.aiCRM.sales.enums.DealStatus status);
 }

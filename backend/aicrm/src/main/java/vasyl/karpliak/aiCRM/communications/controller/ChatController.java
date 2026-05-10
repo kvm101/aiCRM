@@ -39,15 +39,10 @@ public class ChatController {
      */
     @GetMapping
     public ResponseEntity<List<ChatSession>> getChats(
-            @RequestHeader(name = "X-User-Id") String userId,
+            @RequestHeader(name = "X-Project-Id", required = false) String projectId,
             @RequestHeader(name = "X-User-Role", defaultValue = "USER") String userRole) {
         
-        List<ChatSession> sessions;
-        if ("TeamLead".equalsIgnoreCase(userRole) || "ADMIN".equalsIgnoreCase(userRole)) {
-            sessions = chatSessionRepository.findAll();
-        } else {
-            sessions = chatSessionRepository.findByAssignedUserId(Long.parseLong(userId));
-        }
+        List<ChatSession> sessions = chatSessionRepository.findByProjectId(resolveProjectId(projectId));
         return ResponseEntity.ok(sessions);
     }
 
@@ -57,6 +52,7 @@ public class ChatController {
     @PostMapping
     public ResponseEntity<ChatSession> createChat(
             @RequestBody Map<String, String> body,
+            @RequestHeader(name = "X-Project-Id") String projectId,
             @RequestHeader(name = "X-User-Id") String userId) {
         
         String title = body.get("title");
@@ -71,6 +67,12 @@ public class ChatController {
         session.setAssignedUserId(Long.parseLong(userId));
         session.setStatus(SessionStatus.OPEN);
         session.setClientName(title);
+        
+        // We can't set project directly here unless we fetch it from IAM module.
+        // For MVP we just use an entity with only the ID.
+        vasyl.karpliak.aiCRM.iam.domain.Project projectRef = new vasyl.karpliak.aiCRM.iam.domain.Project();
+        projectRef.setId(Long.parseLong(projectId));
+        session.setProject(projectRef);
         
         ChatSession saved = chatSessionRepository.save(session);
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
@@ -171,14 +173,23 @@ public class ChatController {
      * GET /chats/stats — get chat statistics for Dashboard BFF
      */
     @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> getStats() {
-        long openChats = chatSessionRepository.countByStatus(SessionStatus.OPEN);
-        long totalChats = chatSessionRepository.count();
+    public ResponseEntity<Map<String, Object>> getStats(
+            @RequestHeader(name = "X-Project-Id", required = false) String projectIdStr) {
+        Long projectId = resolveProjectId(projectIdStr);
+        long openChats = chatSessionRepository.countByStatusAndProjectId(SessionStatus.OPEN, projectId);
+        long totalChats = chatSessionRepository.countByProjectId(projectId);
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("openChats", openChats);
         stats.put("totalChats", totalChats);
         return ResponseEntity.ok(stats);
+    }
+
+    private Long resolveProjectId(String projectIdStr) {
+        if (projectIdStr != null && !projectIdStr.isBlank()) {
+            return Long.parseLong(projectIdStr);
+        }
+        return vasyl.karpliak.aiCRM.shared.context.RequestContextHelper.getCurrentProjectId();
     }
 
     /**

@@ -11,6 +11,8 @@ import vasyl.karpliak.aiCRM.sales.repository.DealEventRepository;
 import vasyl.karpliak.aiCRM.sales.repository.DealRepository;
 import vasyl.karpliak.aiCRM.sales.repository.ClientRepository;
 import vasyl.karpliak.aiCRM.sales.domain.DealEvent;
+import vasyl.karpliak.aiCRM.iam.repository.ProjectRepository;
+import vasyl.karpliak.aiCRM.iam.domain.Project;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,20 +26,25 @@ public class TaskService {
     private final DealEventRepository dealEventRepository;
     private final DealRepository dealRepository;
     private final ClientRepository clientRepository;
+    private final ProjectRepository projectRepository;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository, DealEventRepository dealEventRepository, DealRepository dealRepository, ClientRepository clientRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository, DealEventRepository dealEventRepository, DealRepository dealRepository, ClientRepository clientRepository, ProjectRepository projectRepository) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
         this.dealEventRepository = dealEventRepository;
         this.dealRepository = dealRepository;
         this.clientRepository = clientRepository;
+        this.projectRepository = projectRepository;
     }
 
-    public Task createTask(Task task, Long userId, Long dealId, Long clientId) {
+    public Task createTask(Task task, Long projectId, Long userId, Long dealId, Long clientId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
 
         task.setUser(user);                 // прив’язка до користувача
+        task.setProject(project);
         
         if (dealId != null) {
             dealRepository.findById(dealId).ifPresent(task::setDeal);
@@ -62,21 +69,21 @@ public class TaskService {
         return savedTask;
     }
 
-    public List<Task> getAllTasks(Long userId) {
-        return taskRepository.findByUserId(userId);
+    public List<Task> getAllTasks(Long projectId) {
+        return taskRepository.findByProjectId(projectId);
     }
 
-    public List<Task> getTasksBeforeDeadline(Long userId, LocalDateTime deadline) {
-        return taskRepository.findByUserIdAndDeadlineBefore(userId, deadline);
+    public List<Task> getTasksBeforeDeadline(Long projectId, LocalDateTime deadline) {
+        return taskRepository.findByProjectIdAndDeadlineBefore(projectId, deadline);
     }
 
-    public Task getTask(Long userId, Long taskId) {
-        return taskRepository.findByIdAndUserId(taskId, userId)
-                .orElseThrow(() -> new RuntimeException("Task not found or does not belong to user"));
+    public Task getTask(Long projectId, Long taskId) {
+        return taskRepository.findByIdAndProjectId(taskId, projectId)
+                .orElseThrow(() -> new RuntimeException("Task not found or does not belong to project"));
     }
 
-    public Task updateTask(Long userId, Long taskId, Task updated, Long dealId, Long clientId) {
-        Task existing = getTask(userId, taskId);
+    public Task updateTask(Long projectId, Long taskId, Task updated, Long dealId, Long clientId) {
+        Task existing = getTask(projectId, taskId);
         
         if (dealId != null && (existing.getDeal() == null || !existing.getDeal().getId().equals(dealId))) {
             dealRepository.findById(dealId).ifPresent(existing::setDeal);
@@ -111,8 +118,8 @@ public class TaskService {
         return taskRepository.save(existing);
     }
 
-    public void deleteTask(Long userId, Long taskId) {
-        Task existing = getTask(userId, taskId);
+    public void deleteTask(Long projectId, Long taskId) {
+        Task existing = getTask(projectId, taskId);
         taskRepository.delete(existing);
     }
 }

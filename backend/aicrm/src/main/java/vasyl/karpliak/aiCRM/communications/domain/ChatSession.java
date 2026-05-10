@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import vasyl.karpliak.aiCRM.communications.enums.ChannelType;
 import vasyl.karpliak.aiCRM.communications.enums.SessionStatus;
+import vasyl.karpliak.aiCRM.iam.domain.Project;
 
 @Entity
 @Table(name = "chat_sessions")
@@ -39,4 +40,8 @@ public class ChatSession {
 
     @Column(name = "client_name")
     private String clientName;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
 }

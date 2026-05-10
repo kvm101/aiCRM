@@ -1,6 +1,7 @@
 package vasyl.karpliak.aiCRM.sales.domain;
 
 import jakarta.persistence.*;
+import vasyl.karpliak.aiCRM.iam.domain.Project;
 import vasyl.karpliak.aiCRM.iam.domain.User;
 import vasyl.karpliak.aiCRM.sales.enums.DealStatus;
 
@@ -31,6 +32,10 @@ public class Deal {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -103,6 +108,14 @@ public class Deal {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public LocalDateTime getCreatedAt() {

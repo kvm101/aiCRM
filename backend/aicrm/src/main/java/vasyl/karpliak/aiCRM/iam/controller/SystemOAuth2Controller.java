@@ -6,8 +6,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.RedirectView;
 import vasyl.karpliak.aiCRM.iam.domain.User;
+import vasyl.karpliak.aiCRM.iam.domain.Organization;
+import vasyl.karpliak.aiCRM.iam.domain.Project;
 import vasyl.karpliak.aiCRM.iam.enums.UserRoles;
 import vasyl.karpliak.aiCRM.iam.repository.UserRepository;
+import vasyl.karpliak.aiCRM.iam.repository.OrganizationRepository;
+import vasyl.karpliak.aiCRM.iam.repository.ProjectRepository;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
@@ -31,10 +35,16 @@ public class SystemOAuth2Controller {
     private String redirectUri;
 
     private final UserRepository userRepository;
+    private final OrganizationRepository organizationRepository;
+    private final ProjectRepository projectRepository;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public SystemOAuth2Controller(UserRepository userRepository) {
+    public SystemOAuth2Controller(UserRepository userRepository, 
+                                  OrganizationRepository organizationRepository,
+                                  ProjectRepository projectRepository) {
         this.userRepository = userRepository;
+        this.organizationRepository = organizationRepository;
+        this.projectRepository = projectRepository;
     }
 
     @GetMapping("/login")
@@ -106,6 +116,20 @@ public class SystemOAuth2Controller {
                             user.setCompany("N/A");
                             user.setPhone("N/A");
                             user.setRole(UserRoles.MANAGER); // Default role for testing
+                            
+                            userRepository.save(user); // Save early to get ID
+
+                            Organization org = new Organization();
+                            org.setName(name != null ? name + " Org" : "My Organization");
+                            org.setOwnerId(user.getId());
+                            Organization savedOrg = organizationRepository.save(org);
+                            
+                            Project proj = new Project();
+                            proj.setName("Default Project");
+                            proj.setOrganization(savedOrg);
+                            projectRepository.save(proj);
+
+                            user.setOrganization(savedOrg);
                         }
                         
                         // Update Google tokens

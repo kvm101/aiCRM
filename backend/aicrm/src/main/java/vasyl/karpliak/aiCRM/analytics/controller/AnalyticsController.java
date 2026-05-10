@@ -19,22 +19,28 @@ public class AnalyticsController {
         this.analyticsService = analyticsService;
     }
 
-    private Long getUserId(String userIdStr) {
-        return Long.parseLong(userIdStr);
+    private Long getProjectId(String projectIdStr) {
+        if (projectIdStr == null || projectIdStr.isBlank()) {
+            throw new RuntimeException("Project ID is missing");
+        }
+        return Long.parseLong(projectIdStr);
     }
 
     @GetMapping("/funnel")
-    public ResponseEntity<Map<String, Long>> getFunnel(@RequestHeader(name = "X-User-Id") String userId) {
-        return ResponseEntity.ok(analyticsService.getFunnel(getUserId(userId)));
+    public ResponseEntity<Map<String, Long>> getFunnel(@RequestHeader(name = "X-Project-Id") String projectId) {
+        return ResponseEntity.ok(analyticsService.getFunnel(getProjectId(projectId)));
     }
 
     @GetMapping("/goals")
-    public ResponseEntity<Map<String, Object>> getGoals(@RequestHeader(name = "X-User-Id", defaultValue = "1") String userId) {
-        return ResponseEntity.ok(analyticsService.getGoals(getUserId(userId)));
+    public ResponseEntity<Map<String, Object>> getGoals(
+            @RequestHeader(name = "X-Project-Id") String projectId,
+            @RequestHeader(name = "X-User-Id", defaultValue = "1") String userId) {
+        return ResponseEntity.ok(analyticsService.getGoals(getProjectId(projectId), Long.parseLong(userId)));
     }
 
     @org.springframework.web.bind.annotation.PutMapping("/goals")
     public ResponseEntity<Map<String, Object>> updateGoals(
+            @RequestHeader(name = "X-Project-Id") String projectId,
             @RequestHeader(name = "X-User-Id", defaultValue = "1") String userId,
             @org.springframework.web.bind.annotation.RequestBody Map<String, String> payload) {
         
@@ -42,6 +48,6 @@ public class AnalyticsController {
             new java.math.BigDecimal(payload.get("targetRevenue")) : null;
         String currency = payload.get("currency");
         
-        return ResponseEntity.ok(analyticsService.updateGoals(getUserId(userId), targetRevenue, currency));
+        return ResponseEntity.ok(analyticsService.updateGoals(getProjectId(projectId), Long.parseLong(userId), targetRevenue, currency));
     }
 }

@@ -17,7 +17,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(chatWebSocketHandler, "/ws/chats")
-                .setAllowedOrigins("http://localhost:3000"); // Allow connections from Next.js
+        registry.addHandler(chatWebSocketHandler, "/ws/chats", "/ws/notifications")
+                .setAllowedOrigins("*"); 
     }
 }

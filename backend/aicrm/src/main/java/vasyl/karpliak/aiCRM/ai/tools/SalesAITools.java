@@ -44,13 +44,17 @@ public class SalesAITools {
         );
     }
 
-    private ClientResponse mapToClientResponse(Client c) {
-        return new ClientResponse(c.getId(), c.getName(), c.getEmail(), c.getPhone(), c.getCompany(), c.getStatus() != null ? c.getStatus().name() : null);
+    private Long getCurrentProjectId() {
+        return vasyl.karpliak.aiCRM.shared.context.RequestContextHelper.getCurrentProjectId();
+    }
+
+    private ClientResponse mapToClientResponse(vasyl.karpliak.aiCRM.sales.dto.ClientDTO c) {
+        return new ClientResponse(c.id(), c.name(), c.email(), c.phone(), c.company(), c.status() != null ? c.status().name() : null);
     }
 
     @Tool(description = "Отримати всі задачі (tasks) для конкретного користувача за його ID. Повертає список задач Kanban.")
     public List<TaskResponse> getAllTasks(Long userId) {
-        return taskService.getAllTasks(userId).stream()
+        return taskService.getAllTasks(getCurrentProjectId()).stream()
                 .map(this::mapToTaskResponse)
                 .collect(Collectors.toList());
     }
@@ -59,7 +63,7 @@ public class SalesAITools {
     public List<ClientResponse> getClients(
             Long userId,
             @ToolParam(required = false, description = "Фільтр за ім'ям клієнта (необов'язковий)") String name) {
-        return clientService.getAllClients(userId, name).stream()
+        return clientService.getAllClients(getCurrentProjectId(), name).stream()
                 .map(this::mapToClientResponse)
                 .collect(Collectors.toList());
     }
@@ -84,14 +88,14 @@ public class SalesAITools {
         }
         
         task.setTag(tag);
-        return mapToTaskResponse(taskService.createTask(task, userId, dealId, clientId));
+        return mapToTaskResponse(taskService.createTask(task, getCurrentProjectId(), userId, dealId, clientId));
     }
 
     @Tool(description = "Оновити статус (тег) задачі. Можливі значення: 'PLANNED', 'IN_WORK', 'DONE'.")
     public TaskResponse updateTaskStatus(Long userId, Long taskId, String newTag) {
         Task patch = new Task();
         patch.setTag(newTag);
-        return mapToTaskResponse(taskService.updateTask(userId, taskId, patch, null, null));
+        return mapToTaskResponse(taskService.updateTask(getCurrentProjectId(), taskId, patch, null, null));
     }
 
     @Tool(description = "Створити нового клієнта (контакт/лід) в CRM системі.")
@@ -107,14 +111,14 @@ public class SalesAITools {
         client.setPhone(phone);
         client.setCompany(company);
         client.setStatus(vasyl.karpliak.aiCRM.sales.enums.ClientStatus.NEW);
-        return mapToClientResponse(clientService.createClient(client, userId));
+        return mapToClientResponse(clientService.createClient(client, getCurrentProjectId()));
     }
 
     @Tool(description = "Оновити статус клієнта у воронці продажів. Можливі статуси: NEW, IN_PROGRESS, WON, LOST.")
     public ClientResponse updateClientStatus(Long userId, Long clientId, vasyl.karpliak.aiCRM.sales.enums.ClientStatus newStatus) {
         Client patch = new Client();
         patch.setStatus(newStatus);
-        return mapToClientResponse(clientService.updateClient(userId, clientId, patch));
+        return mapToClientResponse(clientService.updateClient(getCurrentProjectId(), clientId, patch));
     }
 
     @Tool(description = "Редагувати існуючу задачу. Будь-який параметр може бути null, якщо його не потрібно змінювати. Формат дедлайну ISO, наприклад '2026-12-31T23:59:00'")
@@ -136,7 +140,7 @@ public class SalesAITools {
                 // Якщо AI передав неправильний формат, ігноруємо
             }
         }
-        return mapToTaskResponse(taskService.updateTask(userId, taskId, patch, dealId, clientId));
+        return mapToTaskResponse(taskService.updateTask(getCurrentProjectId(), taskId, patch, dealId, clientId));
     }
 
     @Tool(description = "Редагувати дані існуючого клієнта (контакту). Будь-який параметр може бути null, якщо його не потрібно змінювати.")
@@ -152,7 +156,7 @@ public class SalesAITools {
         patch.setEmail(email);
         patch.setPhone(phone);
         patch.setCompany(company);
-        return mapToClientResponse(clientService.updateClient(userId, clientId, patch));
+        return mapToClientResponse(clientService.updateClient(getCurrentProjectId(), clientId, patch));
     }
 
     private vasyl.karpliak.aiCRM.ai.dto.DealResponse mapToDealResponse(vasyl.karpliak.aiCRM.sales.domain.Deal d) {
@@ -177,25 +181,25 @@ public class SalesAITools {
             java.math.BigDecimal budget,
             @ToolParam(required = false, description = "Валюта угоди, за замовчуванням USD") String currency) {
         vasyl.karpliak.aiCRM.sales.dto.DealCreateRequest request = new vasyl.karpliak.aiCRM.sales.dto.DealCreateRequest(title, budget, currency != null ? currency : "USD", clientId);
-        return mapToDealResponse(dealService.createDeal(userId, request));
+        return mapToDealResponse(dealService.createDeal(getCurrentProjectId(), userId, request));
     }
 
     @Tool(description = "Отримати список всіх угод (deals) користувача. Повертає ID, назву, бюджет, валюту, статус та клієнта для кожної угоди.")
     public List<vasyl.karpliak.aiCRM.ai.dto.DealResponse> getDeals(Long userId) {
-        return dealService.getAllDeals(userId).stream()
+        return dealService.getAllDeals(getCurrentProjectId()).stream()
                 .map(this::mapToDealResponse)
                 .collect(Collectors.toList());
     }
 
     @Tool(description = "Отримати деталі конкретної угоди за її ID.")
     public vasyl.karpliak.aiCRM.ai.dto.DealResponse getDeal(Long userId, Long dealId) {
-        return mapToDealResponse(dealService.getDeal(userId, dealId));
+        return mapToDealResponse(dealService.getDeal(getCurrentProjectId(), dealId));
     }
 
     @Tool(description = "Оновити статус угоди. Можливі статуси: NEW, QUALIFICATION, DELIVERY, DONE, LOST.")
     public vasyl.karpliak.aiCRM.ai.dto.DealResponse updateDealStatus(Long userId, Long dealId, String newStatus) {
         vasyl.karpliak.aiCRM.sales.enums.DealStatus status = vasyl.karpliak.aiCRM.sales.enums.DealStatus.valueOf(newStatus.toUpperCase());
-        return mapToDealResponse(dealService.changeStatus(userId, dealId, status));
+        return mapToDealResponse(dealService.changeStatus(getCurrentProjectId(), dealId, status));
     }
 
     @Tool(description = "Оновити деталі угоди (назву, бюджет, валюту). Будь-який параметр може бути null.")
@@ -206,12 +210,12 @@ public class SalesAITools {
             @ToolParam(required = false, description = "Новий бюджет") java.math.BigDecimal budget,
             @ToolParam(required = false, description = "Нова валюта: UAH, USD, EUR, GBP") String currency) {
         vasyl.karpliak.aiCRM.sales.dto.DealUpdateRequest request = new vasyl.karpliak.aiCRM.sales.dto.DealUpdateRequest(title, budget, currency, null);
-        return mapToDealResponse(dealService.updateDeal(userId, dealId, request));
+        return mapToDealResponse(dealService.updateDeal(getCurrentProjectId(), dealId, request));
     }
 
     @Tool(description = "Видалити угоду за її ID.")
     public String deleteDeal(Long userId, Long dealId) {
-        dealService.deleteDeal(userId, dealId);
+        dealService.deleteDeal(getCurrentProjectId(), dealId);
         return "Угоду #" + dealId + " успішно видалено.";
     }
 }

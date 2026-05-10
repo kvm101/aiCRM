@@ -2,7 +2,9 @@
 
 import { Bell, Search, Sparkles, Check } from "lucide-react";
 import { useAuthStore, Role } from "@/store/useAuthStore";
+import { useProjectStore } from "@/store/useProjectStore";
 import { useAIStore } from "@/store/useAIStore";
+import { FolderGit2, Building2, Plus, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,8 +23,131 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+
+// Окремий компонент для вибору проєкту
+function ProjectSwitcher() {
+  const { organization, projects, activeProjectId, setActiveProjectId, fetchOrganizationAndProjects, createOrganization, createProject } = useProjectStore();
+  const { currentUser } = useAuthStore();
+  
+  const [isCreatingOrg, setIsCreatingOrg] = useState(false);
+  const [isCreatingProj, setIsCreatingProj] = useState(false);
+  const [newName, setNewName] = useState("");
+
+  useEffect(() => {
+    if (currentUser?.id) {
+      fetchOrganizationAndProjects();
+    }
+  }, [currentUser?.id, fetchOrganizationAndProjects]);
+
+  if (!currentUser) return null;
+
+  const activeProject = projects.find(p => p.id === activeProjectId);
+
+  const handleCreateOrg = async () => {
+    if (newName.trim()) {
+      await createOrganization(newName);
+      setNewName("");
+      setIsCreatingOrg(false);
+    }
+  };
+
+  const handleCreateProj = async () => {
+    if (newName.trim()) {
+      await createProject(newName);
+      setNewName("");
+      setIsCreatingProj(false);
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="flex items-center gap-2 px-2 hover:bg-zinc-100 dark:hover:bg-zinc-900">
+          <div className="flex items-center justify-center h-8 w-8 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400">
+            <Building2 className="h-4 w-4" />
+          </div>
+          <div className="flex flex-col items-start text-sm">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">
+              {organization ? organization.name : "Немає організації"}
+            </span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400 leading-tight">
+              {activeProject ? activeProject.name : "Виберіть проєкт"}
+            </span>
+          </div>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-64">
+        {organization ? (
+          <>
+            <DropdownMenuLabel className="text-xs text-zinc-500">Проєкти</DropdownMenuLabel>
+            {projects.map((proj) => (
+              <DropdownMenuItem 
+                key={proj.id} 
+                onClick={() => setActiveProjectId(proj.id)}
+                className="flex items-center justify-between cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <FolderGit2 className="h-4 w-4 text-zinc-400" />
+                  <span className={activeProjectId === proj.id ? "font-medium" : ""}>{proj.name}</span>
+                </div>
+                {activeProjectId === proj.id && <Check className="h-4 w-4 text-indigo-600" />}
+              </DropdownMenuItem>
+            ))}
+            
+            <DropdownMenuSeparator />
+            
+            {isCreatingProj ? (
+              <div className="p-2 flex gap-2">
+                <input 
+                  autoFocus
+                  type="text" 
+                  value={newName} 
+                  onChange={e => setNewName(e.target.value)}
+                  placeholder="Назва проєкту"
+                  className="h-8 w-full rounded border border-zinc-200 px-2 text-sm outline-none"
+                  onKeyDown={e => e.key === 'Enter' && handleCreateProj()}
+                />
+                <Button size="sm" onClick={handleCreateProj} className="h-8">OK</Button>
+              </div>
+            ) : (
+              <DropdownMenuItem onClick={(e) => { e.preventDefault(); setIsCreatingProj(true); }} className="cursor-pointer text-indigo-600">
+                <Plus className="h-4 w-4 mr-2" /> Створити проєкт
+              </DropdownMenuItem>
+            )}
+
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="cursor-pointer text-zinc-600">
+              <Settings className="h-4 w-4 mr-2" /> Налаштування організації
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <>
+            {isCreatingOrg ? (
+              <div className="p-2 flex gap-2">
+                <input 
+                  autoFocus
+                  type="text" 
+                  value={newName} 
+                  onChange={e => setNewName(e.target.value)}
+                  placeholder="Назва організації"
+                  className="h-8 w-full rounded border border-zinc-200 px-2 text-sm outline-none"
+                  onKeyDown={e => e.key === 'Enter' && handleCreateOrg()}
+                />
+                <Button size="sm" onClick={handleCreateOrg} className="h-8">OK</Button>
+              </div>
+            ) : (
+              <DropdownMenuItem onClick={(e) => { e.preventDefault(); setIsCreatingOrg(true); }} className="cursor-pointer text-indigo-600">
+                <Plus className="h-4 w-4 mr-2" /> Створити організацію
+              </DropdownMenuItem>
+            )}
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function Header() {
   const { currentUser, logout, fetchCurrentUser, isLoading } = useAuthStore();
@@ -57,14 +182,7 @@ export function Header() {
   return (
     <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-zinc-950">
       <div className="flex flex-1 items-center gap-4">
-        <div className="relative w-96">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
-          <input
-            type="text"
-            placeholder="Search contacts, deals, messages..."
-            className="h-9 w-full rounded-md border border-zinc-200 bg-zinc-50 pl-9 pr-4 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
-          />
-        </div>
+        <ProjectSwitcher />
       </div>
 
       <div className="flex items-center gap-4">

@@ -25,7 +25,7 @@ export function GlobalWSProvider() {
     if (!currentUser?.id) return;
 
     function connect() {
-      if (!isMounted) return;
+      if (!isMounted || !currentUser?.id) return;
 
       // Підключаємось до WS
       const ws = new WebSocket(`ws://localhost:8080/ws/notifications?userId=${currentUser.id}`);
@@ -53,8 +53,8 @@ export function GlobalWSProvider() {
         }
       };
 
-      ws.onerror = (err) => {
-        console.warn("[GlobalWS] Error:", err);
+      ws.onerror = () => {
+        // Suppress noisy WS error logs (reconnect handles recovery)
       };
 
       ws.onclose = () => {

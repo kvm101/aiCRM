@@ -18,11 +18,18 @@ export async function serverFetch<T>(endpoint: string, options: FetchOptions = {
 
   const cookieStore = await cookies();
   const userId = cookieStore.get('user_id')?.value;
+  const projectId = cookieStore.get('project_id')?.value;
   
   if (userId) {
     headers.set('X-User-Id', userId);
     // Для BFF можна тимчасово передавати дефолтну роль, оскільки бекенд має доступ до бази
     headers.set('X-User-Role', 'MANAGER');
+  }
+
+  if (projectId) {
+    headers.set('X-Project-Id', projectId);
+  } else {
+    headers.set('X-Project-Id', '1'); // Default fallback for first SSR render
   }
 
   const config: RequestInit = {
