@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   BarChart,
@@ -14,7 +15,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Loader2, TrendingUp, Target, DollarSign, Settings2 } from "lucide-react";
+import { Loader2, TrendingUp, Target, DollarSign, Settings2, FileBarChart } from "lucide-react";
 import { useFunnelAnalytics, useGoalsAnalytics, useUpdateGoalsAnalytics } from "@/hooks/useSales";
 import { Button } from "@/components/ui/button";
 import {
@@ -156,8 +157,8 @@ export function DashboardCharts() {
             <CardTitle>Воронка продажів (Угоди)</CardTitle>
             <CardDescription>Розподіл угод за статусами</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <CardContent className="h-[300px] min-w-0 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={formattedFunnelData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} />
@@ -181,8 +182,8 @@ export function DashboardCharts() {
             <CardTitle>Структура угод</CardTitle>
             <CardDescription>Частка кожного статусу</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
+          <CardContent className="h-[300px] flex items-center justify-center min-w-0 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
                 <Pie
                   data={formattedFunnelData}
@@ -205,6 +206,25 @@ export function DashboardCharts() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-indigo-200/70 dark:border-indigo-900/50 bg-gradient-to-br from-indigo-50/90 via-white to-white dark:from-indigo-950/35 dark:via-zinc-950 dark:to-zinc-950 shadow-sm">
+        <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-6">
+          <div className="space-y-1">
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              Звіти та експорт даних
+            </h3>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-xl">
+              Створюйте CSV у фоні (черга) — воронка, угоди, клієнти. Завантажуйте файли, коли статус стане Completed.
+            </p>
+          </div>
+          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white shrink-0 w-full sm:w-auto gap-2">
+            <Link href="/reports">
+              <FileBarChart className="h-4 w-4" />
+              Звіти
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Edit Goals Dialog */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>

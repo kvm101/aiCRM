@@ -2,6 +2,7 @@ package vasyl.karpliak.aiCRM.communications.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import vasyl.karpliak.aiCRM.communications.domain.ChatSession;
 import vasyl.karpliak.aiCRM.communications.domain.Message;
@@ -103,11 +104,12 @@ public class ChatController {
     /**
      * POST /chats/{id}/messages — send a message to a chat session (from operator)
      */
+    @Transactional
     @PostMapping("/{id}/messages")
     public ResponseEntity<Message> sendMessage(
             @PathVariable Long id,
             @RequestBody Map<String, String> body,
-            @RequestHeader(name = "X-User-Id") String userId) {
+            @RequestHeader(name = "X-User-Id", required = false) String userId) {
 
         return chatSessionRepository.findById(id)
                 .map(session -> {
@@ -116,7 +118,7 @@ public class ChatController {
                     // Відправляємо у RabbitMQ для доставки в зовнішній канал, якщо це не внутрішній чат
                     if (session.getChannelType() != vasyl.karpliak.aiCRM.communications.enums.ChannelType.INTERNAL) {
                         vasyl.karpliak.aiCRM.communications.dto.UnifiedMessage unifiedMessage = new vasyl.karpliak.aiCRM.communications.dto.UnifiedMessage(
-                                null, // Немає external_id для вихідного повідомлення
+                                null,
                                 session.getExternalChatId(),
                                 session.getChannelType(),
                                 session.getTeamId(),
@@ -132,23 +134,22 @@ public class ChatController {
                         );
                     }
 
-                    // Також зберігаємо відразу в БД, щоб фронтенд отримав миттєву відповідь
+                    // Зберігаємо в БД
                     Message message = new Message();
                     message.setSession(session);
                     message.setSenderType(SenderType.OPERATOR);
                     message.setText(text);
                     message.setCreatedAt(LocalDateTime.now());
                     
-                    // Reset unread count since operator replied
+                    // Скидаємо лічильник непрочитаних (оператор відповів)
                     session.setUnreadCount(0);
                     chatSessionRepository.save(session);
                     
                     Message saved = messageRepository.save(message);
 
-                    // Відправляємо подію для WebSocket, щоб інші учасники командного чату миттєво побачили повідомлення
-                    if (session.getChannelType() == vasyl.karpliak.aiCRM.communications.enums.ChannelType.INTERNAL) {
-                        eventPublisher.publishEvent(new vasyl.karpliak.aiCRM.communications.service.InboundMessageEvent(this, saved, session.getAssignedUserId()));
-                    }
+                    // Публікуємо WS подію для ВСІХ типів чатів (не тільки INTERNAL)
+                    // щоб усі вкладки браузера отримали оновлення в реальному часі
+                    eventPublisher.publishEvent(new vasyl.karpliak.aiCRM.communications.service.InboundMessageEvent(this, saved, session.getAssignedUserId()));
 
                     return new ResponseEntity<>(saved, HttpStatus.CREATED);
                 })

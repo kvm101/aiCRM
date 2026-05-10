@@ -28,7 +28,7 @@ export function GlobalWSProvider() {
       if (!isMounted || !currentUser?.id) return;
 
       // Підключаємось до WS
-      const ws = new WebSocket(`ws://localhost:8080/ws/notifications?userId=${currentUser.id}`);
+      const ws = new WebSocket(`ws://localhost:8080/ws/chats?userId=${currentUser.id}`);
       wsRef.current = ws;
 
       ws.onopen = () => {

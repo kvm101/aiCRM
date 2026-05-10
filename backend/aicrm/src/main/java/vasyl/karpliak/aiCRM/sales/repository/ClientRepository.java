@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import vasyl.karpliak.aiCRM.sales.domain.Client;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long> {
@@ -13,4 +14,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
     @EntityGraph(attributePaths = {"project", "notes"})
     List<Client> findByProjectId(Long projectId);
+
+    @EntityGraph(attributePaths = {"project", "notes"})
+    Optional<Client> findByIdAndProjectId(Long id, Long projectId);
 }

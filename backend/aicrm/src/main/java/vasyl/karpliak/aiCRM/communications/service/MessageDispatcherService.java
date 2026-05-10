@@ -75,6 +75,12 @@ public class MessageDispatcherService {
             session.setTeamId(unifiedMessage.teamId());
             session.setAssignedUserId(assignedUserId);
             session.setStatus(SessionStatus.OPEN);
+            // Встановлюємо clientName щоб відображалось у списку чатів
+            session.setClientName(unifiedMessage.externalChatId());
+            // Прив'язуємо до проекту за замовчуванням (ID=1) щоб чат показувався у CRM
+            vasyl.karpliak.aiCRM.iam.domain.Project defaultProject = new vasyl.karpliak.aiCRM.iam.domain.Project();
+            defaultProject.setId(1L);
+            session.setProject(defaultProject);
 
             session = chatSessionRepository.save(session);
         }

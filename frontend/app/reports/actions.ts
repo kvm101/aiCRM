@@ -2,40 +2,38 @@
 
 import { serverFetch } from "@/services/serverApiClient";
 
-interface BackendReportResponse {
-  reportId: string;
-  metadata: {
-    generatedAt: string;
-    requestedBy: string;
-  };
-  metrics: Array<{
-    period: string;
-    value: number;
-  }>;
+export type BackendReportType =
+  | "SALES_FUNNEL"
+  | "REVENUE_GROWTH"
+  | "USER_ACTIVITY"
+  | "CLIENT_RETENTION";
+
+interface ReportTaskDTO {
+  id: string;
+  name: string;
+  type: BackendReportType;
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+  projectId: number;
+  requestedByUserId: number | null;
+  createdAt: string;
+  completedAt: string | null;
+  downloadable: boolean;
+  downloadUrl: string | null;
 }
 
-export async function generateReportAction(reportName: string, reportType: string) {
+export async function generateReportAction(reportName: string, reportType: BackendReportType) {
   try {
-    // Call the real backend ReportingController
-    const rawData = await serverFetch<BackendReportResponse>('/reporting/generate', {
-      method: 'POST',
+    const task = await serverFetch<ReportTaskDTO>("/reports/request", {
+      method: "POST",
       body: JSON.stringify({ name: reportName, type: reportType }),
     });
 
-    // BFF Transformation: map backend DTO into chart-ready format
-    const chartData = rawData.metrics.map(m => ({
-      name: m.period,
-      total: m.value,
-    }));
-
     return {
-      success: true,
-      reportId: rawData.reportId,
-      dateGenerated: rawData.metadata.generatedAt,
-      chartData,
+      success: true as const,
+      task,
     };
   } catch (error) {
-    console.error("Failed to generate report via BFF:", error);
-    return { success: false, error: "Report generation failed" };
+    console.error("Failed to request report:", error);
+    return { success: false as const, error: "Report generation failed" };
   }
 }

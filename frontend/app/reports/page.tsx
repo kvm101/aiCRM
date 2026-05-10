@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
-import { generateReportAction } from "./actions";
+import { generateReportAction, type BackendReportType } from "./actions";
 import {
   Table,
   TableBody,
@@ -23,57 +23,101 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FileBarChart, Download, Loader2, Calendar as CalendarIcon, FileSpreadsheet } from "lucide-react";
+import {
+  FileBarChart,
+  Download,
+  Loader2,
+  Calendar as CalendarIcon,
+  FileSpreadsheet,
+} from "lucide-react";
 
-type ReportStatus = "Completed" | "Processing" | "Failed";
+type RowStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 
-interface Report {
+interface ReportRow {
   id: string;
   name: string;
   type: string;
   dateGenerated: string;
-  status: ReportStatus;
+  status: RowStatus;
+  downloadable: boolean;
 }
 
-const initialReports: Report[] = [
-  { id: "rep_1", name: "Q3 Sales Summary", type: "SALES_SUMMARY", dateGenerated: "2023-10-01T10:00:00Z", status: "Completed" },
-  { id: "rep_2", name: "October Activity", type: "USER_ACTIVITY", dateGenerated: "2023-11-01T09:30:00Z", status: "Completed" },
-  { id: "rep_3", name: "Lost Deals Analysis", type: "SALES_SUMMARY", dateGenerated: "2023-11-15T14:20:00Z", status: "Completed" },
+interface ReportTaskJson {
+  id: string;
+  name: string;
+  type: string;
+  status: RowStatus;
+  createdAt: string;
+  completedAt: string | null;
+  downloadable: boolean;
+}
+
+function mapDtoToRow(dto: ReportTaskJson): ReportRow {
+  const dateSrc = dto.completedAt || dto.createdAt;
+  return {
+    id: dto.id,
+    name: dto.name,
+    type: dto.type.replaceAll("_", " "),
+    dateGenerated: dateSrc,
+    status: dto.status,
+    downloadable: dto.downloadable,
+  };
+}
+
+const REPORT_TYPES: { value: BackendReportType; label: string }[] = [
+  { value: "SALES_FUNNEL", label: "Sales funnel (статуси угод)" },
+  { value: "REVENUE_GROWTH", label: "Закриті угоди / виручка" },
+  { value: "USER_ACTIVITY", label: "Активність угод" },
+  { value: "CLIENT_RETENTION", label: "База клієнтів" },
 ];
 
 export default function ReportsPage() {
-  const [reports, setReports] = useState<Report[]>(initialReports);
+  const [reports, setReports] = useState<ReportRow[]>([]);
+  const [listLoading, setListLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [reportName, setReportName] = useState("");
+  const [reportType, setReportType] = useState<BackendReportType>("SALES_FUNNEL");
+
+  const refreshList = useCallback(async () => {
+    try {
+      const res = await fetch("/api/reports", { cache: "no-store" });
+      if (!res.ok) return;
+      const data: ReportTaskJson[] = await res.json();
+      setReports(data.map(mapDtoToRow));
+    } catch {
+      /* ignore */
+    } finally {
+      setListLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshList();
+  }, [refreshList]);
+
+  useEffect(() => {
+    const needsPoll = reports.some(
+      (r) => r.status === "PENDING" || r.status === "PROCESSING"
+    );
+    if (!needsPoll) return;
+    const t = setInterval(() => void refreshList(), 3000);
+    return () => clearInterval(t);
+  }, [reports, refreshList]);
 
   const handleGenerateReport = async () => {
     if (!reportName) return;
     setIsGenerating(true);
 
     try {
-      // Call our Next.js Server Action (BFF Pattern)
-      const result = await generateReportAction(reportName, "SALES_SUMMARY");
-      
+      const result = await generateReportAction(reportName, reportType);
+
       if (!result.success) throw new Error(result.error);
 
-      const newReport: Report = {
-        id: result.reportId as string,
-        name: reportName,
-        type: "SALES_SUMMARY",
-        dateGenerated: result.dateGenerated as string,
-        status: "Processing"
-      };
-
-      setReports([newReport, ...reports]);
+      const row = mapDtoToRow(result.task);
+      setReports((prev) => [row, ...prev.filter((r) => r.id !== row.id)]);
       setIsDialogOpen(false);
       setReportName("");
-
-      // Simulate async completion where we would normally poll or receive a WebSocket event
-      setTimeout(() => {
-        setReports(current => current.map(r => r.id === result.reportId ? { ...r, status: "Completed" } : r));
-      }, 5000);
-
     } catch (error) {
       console.error("Failed to generate report", error);
     } finally {
@@ -81,20 +125,22 @@ export default function ReportsPage() {
     }
   };
 
-  const handleDownload = (report: Report) => {
-    // Mock download action
-    alert(`Downloading ${report.name}.xlsx...`);
-    // In reality: window.open(`${API_URL}/reporting/download/${report.id}`, '_blank');
+  const handleDownload = (report: ReportRow) => {
+    window.open(`/api/reports/${report.id}/download`, "_blank", "noopener,noreferrer");
   };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Reporting Center</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Generate and download analytical reports.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Reporting Center
+          </h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Асинхронна генерація CSV через чергу; завантаження після статусу Completed.
+          </p>
         </div>
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
@@ -105,7 +151,7 @@ export default function ReportsPage() {
             <DialogHeader>
               <DialogTitle>Generate New Report</DialogTitle>
               <DialogDescription>
-                Configure your report parameters. Generation happens asynchronously.
+                Запит потрапляє в RabbitMQ; файл з&apos;явиться після обробки.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -122,28 +168,40 @@ export default function ReportsPage() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                  Report Type
-                </label>
-                <select className="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:placeholder:text-zinc-400 dark:focus-visible:ring-indigo-500">
-                  <option value="SALES_SUMMARY">Sales Summary</option>
-                  <option value="USER_ACTIVITY">User Activity</option>
-                  <option value="LOST_DEALS">Lost Deals Analysis</option>
+                <label className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Report Type</label>
+                <select
+                  className="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:placeholder:text-zinc-400 dark:focus-visible:ring-indigo-500"
+                  value={reportType}
+                  onChange={(e) => setReportType(e.target.value as BackendReportType)}
+                >
+                  {REPORT_TYPES.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                  Date Range
-                </label>
+                <label className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Період</label>
                 <div className="flex gap-2 items-center text-sm text-zinc-500 border border-zinc-200 dark:border-zinc-800 rounded-md px-3 py-2">
-                  <CalendarIcon className="h-4 w-4" /> Last 30 Days (Mock)
+                  <CalendarIcon className="h-4 w-4" /> Усі дані проєкту (CSV)
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleGenerateReport} disabled={!reportName || isGenerating} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileSpreadsheet className="mr-2 h-4 w-4" />}
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => void handleGenerateReport()}
+                disabled={!reportName || isGenerating}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                {isGenerating ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                )}
                 Generate
               </Button>
             </DialogFooter>
@@ -163,34 +221,55 @@ export default function ReportsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {reports.map((report) => (
-              <TableRow key={report.id}>
-                <TableCell className="font-medium flex items-center gap-2">
-                  <FileSpreadsheet className="h-4 w-4 text-zinc-400" />
-                  {report.name}
-                </TableCell>
-                <TableCell className="text-zinc-500">{report.type.replace('_', ' ')}</TableCell>
-                <TableCell className="text-zinc-500">{format(new Date(report.dateGenerated), 'MMM d, yyyy h:mm a')}</TableCell>
-                <TableCell>
-                  <Badge variant={report.status === "Completed" ? "default" : report.status === "Processing" ? "secondary" : "destructive"}>
-                    {report.status === "Processing" && <Loader2 className="mr-1 h-3 w-3 animate-spin inline" />}
-                    {report.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    disabled={report.status !== "Completed"}
-                    onClick={() => handleDownload(report)}
-                    className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/50"
-                  >
-                    <Download className="h-4 w-4 mr-2" /> Download XLSX
-                  </Button>
+            {listLoading && (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center text-zinc-500">
+                  <Loader2 className="h-5 w-5 animate-spin inline mr-2" />
+                  Завантаження…
                 </TableCell>
               </TableRow>
-            ))}
-            {reports.length === 0 && (
+            )}
+            {!listLoading &&
+              reports.map((report) => (
+                <TableRow key={report.id}>
+                  <TableCell className="font-medium flex items-center gap-2">
+                    <FileSpreadsheet className="h-4 w-4 text-zinc-400" />
+                    {report.name}
+                  </TableCell>
+                  <TableCell className="text-zinc-500">{report.type}</TableCell>
+                  <TableCell className="text-zinc-500">
+                    {format(new Date(report.dateGenerated), "MMM d, yyyy h:mm a")}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        report.status === "COMPLETED"
+                          ? "default"
+                          : report.status === "PENDING" || report.status === "PROCESSING"
+                            ? "secondary"
+                            : "destructive"
+                      }
+                    >
+                      {(report.status === "PENDING" || report.status === "PROCESSING") && (
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin inline" />
+                      )}
+                      {report.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={!report.downloadable}
+                      onClick={() => handleDownload(report)}
+                      className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/50"
+                    >
+                      <Download className="h-4 w-4 mr-2" /> Download CSV
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            {!listLoading && reports.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center text-zinc-500">
                   No reports generated yet.

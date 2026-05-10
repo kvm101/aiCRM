@@ -39,6 +39,21 @@ export interface Deal {
   updatedAt: string;
 }
 
+export interface FileAttachment {
+  id: number;
+  originalFilename: string;
+  contentType?: string;
+  fileSizeBytes: number;
+  status: 'PENDING' | 'PROCESSING' | 'INDEXED' | 'FAILED';
+  projectId: number;
+  dealEventId?: number | null;
+  taskId?: number | null;
+  clientId?: number | null;
+  clientNoteIndex?: number | null;
+  processingError?: string | null;
+  createdAt: string;
+}
+
 // Clients Hooks
 export const useClients = (name?: string) => {
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
@@ -162,6 +177,19 @@ export interface DealEvent {
   createdAt: string;
 }
 
+export const useAttachments = () => {
+  const activeProjectId = useProjectStore((state) => state.activeProjectId);
+  return useQuery({
+    queryKey: ['files', activeProjectId],
+    queryFn: async (): Promise<FileAttachment[]> => {
+      const { data } = await apiClient.get('/files', { withCredentials: true });
+      return data;
+    },
+    staleTime: 0,
+    refetchInterval: 5000,
+  });
+};
+
 export const useDealEvents = (dealId: number) => {
   return useQuery({
     queryKey: ['deals', dealId, 'events'],
@@ -240,6 +268,53 @@ export const useDeleteDeal = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
       queryClient.invalidateQueries({ queryKey: ['analytics'] });
+    },
+  });
+};
+
+export const useUploadAttachment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      file,
+      dealEventId,
+      taskId,
+      clientId,
+      clientNoteIndex,
+    }: {
+      file: File;
+      dealEventId?: number;
+      taskId?: number;
+      clientId?: number;
+      clientNoteIndex?: number;
+    }): Promise<FileAttachment> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (dealEventId !== undefined) formData.append('dealEventId', String(dealEventId));
+      if (taskId !== undefined) formData.append('taskId', String(taskId));
+      if (clientId !== undefined) formData.append('clientId', String(clientId));
+      if (clientNoteIndex !== undefined) formData.append('clientNoteIndex', String(clientNoteIndex));
+
+      const { data } = await apiClient.post('/files/upload', formData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['files'] });
+    },
+  });
+};
+
+export const useDeleteAttachment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (fileId: number) => {
+      await apiClient.delete(`/files/${fileId}`, { withCredentials: true });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['files'] });
     },
   });
 };

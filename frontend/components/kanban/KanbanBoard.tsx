@@ -22,8 +22,10 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { GripVertical, Loader2, Calendar, Plus, Pencil, CheckCircle2, User } from "lucide-react";
-import { useTasks, useUpdateTask, useCreateTask, Task, useDeals, useClients } from "@/hooks/useSales";
+import { GripVertical, Loader2, Calendar, Plus, Pencil, CheckCircle2, User, Paperclip, Download, Trash2 } from "lucide-react";
+import { useTasks, useUpdateTask, useCreateTask, Task, useDeals, useClients, useUploadAttachment, useAttachments, useDeleteAttachment, FileAttachment } from "@/hooks/useSales";
+import { useProjectStore } from "@/store/useProjectStore";
+import { DeleteAttachmentDialog } from "@/components/attachments/DeleteAttachmentDialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,13 +49,17 @@ const COLUMN_NAMES: Record<Task['tag'], string> = {
 
 export function KanbanBoard() {
   const { data: serverTasks, isLoading } = useTasks();
+  const { data: attachments = [] } = useAttachments();
   const { data: deals = [] } = useDeals();
   const { data: clients = [] } = useClients();
   
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: createTask } = useCreateTask();
+  const uploadAttachment = useUploadAttachment();
+  const deleteAttachment = useDeleteAttachment();
 
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<FileAttachment | null>(null);
   const [activeId, setActiveId] = useState<number | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState<Partial<Task>>({
@@ -67,9 +73,11 @@ export function KanbanBoard() {
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
 
   const [taskToComplete, setTaskToComplete] = useState<{ id: number; tag: Task['tag'] } | null>(null);
   const [taskResult, setTaskResult] = useState("");
+  const [uploadingTaskId, setUploadingTaskId] = useState<number | null>(null);
   const [createFollowup, setCreateFollowup] = useState(false);
   const [followupTitle, setFollowupTitle] = useState("");
   const [followupDays, setFollowupDays] = useState("1");
@@ -181,18 +189,47 @@ export function KanbanBoard() {
     setIsEditDialogOpen(true);
   };
 
+  const openViewDialog = (task: Task) => {
+    setViewingTask(task);
+  };
+
   const activeTask = activeId ? tasks.find((t) => t.id === activeId) : null;
+
+  const handleUploadToTask = (taskId: number, file: File | null) => {
+    if (!file) return;
+    setUploadingTaskId(taskId);
+    uploadAttachment.mutate(
+      { file, taskId },
+      {
+        onSettled: () => setUploadingTaskId(null),
+      }
+    );
+  };
 
   if (isLoading && tasks.length === 0) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
+      <div className="flex min-h-[240px] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col space-y-4">
+      <DeleteAttachmentDialog
+        attachment={attachmentToDelete}
+        open={attachmentToDelete != null}
+        onOpenChange={(o) => {
+          if (!o) setAttachmentToDelete(null);
+        }}
+        onConfirm={() => {
+          if (!attachmentToDelete) return;
+          deleteAttachment.mutate(attachmentToDelete.id, {
+            onSuccess: () => setAttachmentToDelete(null),
+          });
+        }}
+        isPending={deleteAttachment.isPending}
+      />
       <div className="flex justify-end">
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
@@ -314,6 +351,121 @@ export function KanbanBoard() {
           </DialogContent>
         </Dialog>
 
+        {/* View Task Dialog */}
+        <Dialog open={!!viewingTask} onOpenChange={(open) => !open && setViewingTask(null)}>
+          <DialogContent className="sm:max-w-[700px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between gap-4">
+                <span className="truncate">{viewingTask?.title || "Завдання"}</span>
+                {viewingTask && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      openEditDialog(viewingTask);
+                      setViewingTask(null);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Редагувати
+                  </Button>
+                )}
+              </DialogTitle>
+              {viewingTask?.description ? (
+                <DialogDescription className="whitespace-pre-wrap break-words">
+                  {viewingTask.description}
+                </DialogDescription>
+              ) : (
+                <DialogDescription>Опис відсутній.</DialogDescription>
+              )}
+            </DialogHeader>
+
+            {viewingTask && (
+              <div className="grid gap-3 text-sm">
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                    Статус: {viewingTask.tag}
+                  </Badge>
+                  {(viewingTask.dealTitle || viewingTask.dealId) && (
+                    <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+                      Угода: {viewingTask.dealTitle || `#${viewingTask.dealId}`}
+                    </Badge>
+                  )}
+                  {(viewingTask.clientName || viewingTask.clientId) && (
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                      Клієнт: {viewingTask.clientName || `#${viewingTask.clientId}`}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+                    <div className="text-xs text-zinc-500 mb-1">Дедлайн</div>
+                    <div className="font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-zinc-400" />
+                      {new Date(viewingTask.dueDate || viewingTask.deadline).toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 sm:col-span-2">
+                    <div className="text-xs text-zinc-500 mb-2">Вкладення</div>
+                    {attachments.filter((a) => a.taskId === viewingTask.id).length === 0 ? (
+                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                        Немає файлів. Додайте через іконку скріпки на картці.
+                      </div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {attachments
+                          .filter((a) => a.taskId === viewingTask.id)
+                          .map((f) => (
+                            <li
+                              key={f.id}
+                              className="flex items-center justify-between gap-2 rounded-md bg-zinc-50 dark:bg-zinc-900/50 px-2 py-1.5 text-xs"
+                            >
+                              <span className="truncate text-zinc-800 dark:text-zinc-200">{f.originalFilename}</span>
+                              <div className="flex shrink-0 items-center gap-0.5">
+                                <button
+                                  type="button"
+                                  className="opacity-50 hover:opacity-100 p-1 rounded text-red-600 hover:text-red-700"
+                                  title="Видалити"
+                                  onPointerDown={(e) => e.stopPropagation()}
+                                  onClick={() => setAttachmentToDelete(f)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="opacity-50 hover:opacity-100 p-1 rounded"
+                                  title="Скачати"
+                                  onPointerDown={(e) => e.stopPropagation()}
+                                  onClick={() => {
+                                    const pid = useProjectStore.getState().activeProjectId;
+                                    const q = pid != null ? `?projectId=${pid}` : "";
+                                    window.open(`/api/files/${f.id}/download${q}`, "_blank", "noopener,noreferrer");
+                                  }}
+                                >
+                                  <Download className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+
+                {viewingTask.result && (
+                  <div className="rounded-lg border border-emerald-200 dark:border-emerald-900 bg-emerald-50/60 dark:bg-emerald-950/20 p-3">
+                    <div className="text-xs text-emerald-700 dark:text-emerald-300 mb-1">Результат</div>
+                    <div className="text-sm text-emerald-800 dark:text-emerald-200 whitespace-pre-wrap">
+                      {viewingTask.result}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Complete Task Modal */}
         <Dialog open={!!taskToComplete} onOpenChange={(open) => !open && setTaskToComplete(null)}>
           <DialogContent>
@@ -376,7 +528,7 @@ export function KanbanBoard() {
         </Dialog>
       </div>
 
-      <div className="flex h-full w-full gap-4 overflow-x-auto pb-4">
+      <div className="flex w-full gap-4 overflow-x-auto pb-4 items-start">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -388,7 +540,12 @@ export function KanbanBoard() {
               key={columnId}
               columnId={columnId}
               tasks={tasks.filter((t) => t.tag === columnId)}
+              attachments={attachments}
               onEditTask={openEditDialog}
+              onViewTask={openViewDialog}
+              onAttachFile={handleUploadToTask}
+              onRequestDeleteAttachment={setAttachmentToDelete}
+              uploadingTaskId={uploadingTaskId}
             />
           ))}
           <DragOverlay>
@@ -404,7 +561,25 @@ export function KanbanBoard() {
   );
 }
 
-function Column({ columnId, tasks, onEditTask }: { columnId: Task['tag']; tasks: Task[]; onEditTask: (t: Task) => void }) {
+function Column({
+  columnId,
+  tasks,
+  attachments,
+  onEditTask,
+  onViewTask,
+  onAttachFile,
+  onRequestDeleteAttachment,
+  uploadingTaskId
+}: {
+  columnId: Task['tag'];
+  tasks: Task[];
+  attachments: FileAttachment[];
+  onEditTask: (t: Task) => void;
+  onViewTask: (t: Task) => void;
+  onAttachFile: (taskId: number, file: File | null) => void;
+  onRequestDeleteAttachment: (f: FileAttachment) => void;
+  uploadingTaskId: number | null;
+}) {
   const { setNodeRef } = useDroppable({
     id: columnId,
   });
@@ -420,10 +595,19 @@ function Column({ columnId, tasks, onEditTask }: { columnId: Task['tag']; tasks:
         </Badge>
       </div>
 
-      <div ref={setNodeRef} className="flex-1 min-h-[500px] space-y-3">
+      <div ref={setNodeRef} className="flex flex-col gap-3 min-h-[80px]">
         <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
-            <SortableTaskCard key={task.id} task={task} onEditTask={onEditTask} />
+            <SortableTaskCard
+              key={task.id}
+              task={task}
+              taskFiles={attachments.filter((a) => a.taskId === task.id)}
+              onEditTask={onEditTask}
+              onViewTask={onViewTask}
+              onAttachFile={onAttachFile}
+              onRequestDeleteAttachment={onRequestDeleteAttachment}
+              uploadingTaskId={uploadingTaskId}
+            />
           ))}
         </SortableContext>
       </div>
@@ -431,7 +615,23 @@ function Column({ columnId, tasks, onEditTask }: { columnId: Task['tag']; tasks:
   );
 }
 
-function SortableTaskCard({ task, onEditTask }: { task: Task; onEditTask: (t: Task) => void }) {
+function SortableTaskCard({
+  task,
+  taskFiles,
+  onEditTask,
+  onViewTask,
+  onAttachFile,
+  onRequestDeleteAttachment,
+  uploadingTaskId
+}: {
+  task: Task;
+  taskFiles: FileAttachment[];
+  onEditTask: (t: Task) => void;
+  onViewTask: (t: Task) => void;
+  onAttachFile: (taskId: number, file: File | null) => void;
+  onRequestDeleteAttachment: (f: FileAttachment) => void;
+  uploadingTaskId: number | null;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
   });
@@ -444,14 +644,47 @@ function SortableTaskCard({ task, onEditTask }: { task: Task; onEditTask: (t: Ta
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <TaskCard task={task} onEditTask={onEditTask} />
+      <TaskCard
+        task={task}
+        taskFiles={taskFiles}
+        onEditTask={onEditTask}
+        onViewTask={onViewTask}
+        onAttachFile={onAttachFile}
+        onRequestDeleteAttachment={onRequestDeleteAttachment}
+        uploadingTaskId={uploadingTaskId}
+      />
     </div>
   );
 }
 
-function TaskCard({ task, isOverlay = false, onEditTask }: { task: Task; isOverlay?: boolean; onEditTask?: (t: Task) => void }) {
+function TaskCard({
+  task,
+  taskFiles = [],
+  isOverlay = false,
+  onEditTask,
+  onViewTask,
+  onAttachFile,
+  onRequestDeleteAttachment,
+  uploadingTaskId
+}: {
+  task: Task;
+  taskFiles?: FileAttachment[];
+  isOverlay?: boolean;
+  onEditTask?: (t: Task) => void;
+  onViewTask?: (t: Task) => void;
+  onAttachFile?: (taskId: number, file: File | null) => void;
+  onRequestDeleteAttachment?: (f: FileAttachment) => void;
+  uploadingTaskId?: number | null;
+}) {
   return (
-    <Card className={`cursor-grab active:cursor-grabbing hover:border-indigo-500/50 transition-all ${isOverlay ? 'shadow-xl border-indigo-500' : ''}`}>
+    <Card
+      className={`cursor-grab active:cursor-grabbing hover:border-indigo-500/50 transition-all ${isOverlay ? 'shadow-xl border-indigo-500' : ''}`}
+      onClick={() => {
+        if (!isOverlay && onViewTask) {
+          onViewTask(task);
+        }
+      }}
+    >
       <CardContent className="p-4 space-y-3">
         <div className="flex justify-between items-start gap-2">
           <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm leading-tight">
@@ -468,6 +701,25 @@ function TaskCard({ task, isOverlay = false, onEditTask }: { task: Task; isOverl
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
+            )}
+            {onAttachFile && (
+              <label
+                title="Прикріпити файл"
+                className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-indigo-500 transition-colors cursor-pointer"
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                <Paperclip className="h-3.5 w-3.5" />
+                <input
+                  type="file"
+                  className="hidden"
+                  disabled={uploadingTaskId === task.id}
+                  onChange={(e) => {
+                    const selected = e.target.files?.[0] ?? null;
+                    onAttachFile(task.id, selected);
+                    e.currentTarget.value = "";
+                  }}
+                />
+              </label>
             )}
             <GripVertical className="h-4 w-4 text-zinc-400 flex-shrink-0" />
           </div>
@@ -498,6 +750,54 @@ function TaskCard({ task, isOverlay = false, onEditTask }: { task: Task; isOverl
             <div className="flex items-start gap-1 mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 p-1.5 rounded">
               <CheckCircle2 className="h-3 w-3 flex-shrink-0 mt-0.5" />
               <span>{task.result}</span>
+            </div>
+          )}
+          {uploadingTaskId === task.id && (
+            <div className="text-[10px] text-zinc-400">Завантаження файлу...</div>
+          )}
+          {taskFiles.length > 0 && (
+            <div className="mt-1 space-y-1">
+              {taskFiles.map((f) => (
+                <div
+                  key={f.id}
+                  className="flex items-center justify-between gap-2 rounded bg-zinc-100/80 dark:bg-zinc-800/60 px-2 py-1 text-[10px] text-zinc-600 dark:text-zinc-300"
+                >
+                  <span className="truncate flex items-center gap-1 min-w-0">
+                    <Paperclip className="h-3 w-3 shrink-0 opacity-70" />
+                    {f.originalFilename}
+                  </span>
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    {onRequestDeleteAttachment && (
+                      <button
+                        type="button"
+                        className="opacity-45 hover:opacity-100 p-0.5 text-red-600 hover:text-red-700"
+                        title="Видалити"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRequestDeleteAttachment(f);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="opacity-45 hover:opacity-100 p-0.5"
+                      title="Скачати"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const pid = useProjectStore.getState().activeProjectId;
+                        const q = pid != null ? `?projectId=${pid}` : "";
+                        window.open(`/api/files/${f.id}/download${q}`, "_blank", "noopener,noreferrer");
+                      }}
+                    >
+                      <Download className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
