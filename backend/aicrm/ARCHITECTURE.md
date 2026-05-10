@@ -1,148 +1,158 @@
 # aiCRM Backend Architecture
 
-## Overview
-Додаток **aiCRM** використовує архітектуру **Модульного моноліту (Modular Monolith)**, що базується на принципах **Domain-Driven Design (DDD)**. 
-Замість класичної шарової архітектури код розділено на незалежні бізнес-домени. Це забезпечує високу зв'язність (high cohesion) всередині модулів, зменшує залежності між ними (loose coupling) та дозволяє легко масштабувати додаток.
+## Огляд
 
-Особливістю архітектури є глибока інтеграція **Штучного Інтелекту (Spring AI)** з мульти-провайдерною системою (Gemini, GitHub Models, Mistral, Groq), який працює як повноцінний автономний агент через механізм Tool Calling з автоматичним fallback між моделями.
+**aiCRM** — модульний моноліт (**Modular Monolith**) на Spring Boot **3.4**, Java **21**, з упорядкуванням пакетів за доменами (наближено до **DDD**). Кожен домен містить контролери, сервіси, репозиторії, сутності та DTO з високою зв’язністю всередині й обмеженими залежностями між модулями.
 
-## Функціональні вимоги (Functional Requirements)
-- **Управління користувачами (IAM)**: Реєстрація, автентифікація, управління сесіями (HttpOnly cookie), перегляд профілів.
-- **Управління клієнтами (Sales)**: Ведення бази клієнтів (CRM) — створення, оновлення (PATCH), видалення (CRUD), фільтрація по воронці продажів.
-- **Управління угодами (Sales)**: Фінансовий облік угод (`Deal`), відстеження етапів, мультивалютність (UAH, USD, EUR, GBP), історія взаємодій (`DealEvent`). Повний CRUD через UI та AI.
-- **Управління завданнями (Sales)**: Планування роботи у форматі Kanban-дошки. Створення завдань, робота з дедлайнами та описами.
-- **Аналітика (Analytics)**: Воронка продажів (по статусах угод), цілі на місяць (доходи від завершених угод з динамічною фільтрацією за поточний місяць).
-- **Комунікації (Communications)**: Інтеграція з Telegram та Email (SMTP відправка + IMAP отримання), WebSockets для реальному часу. Система внутрішніх сповіщень (`Notification`).
-- **Автоматизація (Integration)**: `SalesIntegrationService` автоматично створює лідів та угоди при надходженні нових повідомлень.
-- **Штучний інтелект (AI)**: Глобальний чат-асистент з persistent-історією в БД, підтримкою 4 LLM-провайдерів та повним CRUD доступом до всіх модулів CRM.
+Інтеграція з **Spring AI** (BOM **1.1.5**) дає мульти-провайдерний LLM чат із tool calling та (опціонально) **векторне сховище pgvector**, **Embeddings**, **MCP server** (транспорт SSE). Паралельно використовується **RabbitMQ** для асинхронної обробки повідомлень комунікацій, вкладень файлів і генерації звітів.
 
-## Структура Проєкту
-Вихідний код знаходиться у `src/main/java/vasyl/karpliak/aiCRM/` і поділений на такі основні домени:
+Увімкнені **virtual threads** (`spring.threads.virtual.enabled`) для масштабування довгоживучих SSE-з’єднань MCP.
 
-### 1. `ai` (Штучний Інтелект та Агенти)
-Модуль для роботи зі Spring AI та LLM (мульти-провайдерна архітектура).
-- **`config`**: `AiModelConfig` — фабрика AI-моделей: налаштування Groq (`llama3-groq-70b-8192-tool-use-preview`), GitHub Models (`gpt-4o-mini`), Mistral (`mistral-small-latest`). Gemini конфігурується через `application.yaml`.
-- **`controller`**: `AIChatController` — обробляє запити від фронтенду (`POST /ai/chat`), зберігає історію чату в БД (`GET /ai/history`, `DELETE /ai/history`), повертає `totalMessages` та `shouldClear` прапорець при 20+ повідомленнях.
-- **`service`**: 
-  - `AIChatService` — формує системний промпт та конвертує історію з DTO у Spring AI `Message` об'єкти.
-  - `AiOrchestrator` — реалізує стратегію Gemini → GitHub → Mistral → Groq з автоматичним fallback. Підтримує явний вибір провайдера або автоматичний каскадний виклик.
-- **`tools`**: `SalesAITools`, `CommunicationsAITools` — класи з методами `@Tool`, що реалізують концепцію Function Calling. Надають AI-моделі прямий доступ до CRUD операцій: `getClients`, `createClient`, `createDeal`, `getDeals`, `getDeal`, `updateDealStatus`, `updateDealDetails`, `deleteDeal`, `getAllTasks`, `createTask`, `getOpenChats`, `getMessagesSince`, `sendEmail`.
-- **`domain`**: `AiChatMessage` — JPA-сутність для збереження історії чату в БД (userId, role, content, createdAt).
-- **`repository`**: `AiChatMessageRepository` — CRUD для історії чату (пошук/підрахунок/видалення по userId).
-- **`dto`**: DTO-класи (`TaskResponse`, `ClientResponse`, `ChatSessionResponse`, `MessageResponse`, `ChatRequest`) для безпечної JSON серіалізації результатів AI-інструментів.
+## Інфраструктура та залежності
 
-### 2. `analytics` (Аналітика та Звітність)
-- **Відповідальність**: Обчислення метрик для дашборду.
-- **Ключові компоненти**: `AnalyticsController`, `AnalyticsService`.
-- **Функціональність**: 
-  - Воронка продажів (`getFunnelData`) — розподіл угод за статусами.
-  - Цілі на місяць (`getGoals`) — підрахунок доходу від завершених угод (`DONE`) з фільтрацією за поточний місяць (через `findByUserIdAndStatusAndUpdatedAtBetween`).
+| Компонент | Призначення |
+|-----------|-------------|
+| **PostgreSQL** + JPA (Hibernate) | Основна БД (`ddl-auto: update`). Розширення `vector` створюється на старті (`PgVectorExtensionInitializer`), якщо дозволяє середовище. |
+| **RabbitMQ** | Черги: маршрутизація каналів комунікацій, обробка файлів (`FileProcessingListener`), генерація звітів (`ReportGenerationListener`). Окремі конфіг-класи в доменах. |
+| **WebSocket** | Реальний час для чатів і сповіщень (`WebSocketConfig`, `ChatWebSocketHandler`). |
+| **Spring Mail** | SMTP надсилання, IMAP-поллінг для вхідних листів. |
+| **Springdoc OpenAPI** | Документація REST (`/swagger-ui.html` типовий для springdoc). |
+| **Apache Tika** | Вилучення тексту з завантажених файлів (модуль `attachments`). |
+| **commons-csv** | Експорт звітів у CSV. |
 
-### 3. `iam` (Identity and Access Management)
-- **Відповідальність**: Реєстрація, автентифікація, авторизація та ролі.
-- **Ключові компоненти**: `AuthController`, `UserService`, `UserRepository`, сутність `User`.
+### Конфігурація AI та векторів
 
-### 4. `sales` (Sales & CRM Core)
-- **Відповідальність**: Управління клієнтами, угодами (Deals) та завданнями (Kanban). Автоматизована інтеграція зовнішніх повідомлень.
-- **Ключові компоненти**: `ClientController`, `DealController`, `TaskController`, `IntegrationController`.
-- **Сервіси**: `DealService` (обробка логіки угод, мультивалютності, запис логів подій), `SalesIntegrationService` (авто-створення клієнтів/угод з повідомлень).
-- **Сутності**: `Client`, `Deal`, `DealEvent`, `Task`.
-- **Репозиторії**: `DealRepository` (з методом `findByUserIdAndStatusAndUpdatedAtBetween` для місячної аналітики).
+- Чат Gemini через `spring.ai.google.genai` (ключ з оточення, напр. `GEMINI_API_KEY`).
+- Додаткові провайдери (Groq, GitHub Models, Mistral) керуються власними бінами/налаштуваннями в модулі `ai` (`AiModelConfig`, оркестрація fallback).
+- `application.yaml` може виключати автоконфігурацію **OpenAI Embeddings** і **PgVectorStore** — тоді бін **`VectorStore` відсутній**, і модуль семантичного пошуку **не активується** (`@ConditionalOnBean(VectorStore.class)`).
 
-### 5. `communications` (Омніканальність та Сповіщення)
-- **Відповідальність**: Робота з повідомленнями (Telegram, Email), WebSockets, система внутрішніх сповіщень.
-- **Ключові компоненти**: 
-  - `ChatController`, `MailController`, `TelegramWebhookController`, `NotificationController`.
-  - Сутності: `ChatSession`, `Message`, `EmailMessage` (з `externalMessageId` для IMAP дедуплікації), `Notification`.
-  - `RabbitMQConfig`, `MessageDispatcherService` — асинхронна маршрутизація повідомлень (RabbitMQ).
-  - `MailService` — розсилка email через SMTP Gmail з підтримкою відкладеної відправки (`TaskScheduler`).
-  - `InboundEmailService` — **IMAP-клієнт** для автоматичного отримання вхідної пошти (`@Scheduled` кожні 60 секунд). Зберігає нові листи в БД, створює нотифікації та WebSocket-сповіщення.
-  - `MessageOutboundListener`, `InboundMessageEvent`, `NewNotificationEvent` — Spring Events для внутрішньої комунікації.
-  - `TelegramAdapter` — адаптер для відправки відповідей у Telegram.
+### MCP сервер
 
-### 6. `shared` (Shared Kernel)
-- **Відповідальність**: Спільна інфраструктура, глобальні налаштування.
-- **Ключові компоненти**: 
-  - `GlobalExceptionHandler` — уніфікована обробка помилок.
-  - `WebSocketConfig`, `ChatWebSocketHandler` — конфігурація WebSockets для двостороннього зв'язку з Next.js (Chats + Notifications).
-  - `WebConfig` — CORS конфігурація.
+- Увімкнення через `spring.ai.mcp.server` (SSE): ендпоінти типу **`/mcp/sse`** та **`/mcp/message`** згідно з конфігурацією в `application.yaml`.
+- Призначення: зовнішні клієнти MCP можуть отримувати інструменти/контекст CRM узгоджено зі Spring AI MCP starter’ами (`spring-ai-starter-mcp-client` / `-server` в `pom.xml`).
+
+## Контекст запиту: користувач і проєкт
+
+У багатьох сценаріях дані ізольовані за **project** (робочим простором усередині організації):
+
+- HTTP-заголовки **`X-Project-Id`**, **`X-User-Id`** (де потрібно).
+- **`RequestContextHelper`** — резервні значення для розробки, якщо заголовки відсутні.
+- Контролери IAM також приймають cookie **`user_id`** для сумісності з браузерними сесіями.
+
+## Функціональні вимоги (вищий рівень)
+
+- **IAM**: користувачі, ролі, реєстрація/логін, Google OAuth2, **організації** та **проєкти**.
+- **Sales**: клієнти, угоди, події по угодах, задачі Kanban, інтеграційний вебхук вхідних повідомлень.
+- **Analytics**: воронка, цілі на місяць (доходи/закриття).
+- **Communications**: Telegram, Email (SMTP/IMAP), внутрішні нотифікації, RabbitMQ-диспетчинг, WebSocket.
+- **AI**: глобальний чат-асистент з історією в БД, tool calling до Sales/Communications.
+- **Attachments**: завантаження файлів (зв’язок з подіями угод, задачами, нотатками клієнта тощо), черга асинхронної обробки (текст).
+- **Reporting**: асинхронне формування CSV-звітів через RabbitMQ, список задач та завантаження файлу.
+- **Search**: семантичний пошук по векторному сховищу за **умови** наявності `VectorStore`.
+- **Dashboard**: агреговані лічильники для головної панелі за `projectId`.
+- **Shared**: CORS, WebSocket, глобальна обробка помилок, сидування БД тощо.
+
+## Структура пакетів (`vasyl.karpliak.aiCRM`)
+
+### `ai`
+
+- LLM чат (`AIChatController`: `/ai/...`), історія (`AiChatMessage`), `AIChatService`, `AiOrchestrator` (fallback між провайдерами).
+- **`tools`**: `SalesAITools`, `CommunicationsAITools` — методи `@Tool` для мутацій/читання даних CRM.
+
+### `analytics`
+
+- `AnalyticsController`, `AnalyticsService` — метрики воронки та місячних цілей.
+
+### `iam`
+
+- `AuthController`, `UserController`, `User`, `UserService`.
+- **`OrganizationController`** (`/iam/organizations`) — «моя» організація, створення.
+- **`ProjectController`** (`/iam/projects`) — список/створення проєктів у межах організації користувача.
+- **OAuth2**: `OAuth2Controller` (`/iam/oauth2/google/...`), `SystemOAuth2Controller` (`/auth/oauth2/google/...`) для різних callback-потоків.
+
+### `sales`
+
+- `ClientController`, `DealController`, `TaskController`, `IntegrationController`.
+- Сутності: `Client`, `Deal`, `DealEvent`, `Task`; сервіси угод та `SalesIntegrationService` (ліди/угоди з вхідних повідомлень).
+
+### `communications`
+
+- `ChatController`, `MailController`, `TelegramWebhookController`, `NotificationController`.
+- RabbitMQ (`RabbitMQConfig`, `MessageDispatcherService`), пошта, адаптер Telegram, доменні `ChatSession`, `Message`, `Notification`, події для WebSocket.
+
+### `attachments`
+
+- **`FileController`** (`/files`): список, `multipart` upload з опціональними зв’язками (`dealEventId`, `taskId`, `clientId`, `clientNoteIndex`), завантаження з диска, видалення.
+- **`FileProcessingRabbitConfig`** + **`FileProcessingListener`** — асинхронна обробка черги після створення запису вкладення.
+- **`FileAttachmentService`**, **`FileTextExtractor`** (Tika), статуси `FileAttachmentStatus`, сутність `FileAttachment`.
+
+### `reporting`
+
+- **`ReportRequestController`**: `POST /reports/request`, `GET /reports` — заявки та список по проєкту.
+- **`ReportDownloadController`**: `GET /reports/{id}/download` — CSV після `COMPLETED`.
+- **`ReportingService`** — збереження `ReportTask`, публікація в RabbitMQ; **`ReportGenerationListener`** — генерація CSV у каталозі на кшталт `~/aicrm-reports/`.
+- Типи звітів та статуси: `ReportType`, `ReportStatus`.
+
+### `search`
+
+- **`SemanticSearchController`**: `POST /search/semantic` (тіло: запит, `topK`) — **тільки якщо** в контексті є `VectorStore`.
+- **`SemanticSearchService`** — `similaritySearch`, фільтрація метаданих за `projectId`.
+
+### `shared`
+
+- **`DashboardController`**: `GET /dashboard/stats` — зведення по клієнтах, задачах, чатах, угодах, непрочитаних (з урахуванням `X-Project-Id`).
+- **`GlobalExceptionHandler`**, **`WebConfig`**, **`WebSocketConfig`**, **`ChatWebSocketHandler`**, **`DatabaseSeeder`**, **`RequestContextHelper`**, **`PgVectorExtensionInitializer`**, **`HealthController`**.
+
+## Внутрішня структура домену (package by feature)
+
+- `controller` — REST
+- `service` — бізнес-логіка, `@Transactional` де потрібно
+- `repository` — Spring Data JPA
+- `domain` — `@Entity`
+- `dto` — контракти API / AI
+- `config`, `listener`, `enums`, `adapter` — за потреби
+
+## Схема: AI → інструменти → БД
+
+```
+Клієнт → AIChatController → AIChatService → AiOrchestrator (LLM провайдери)
+                    ↓
+          ChatClient + tools(SalesAITools, CommunicationsAITools)
+                    ↓
+          Виклики @Tool → сервіси доменів → JPA → PostgreSQL
+```
+
+## Схема: асинхронні звіти та файли
+
+```
+HTTP → ReportingService / FileAttachmentService → RabbitMQ → Listener → файли на диску / оновлення статусів у БД
+```
+
+## Взаємодія з Next.js фронтендом
+
+- REST API на порту **8080** (за замовчуванням).
+- Фронт передає **`X-Project-Id`** та **`X-User-Id`** (і дублює частину через cookies для SSR).
+- WebSocket для чатів і нотифікацій.
+- Окремі Next **Route Handlers** можуть проксувати `/reports` та завантаження файлів з передачею тих самих заголовків.
 
 ---
 
-## Архітектура всередині доменів (Package by Component)
-Кожен домен дотримується чіткої внутрішньої структури шарів:
-- **`controller`**: REST API шар. Приймає HTTP-запити, валідує вхідні дані.
-- **`service`**: Шар бізнес-логіки. Містить бізнес-правила та управляє транзакціями (`@Transactional`). Сервіси модулів викликаються безпосередньо або через AI Tools.
-- **`repository`**: Шар доступу до даних (Spring Data JPA).
-- **`domain`**: JPA Сутності (`@Entity`). Двосторонні зв'язки строго контролюються, щоб уникати проблем із серіалізацією.
-- **`dto`**: Об'єкти передачі даних. Особливо критичні для обміну даними зі Spring AI (в пакеті `ai.dto`).
-- **`config`**: Конфігураційні класи (`@Configuration`, `@Bean`) для зовнішніх інтеграцій.
-- **`enums`**: Перелічувані типи (`DealStatus`, `SessionStatus`, `SenderType`, `UserRoles`).
-- **`adapter`**: Адаптери для зовнішніх сервісів (наприклад, `TelegramAdapter`).
+## Довідник REST (основні префікси)
 
-## AI Мульти-провайдерна Архітектура
+> Точні шляхи методів див. у відповідних `@RestController`; нижче — групування за модулями.
 
-```
-Користувач → AIChatController → AIChatService → AiOrchestrator
-                                                      ↓
-                                         ┌─────────────────────────────┐
-                                         │   Стратегія Fallback:       │
-                                         │   1. Google Gemini 2.5 Flash│
-                                         │   2. GitHub GPT-4o-mini     │
-                                         │   3. Mistral Small          │
-                                         │   4. Groq Llama3 Tool-Use   │
-                                         └─────────────────────────────┘
-                                                      ↓
-                                         ChatClient.tools(salesAITools, communicationsAITools)
-                                                      ↓
-                                         AI виконує Tool Calls → мутації БД
-```
-
-## Взаємодія Backend - Frontend (Next.js)
-Бекенд надає REST API, яке споживається Next.js клієнтом. 
-Деякі специфічні інтеграції:
-- **Real-time (WebSockets)**: Використовуються для оновлення чатів та нотифікацій у реальному часі.
-- **REST для AI**: AI-чат використовує `POST /ai/chat` з передачею історії та вибраного провайдера.
-- **IMAP Polling**: Бекенд самостійно перевіряє пошту кожні 60с та push-ить нотифікації через WebSocket.
-
----
-
-## API Ендпоінти
-
-### 🤖 AI Асистент (`/ai`)
-- `POST /ai/chat` — Надіслати повідомлення AI-асистенту. Повертає `reply`, `totalMessages`, `shouldClear`. Зберігає кожне повідомлення в БД.
-- `GET /ai/history` — Отримати збережену історію чату поточного користувача.
-- `DELETE /ai/history` — Очистити всю історію чату.
-
-### 💬 Чати та Комунікації (`/chats`, `/webhooks`, `/mail`, `/notifications`)
-- `GET /chats` — Отримати всі відкриті сесії чатів.
-- `GET /chats/{id}/messages` — Отримати історію повідомлень конкретного чату.
-- `POST /chats/{id}/messages` — Надіслати нове повідомлення в чат.
-- `POST /webhooks/telegram/{teamId}` — Вхідний вебхук від Telegram.
-- `POST /mail/mail` — Надіслати електронний лист (з підтримкою відкладеної відправки).
-- `GET /mail/folder/{folder}` — Отримати листи з папки (INBOX, SENT).
-- `GET /notifications` — Отримати список сповіщень.
-- `GET /notifications/unread` — Отримати непрочитані сповіщення.
-- `PATCH /notifications/{id}/read` — Позначити як прочитане.
-- `PATCH /notifications/read-all` — Позначити всі як прочитані.
-
-### 📊 Аналітика (`/analytics`)
-- `GET /analytics/funnel` — Дані воронки продажів (розподіл по статусах).
-- `GET /analytics/goals` — Цілі на поточний місяць (дохід, кількість завершених угод).
-
-### 🔐 Авторизація та Користувачі (`/auth`, `/users`)
-- `POST /auth/register` — Реєстрація.
-- `POST /auth/login` — Вхід.
-- `GET /users/{id}` — Профіль користувача.
-
-### 👥 Клієнти та Угоди (`/clients`, `/deals`)
-- CRUD: `POST /clients`, `GET /clients/filtered`, `PATCH /clients/{id}`, `DELETE /clients/{id}`.
-- Угоди: `POST /deals`, `GET /deals`, `GET /deals/{id}`, `PATCH /deals/{id}`, `DELETE /deals/{id}`, `PATCH /deals/{id}/status`.
-- Історія: `GET /deals/{dealId}/events`.
-- Автоматизація: `POST /integration/incoming-message`.
-
-### 📋 Завдання (`/tasks`)
-- CRUD: `POST /tasks`, `GET /tasks/filtered`, `PUT /tasks/{id}`, `DELETE /tasks/{id}`.
-
-### ⚙️ Спільні
-- `GET /health` — Перевірка статусу працездатності.
+| Префікс | Модуль |
+|---------|--------|
+| `/ai` | Чат, історія |
+| `/auth`, `/users` | Автентифікація, профіль |
+| `/iam/organizations`, `/iam/projects` | Організація, проєкти |
+| `/iam/oauth2/google/...`, `/auth/oauth2/google/...` | OAuth2 Google |
+| `/clients`, `/deals`, `/tasks` | CRM core |
+| `/integration` | Вхідні повідомлення для інтеграцій |
+| `/analytics` | Воронка, цілі |
+| `/chats`, `/mail`, `/webhooks/telegram`, `/notifications` | Комунікації |
+| `/files` | Вкладення |
+| `/reports` | Звіти (запит, список, завантаження) |
+| `/search/semantic` | Семантичний пошук (умовно) |
+| `/dashboard` | Статистика дашборду |
+| `GET /` | Health-перевірка (`HealthController`) |

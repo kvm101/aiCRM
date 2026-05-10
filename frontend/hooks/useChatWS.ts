@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useState } from "react";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/services/apiClient";
@@ -44,77 +43,51 @@ export const useChatMessages = (chatId: number | null) => {
     queryFn: async (): Promise<ChatMessage[]> => {
       if (!chatId) return [];
       const { data } = await apiClient.get(`/chats/${chatId}/messages`, { withCredentials: true });
-      // Transform backend format to frontend format
+      // session is @JsonIgnore on backend, so use chatId from query context
       return data.map((msg: any) => ({
         id: msg.id,
-        chatId: msg.session?.id || chatId,
-        sender: msg.senderType === "OPERATOR" ? "user" : "client",
+        chatId: chatId, // use known chatId since session is hidden
+        sender: msg.senderType === 'OPERATOR' ? 'user' : 'client',
+        senderType: msg.senderType,
         text: msg.text,
         timestamp: msg.createdAt,
       }));
     },
     enabled: !!chatId,
+    refetchInterval: false,
+    staleTime: 0,
   });
 };
 
-export function useChatWS(wsUrl: string = "ws://localhost:8080/ws/chats") {
-  const { currentUser } = useAuthStore();
+export function useChatWS() {
   const queryClient = useQueryClient();
   const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
-  const wsRef = useRef<WebSocket | null>(null);
-
-  useEffect(() => {
-    if (!currentUser?.id) return;
-
-    const ws = new WebSocket(`${wsUrl}?userId=${currentUser.id}`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      console.log(`[WebSocket] Connected as ${currentUser.name}`);
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log("[WebSocket] Received:", data);
-
-        // If backend sends a message, invalidate queries to fetch the latest
-        if (data.type === "NEW_MESSAGE" || data.status === "received") {
-          queryClient.invalidateQueries({ queryKey: ['messages'] });
-          queryClient.invalidateQueries({ queryKey: ['chats'] });
-          if (data.payload) {
-             const payload = data.payload;
-             const mappedPayload: ChatMessage = {
-               id: payload.id,
-               chatId: payload.chatId,
-               sender: payload.senderType === "OPERATOR" ? "user" : "client",
-               text: payload.text,
-               timestamp: payload.createdAt
-             };
-             setLiveMessages((prev) => [...prev, mappedPayload]);
-          }
-        }
-      } catch (e) {
-        console.error("[WebSocket] Parse error:", e);
-      }
-    };
-
-    ws.onclose = () => {
-      console.log("[WebSocket] Disconnected");
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, [wsUrl, currentUser?.id, currentUser?.name, queryClient]);
 
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ chatId, text }: { chatId: string | number, text: string }) => {
       const { data } = await apiClient.post(`/chats/${chatId}/messages`, { text }, { withCredentials: true });
       return data;
     },
-    onSuccess: (_, variables) => {
+    onMutate: async ({ chatId, text }) => {
+      // Optimistic update: show message immediately
+      const optimistic: ChatMessage = {
+        id: `optimistic-${Date.now()}`,
+        chatId,
+        sender: 'user',
+        text,
+        timestamp: new Date().toISOString(),
+      };
+      setLiveMessages(prev => [...prev, optimistic]);
+    },
+    onSuccess: (savedMsg, variables) => {
+      // Remove optimistic message (real one will appear via query invalidation)
+      setLiveMessages(prev => prev.filter(m => !String(m.id).startsWith('optimistic-')));
       queryClient.invalidateQueries({ queryKey: ['messages', variables.chatId] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
+    },
+    onError: () => {
+      setLiveMessages(prev => prev.filter(m => !String(m.id).startsWith('optimistic-')));
     }
   });
 

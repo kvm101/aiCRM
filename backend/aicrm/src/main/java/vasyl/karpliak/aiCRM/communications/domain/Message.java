@@ -20,6 +20,7 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name = "session_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private ChatSession session;
 
     @Column(name = "external_message_id")

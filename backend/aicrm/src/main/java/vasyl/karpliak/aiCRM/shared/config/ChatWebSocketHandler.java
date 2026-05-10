@@ -1,6 +1,5 @@
 package vasyl.karpliak.aiCRM.shared.config;
 
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -56,7 +55,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    @EventListener
+    @org.springframework.transaction.event.TransactionalEventListener(
+            phase = org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT)
     public void handleInboundMessageEvent(InboundMessageEvent event) {
         try {
             Message msg = event.getMessage();

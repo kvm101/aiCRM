@@ -29,13 +29,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Plus, Trash2, Pencil, FolderOpen, MessageSquare, Send, User, Bot, History, Clock, CheckCircle2 } from "lucide-react";
+import { Search, Plus, Trash2, Pencil, FolderOpen, MessageSquare, Send, User, Bot, History, Clock, CheckCircle2, Paperclip, X, Download } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { useDeals, useCreateDeal, useUpdateDeal, useDeleteDeal, useUpdateDealStatus, Deal, useClients, useDealEvents, useCreateDealNote, useCreateTask } from "@/hooks/useSales";
+import {
+  useDeals,
+  useCreateDeal,
+  useUpdateDeal,
+  useDeleteDeal,
+  useUpdateDealStatus,
+  Deal,
+  useClients,
+  useDealEvents,
+  useCreateDealNote,
+  useCreateTask,
+  useUploadAttachment,
+  useAttachments,
+  useDeleteAttachment,
+  type FileAttachment,
+} from "@/hooks/useSales";
+import { useProjectStore } from "@/store/useProjectStore";
+import { DeleteAttachmentDialog } from "@/components/attachments/DeleteAttachmentDialog";
 
 const STATUS_MAP: Record<string, string> = {
   NEW: "Нові",
@@ -243,14 +260,21 @@ export default function DealsPage() {
 
 function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }) {
   const { data: events = [] } = useDealEvents(deal.id);
+  const { data: attachments = [] } = useAttachments();
   const createNote = useCreateDealNote();
   const createTask = useCreateTask();
+  const uploadAttachment = useUploadAttachment();
+  const deleteAttachment = useDeleteAttachment();
   const updateDeal = useUpdateDeal();
   const deleteDeal = useDeleteDeal();
+
+  const [attachmentToDelete, setAttachmentToDelete] = useState<FileAttachment | null>(null);
   
   const [inputText, setInputText] = useState("");
   const [mode, setMode] = useState<"note" | "task">("note");
   const [taskDays, setTaskDays] = useState("1");
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [isSendingWithAttachment, setIsSendingWithAttachment] = useState(false);
 
   // Edit state
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -258,12 +282,35 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
   const [editBudget, setEditBudget] = useState(deal.budget);
   const [editCurrency, setEditCurrency] = useState(deal.currency || "USD");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
     if (mode === "note") {
-      createNote.mutate({ dealId: deal.id, text: inputText });
+      setIsSendingWithAttachment(!!pendingFile);
+      createNote.mutate(
+        { dealId: deal.id, text: inputText },
+        {
+          onSuccess: (createdEvent) => {
+            if (pendingFile && createdEvent?.id) {
+              uploadAttachment.mutate(
+                { file: pendingFile, dealEventId: createdEvent.id },
+                {
+                  onSettled: () => {
+                    setPendingFile(null);
+                    setIsSendingWithAttachment(false);
+                  },
+                }
+              );
+            } else {
+              setIsSendingWithAttachment(false);
+            }
+          },
+          onError: () => {
+            setIsSendingWithAttachment(false);
+          },
+        }
+      );
     } else {
       const nextDeadline = new Date();
       nextDeadline.setDate(nextDeadline.getDate() + parseInt(taskDays));
@@ -304,6 +351,20 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
 
   return (
     <div className="flex flex-col md:flex-row h-full w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+      <DeleteAttachmentDialog
+        attachment={attachmentToDelete}
+        open={attachmentToDelete != null}
+        onOpenChange={(o) => {
+          if (!o) setAttachmentToDelete(null);
+        }}
+        onConfirm={() => {
+          if (!attachmentToDelete) return;
+          deleteAttachment.mutate(attachmentToDelete.id, {
+            onSuccess: () => setAttachmentToDelete(null),
+          });
+        }}
+        isPending={deleteAttachment.isPending}
+      />
       
       {/* Ліва колонка (1/3): Статична інформація */}
       <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 p-6 flex flex-col gap-6 overflow-y-auto bg-white dark:bg-zinc-950 shrink-0">
@@ -402,10 +463,55 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
               }
 
               // Нотатки (Chat bubbles)
+              const eventFiles = attachments.filter((a) => a.dealEventId === event.id);
               return (
                 <div key={event.id} className="flex flex-col items-end mb-4">
                   <div className="max-w-[85%] sm:max-w-[75%] bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-sm">
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{event.description}</p>
+                    {eventFiles.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {eventFiles.map((f) => (
+                          <div
+                            key={f.id}
+                            className="flex items-center justify-between gap-3 rounded-lg bg-white/10 px-3 py-2 text-xs"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Paperclip className="h-3.5 w-3.5 opacity-90" />
+                              <span className="truncate">{f.originalFilename}</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="opacity-80">
+                                {f.status === "INDEXED"
+                                  ? "Збережено"
+                                  : f.status === "FAILED"
+                                    ? "Помилка"
+                                    : "Обробка..."}
+                              </span>
+                              <button
+                                type="button"
+                                className="opacity-60 hover:opacity-100 transition-opacity text-white/90 hover:text-white"
+                                onClick={() => setAttachmentToDelete(f)}
+                                title="Видалити"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                className="opacity-60 hover:opacity-100 transition-opacity"
+                                onClick={() => {
+                                  const pid = useProjectStore.getState().activeProjectId;
+                                  const q = pid != null ? `?projectId=${pid}` : "";
+                                  window.open(`/api/files/${f.id}/download${q}`, "_blank", "noopener,noreferrer");
+                                }}
+                                title="Скачати"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <span className="text-[10px] text-zinc-400 mt-1 mr-1">
                     Ви • {dateString} {timeString}
@@ -466,16 +572,26 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
                 onChange={(e) => setInputText(e.target.value)}
                 className="flex-1 h-11 rounded-xl bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 focus-visible:ring-indigo-500"
               />
+              {mode === "note" && (
+                <label className="h-11 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 inline-flex items-center justify-center text-zinc-600 hover:text-indigo-600 cursor-pointer">
+                  <Paperclip className="h-4 w-4" />
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+              )}
               <Button 
                 type="submit" 
-                disabled={createNote.isPending || createTask.isPending || !inputText.trim()}
+                disabled={createNote.isPending || createTask.isPending || isSendingWithAttachment || !inputText.trim()}
                 className={`h-11 px-6 rounded-xl shrink-0 transition-all shadow-sm ${
                   mode === "task" 
                     ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
                     : "bg-indigo-600 hover:bg-indigo-700 text-white"
                 }`}
               >
-                {createNote.isPending || createTask.isPending ? (
+                {createNote.isPending || createTask.isPending || isSendingWithAttachment ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
@@ -485,6 +601,21 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
                 )}
               </Button>
             </div>
+            {mode === "note" && pendingFile && (
+              <div className="flex items-center justify-between rounded-lg border border-indigo-200 bg-indigo-50/60 dark:bg-indigo-950/30 dark:border-indigo-900 px-3 py-2 text-xs text-zinc-700 dark:text-zinc-300">
+                <div className="flex items-center gap-2 truncate">
+                  <Paperclip className="h-3.5 w-3.5 text-indigo-600" />
+                  <span className="truncate">{pendingFile.name}</span>
+                </div>
+                <button
+                  type="button"
+                  className="ml-3 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                  onClick={() => setPendingFile(null)}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
           </form>
         </div>
 

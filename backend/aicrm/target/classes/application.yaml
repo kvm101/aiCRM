@@ -2,11 +2,29 @@ spring:
   application:
     name: aiCRM
 
+  autoconfigure:
+    exclude:
+      # OpenAI starter тягне EmbeddingModel; для pgvector лишаємо лише Google GenAI embeddings
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+      # Тимчасово вимикаємо PgVectorStore, щоб при attach файлів не йшли embeddings/LLM виклики назовні
+      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+
   threads:
     virtual:
       enabled: true # Важливо для масштабування SSE-з'єднань MCP-сервера
 
+  servlet:
+    multipart:
+      max-file-size: 32MB
+      max-request-size: 36MB
+
   ai:
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 768
+
     mcp:
       server:
         enabled: true
@@ -19,6 +37,11 @@ spring:
     google:
       genai:
         api-key: ${GEMINI_API_KEY:AIzaSyABaMRAbypXDyxv0dOoQb0DvO2aGcAgO7k}
+        embedding:
+          api-key: ${GEMINI_API_KEY:AIzaSyABaMRAbypXDyxv0dOoQb0DvO2aGcAgO7k}
+          text:
+            options:
+              model: text-embedding-004
         chat:
           options:
             model: gemini-2.5-flash
@@ -27,6 +50,8 @@ spring:
     openai:
       api-key: "disabled"
       chat:
+        enabled: false
+      embedding:
         enabled: false
 
     retry:

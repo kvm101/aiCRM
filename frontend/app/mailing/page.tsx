@@ -24,7 +24,7 @@ export default function MailingPage() {
   const { data: sentEmails = [], refetch: refetchSent } = useFolderEmails("SENT");
   const { data: inboxEmails = [] } = useFolderEmails("INBOX");
   const { mutate: markAsRead } = useMarkEmailAsRead();
-  const [timeFilter, setTimeFilter] = useState<"day" | "3days" | "week" | "all">("day");
+  const [timeFilter, setTimeFilter] = useState<"day" | "3days" | "week" | "all">("all");
   const { currentUser } = useAuthStore();
 
   const filterDate = new Date();
