@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    List<Task> findByUserId(Long userId);
+    List<Task> findByProjectId(Long projectId);
 
-    List<Task> findByUserIdAndDeadlineBefore(Long userId, LocalDateTime deadline);
+    List<Task> findByProjectIdAndDeadlineBefore(Long projectId, LocalDateTime deadline);
 
-    Optional<Task> findByIdAndUserId(Long taskId, Long userId);
+    Optional<Task> findByIdAndProjectId(Long taskId, Long projectId);
 }

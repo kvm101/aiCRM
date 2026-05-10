@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/apiClient';
+import { useProjectStore } from '@/store/useProjectStore';
 
 export interface Client {
   id: number;
@@ -40,8 +41,9 @@ export interface Deal {
 
 // Clients Hooks
 export const useClients = (name?: string) => {
+  const activeProjectId = useProjectStore((state) => state.activeProjectId);
   return useQuery({
-    queryKey: ['clients', name],
+    queryKey: ['clients', activeProjectId, name],
     queryFn: async (): Promise<Client[]> => {
       const { data } = await apiClient.get('/clients/filtered', {
         params: { name },
@@ -92,8 +94,9 @@ export const useDeleteClient = () => {
 
 // Tasks Hooks
 export const useTasks = () => {
+  const activeProjectId = useProjectStore((state) => state.activeProjectId);
   return useQuery({
-    queryKey: ['tasks'],
+    queryKey: ['tasks', activeProjectId],
     queryFn: async (): Promise<Task[]> => {
       const { data } = await apiClient.get('/tasks', { withCredentials: true });
       return data;
@@ -141,8 +144,9 @@ export const useDeleteTask = () => {
 
 // Deals Hooks
 export const useDeals = () => {
+  const activeProjectId = useProjectStore((state) => state.activeProjectId);
   return useQuery({
-    queryKey: ['deals'],
+    queryKey: ['deals', activeProjectId],
     queryFn: async (): Promise<Deal[]> => {
       const { data } = await apiClient.get('/deals', { withCredentials: true });
       return data;
@@ -242,8 +246,9 @@ export const useDeleteDeal = () => {
 
 // Analytics Hooks
 export const useFunnelAnalytics = () => {
+  const activeProjectId = useProjectStore((state) => state.activeProjectId);
   return useQuery({
-    queryKey: ['analytics', 'funnel'],
+    queryKey: ['analytics', 'funnel', activeProjectId],
     queryFn: async (): Promise<Record<string, number>> => {
       const { data } = await apiClient.get('/analytics/funnel', { withCredentials: true });
       return data;
@@ -254,8 +259,9 @@ export const useFunnelAnalytics = () => {
 };
 
 export const useGoalsAnalytics = () => {
+  const activeProjectId = useProjectStore((state) => state.activeProjectId);
   return useQuery({
-    queryKey: ['analytics', 'goals'],
+    queryKey: ['analytics', 'goals', activeProjectId],
     queryFn: async (): Promise<{ achievedRevenue: number; targetRevenue: number; currency: string }> => {
       const { data } = await apiClient.get('/analytics/goals', { withCredentials: true });
       return data;

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vasyl.karpliak.aiCRM.iam.domain.Project;
 import vasyl.karpliak.aiCRM.sales.enums.ClientStatus;
 
 import java.util.ArrayList;
@@ -42,4 +43,8 @@ public class Client {
     @CollectionTable(name = "client_notes", joinColumns = @JoinColumn(name = "client_id"))
     @Column(name = "note", nullable = false)
     private List<String> notes = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
 }

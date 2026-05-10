@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vasyl.karpliak.aiCRM.sales.domain.Client;
+import vasyl.karpliak.aiCRM.sales.dto.ClientDTO;
 import vasyl.karpliak.aiCRM.sales.service.ClientService;
 
 import java.util.List;
@@ -20,40 +21,47 @@ public class ClientController {
     }
 
     @PostMapping
-    public ResponseEntity<Client> createClient(
+    public ResponseEntity<ClientDTO> createClient(
             @RequestBody Client client,
-            @RequestHeader(name = "X-User-Id") String userId) {
+            @RequestHeader(name = "X-Project-Id") String projectId) {
 
-        Client createdClient = clientService.createClient(client, Long.parseLong(userId));
+        ClientDTO createdClient = clientService.createClient(client, Long.parseLong(projectId));
         return new ResponseEntity<>(createdClient, HttpStatus.CREATED);
     }
 
     @GetMapping("/filtered")
-    public ResponseEntity<List<Client>> listOfClients(
+    public ResponseEntity<List<ClientDTO>> listOfClients(
             @RequestParam(required = false) String name,
-            @RequestHeader(name = "X-User-Id") String user_id) {
+            @RequestHeader(name = "X-Project-Id", required = false) String projectId) {
 
-        List<Client> clients = clientService.getAllClients(Long.parseLong(user_id), name);
+        List<ClientDTO> clients = clientService.getAllClients(resolveProjectId(projectId), name);
         return ResponseEntity.ok(clients);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Client> readClient(
+    public ResponseEntity<ClientDTO> readClient(
             @PathVariable Long id,
-            @RequestHeader(name = "X-User-Id") String user_id) {
+            @RequestHeader(name = "X-Project-Id", required = false) String projectId) {
 
-        Optional<Client> client = Optional.ofNullable(clientService.getClientById(Long.parseLong(user_id), id));
+        Optional<ClientDTO> client = Optional.ofNullable(clientService.getClientById(resolveProjectId(projectId), id));
         return client.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    private Long resolveProjectId(String projectIdStr) {
+        if (projectIdStr != null && !projectIdStr.isBlank()) {
+            return Long.parseLong(projectIdStr);
+        }
+        return vasyl.karpliak.aiCRM.shared.context.RequestContextHelper.getCurrentProjectId();
+    }
+
     @PatchMapping("/{id}")
-    public ResponseEntity<Client> updateClient(
+    public ResponseEntity<ClientDTO> updateClient(
             @PathVariable Long id,
             @RequestBody Client patchClient,
-            @RequestHeader(name = "X-User-Id") String user_id) {
+            @RequestHeader(name = "X-Project-Id") String projectId) {
 
-        Client updatedClient = clientService.updateClient(id, Long.parseLong(user_id), patchClient);
+        ClientDTO updatedClient = clientService.updateClient(id, Long.parseLong(projectId), patchClient);
         return updatedClient != null
                 ? ResponseEntity.ok(updatedClient)
                 : ResponseEntity.notFound().build();
@@ -62,10 +70,10 @@ public class ClientController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteClient(
             @PathVariable Long id,
-            @RequestHeader(name = "X-User-Id") String user_id) {
+            @RequestHeader(name = "X-Project-Id") String projectId) {
 
-        if (user_id != null) {
-            boolean deleted = clientService.deleteClient(Long.parseLong(user_id), id);
+        if (projectId != null) {
+            boolean deleted = clientService.deleteClient(Long.parseLong(projectId), id);
             return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
         }
         return ResponseEntity.notFound().build();

@@ -1,10 +1,14 @@
 package vasyl.karpliak.aiCRM.sales.service;
 
 import org.springframework.stereotype.Service;
-import vasyl.karpliak.aiCRM.iam.domain.User;
+import org.springframework.transaction.annotation.Transactional;
+import vasyl.karpliak.aiCRM.iam.domain.Project;
 import vasyl.karpliak.aiCRM.sales.domain.Client;
-import vasyl.karpliak.aiCRM.iam.repository.UserRepository;
+import vasyl.karpliak.aiCRM.iam.repository.ProjectRepository;
 import vasyl.karpliak.aiCRM.sales.repository.ClientRepository;
+import vasyl.karpliak.aiCRM.sales.dto.ClientDTO;
+import vasyl.karpliak.aiCRM.sales.dto.ProjectDTO;
+import vasyl.karpliak.aiCRM.sales.dto.ClientNoteDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,53 +17,76 @@ import java.util.List;
 public class ClientService {
 
     private final ClientRepository clientRepository;
-    private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
 
-    public ClientService(ClientRepository clientRepository, UserRepository userRepository) {
+    public ClientService(ClientRepository clientRepository, ProjectRepository projectRepository) {
         this.clientRepository = clientRepository;
-        this.userRepository = userRepository;
+        this.projectRepository = projectRepository;
     }
 
-    public Client createClient(Client client, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    private ClientDTO convertToDTO(Client client) {
+        ProjectDTO projectDTO = null;
+        if (client.getProject() != null) {
+            projectDTO = new ProjectDTO(client.getProject().getId(), client.getProject().getName());
+        }
 
-        Client savedClient = clientRepository.save(client);
+        List<ClientNoteDTO> notesDTO = new ArrayList<>();
+        if (client.getNotes() != null) {
+            long noteId = 1L;
+            for (String note : client.getNotes()) {
+                notesDTO.add(new ClientNoteDTO(noteId++, note));
+            }
+        }
 
-        user.getClients().add(savedClient);
-        userRepository.save(user);
-
-        return savedClient;
+        return new ClientDTO(
+                client.getId(),
+                client.getName(),
+                client.getCompany(),
+                client.getEmail(),
+                client.getPhone(),
+                client.getStatus(),
+                projectDTO,
+                notesDTO
+        );
     }
 
+    @Transactional
+    public ClientDTO createClient(Client client, Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
 
-    public List<Client> getAllClients(Long userId, String name) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        client.setProject(project);
+        return convertToDTO(clientRepository.save(client));
+    }
 
-        List<Client> clients = user.getClients();
+    @Transactional(readOnly = true)
+    public List<ClientDTO> getAllClients(Long projectId, String name) {
+        List<Client> clients = clientRepository.findByProjectId(projectId);
 
         if (name != null && !name.isBlank()) {
-            return clients.stream()
+            clients = clients.stream()
                     .filter(c -> c.getName().toLowerCase().contains(name.toLowerCase()))
                     .toList();
         }
 
-        return clients;
+        return clients.stream().map(this::convertToDTO).toList();
     }
 
-    public Client getClientById(Long userId, Long clientId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return user.getClients().stream()
+    private Client getClientEntityById(Long projectId, Long clientId) {
+        return clientRepository.findByProjectId(projectId).stream()
                 .filter(c -> c.getId().equals(clientId))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Client not found: " + clientId));
     }
 
-    public Client updateClient(Long userId, Long clientId, Client patchClient) {
-        Client existing = getClientById(userId, clientId);
+    @Transactional(readOnly = true)
+    public ClientDTO getClientById(Long projectId, Long clientId) {
+        return convertToDTO(getClientEntityById(projectId, clientId));
+    }
+
+    @Transactional
+    public ClientDTO updateClient(Long clientId, Long projectId, Client patchClient) {
+        Client existing = getClientEntityById(projectId, clientId);
 
         if (patchClient.getName() != null && !patchClient.getName().isBlank()) {
             existing.setName(patchClient.getName());
@@ -84,26 +111,16 @@ public class ClientService {
             existing.getNotes().addAll(patchClient.getNotes());
         }
 
-        return clientRepository.save(existing);
+        return convertToDTO(clientRepository.save(existing));
     }
 
-
-
-    public boolean deleteClient(Long userId, Long clientId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Client client = user.getClients().stream()
-                .filter(c -> c.getId().equals(clientId))
-                .findFirst()
-                .orElse(null);
-
+    @Transactional
+    public boolean deleteClient(Long projectId, Long clientId) {
+        Client client = getClientEntityById(projectId, clientId);
         if (client != null) {
-            user.getClients().remove(client); // orphanRemoval видалить клієнта з бази
-            userRepository.save(user);
+            clientRepository.delete(client);
             return true;
         }
-
         return false;
     }
 }

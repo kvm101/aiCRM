@@ -13,5 +13,8 @@ import java.util.Optional;
 public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> {
     Optional<ChatSession> findByExternalChatIdAndChannelTypeAndTeamId(String externalChatId, ChannelType channelType, Long teamId);
     List<ChatSession> findByAssignedUserId(Long assignedUserId);
+    List<ChatSession> findByProjectId(Long projectId);
     long countByStatus(SessionStatus status);
+    long countByStatusAndProjectId(SessionStatus status, Long projectId);
+    long countByProjectId(Long projectId);
 }

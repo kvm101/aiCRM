@@ -24,7 +24,7 @@ export default function MailingPage() {
   const { data: sentEmails = [], refetch: refetchSent } = useFolderEmails("SENT");
   const { data: inboxEmails = [] } = useFolderEmails("INBOX");
   const { mutate: markAsRead } = useMarkEmailAsRead();
-  const [timeFilter, setTimeFilter] = useState<"day" | "3days" | "week" | "all">("all");
+  const [timeFilter, setTimeFilter] = useState<"day" | "3days" | "week" | "all">("day");
   const { currentUser } = useAuthStore();
 
   const filterDate = new Date();
@@ -61,9 +61,9 @@ export default function MailingPage() {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     const recipients = to.split(",").map(s => s.trim()).filter(s => s);
-    
+
     try {
       await apiClient.post("/mail/mail", {
         to: recipients,
@@ -71,7 +71,7 @@ export default function MailingPage() {
         text,
         when: computeSendTime(),
       }, { withCredentials: true });
-      
+
       alert(sendMode === "now" ? "Листи надіслано!" : "Листи заплановано!");
       setTo("");
       setSubject("");
@@ -105,8 +105,8 @@ export default function MailingPage() {
           {emails.map(email => {
             const isUnread = !(email.isRead ?? email.read);
             return (
-              <div 
-                key={email.id} 
+              <div
+                key={email.id}
                 className={`p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer ${selectedEmail?.id === email.id ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''} ${!isUnread ? 'opacity-70 bg-zinc-50/50 dark:bg-zinc-950/50' : ''}`}
                 onClick={() => {
                   setSelectedEmail(email);
@@ -162,25 +162,11 @@ export default function MailingPage() {
               </TabsTrigger>
             </TabsList>
             <div className="ml-auto pb-3">
-              {currentUser?.isGmailConnected ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-sm font-medium border border-green-200 dark:border-green-900/50">
-                  <Check className="w-4 h-4" />
-                  Gmail підключено
+              {currentUser?.email && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-zinc-100 text-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300 text-sm font-medium border border-zinc-200 dark:border-zinc-700">
+                  <Mail className="w-4 h-4 text-zinc-500" />
+                  {currentUser.email}
                 </div>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-900/50"
-                  onClick={() => {
-                    if (currentUser?.id) {
-                      window.location.href = `http://localhost:8080/iam/oauth2/google/login?userId=${currentUser.id}`;
-                    }
-                  }}
-                >
-                  <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="Google" />
-                  Підключити Gmail
-                </Button>
               )}
             </div>
           </div>
@@ -195,8 +181,8 @@ export default function MailingPage() {
                       {unreadEmailsCount} нових
                     </span>
                   </span>
-                  <select 
-                    value={timeFilter} 
+                  <select
+                    value={timeFilter}
                     onChange={(e) => setTimeFilter(e.target.value as any)}
                     className="text-xs border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-950 px-2 py-1 outline-none text-zinc-600 dark:text-zinc-400"
                   >
@@ -220,7 +206,7 @@ export default function MailingPage() {
                           Від: <span className="font-medium text-zinc-900 dark:text-zinc-100">{selectedEmail.sender}</span>
                         </div>
                         <div className="flex items-center">
-                          <Clock className="h-3.5 w-3.5 mr-1.5"/> {new Date(selectedEmail.timestamp).toLocaleString()}
+                          <Clock className="h-3.5 w-3.5 mr-1.5" /> {new Date(selectedEmail.timestamp).toLocaleString()}
                         </div>
                       </div>
                       <div>
@@ -259,7 +245,7 @@ export default function MailingPage() {
                           Від: <span className="font-medium text-zinc-900 dark:text-zinc-100">{selectedEmail.sender}</span>
                         </div>
                         <div className="flex items-center">
-                          <Clock className="h-3.5 w-3.5 mr-1.5"/> {new Date(selectedEmail.timestamp).toLocaleString()}
+                          <Clock className="h-3.5 w-3.5 mr-1.5" /> {new Date(selectedEmail.timestamp).toLocaleString()}
                         </div>
                       </div>
                       <div>
@@ -286,18 +272,18 @@ export default function MailingPage() {
               <form onSubmit={handleSend} className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Отримувачі (через кому)</label>
-                  <Input 
-                    placeholder="client1@example.com, client2@example.com" 
+                  <Input
+                    placeholder="client1@example.com, client2@example.com"
                     value={to}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTo(e.target.value)}
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Тема</label>
-                  <Input 
-                    placeholder="Введіть тему листа" 
+                  <Input
+                    placeholder="Введіть тему листа"
                     value={subject}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSubject(e.target.value)}
                     required
@@ -306,8 +292,8 @@ export default function MailingPage() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Текст повідомлення</label>
-                  <Textarea 
-                    placeholder="Напишіть ваше повідомлення тут..." 
+                  <Textarea
+                    placeholder="Напишіть ваше повідомлення тут..."
                     className="min-h-[120px]"
                     value={text}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)}
@@ -322,11 +308,10 @@ export default function MailingPage() {
                     <button
                       type="button"
                       onClick={() => { setSendMode("now"); setDelayMinutes(null); setCustomWhen(""); }}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                        sendMode === "now"
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${sendMode === "now"
                           ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm"
                           : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                      }`}
+                        }`}
                     >
                       <Send className="h-3.5 w-3.5 inline mr-1.5" />
                       Зараз
@@ -334,11 +319,10 @@ export default function MailingPage() {
                     <button
                       type="button"
                       onClick={() => setSendMode("later")}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                        sendMode === "later"
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${sendMode === "later"
                           ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm"
                           : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                      }`}
+                        }`}
                     >
                       <Clock className="h-3.5 w-3.5 inline mr-1.5" />
                       Запланувати
@@ -369,11 +353,10 @@ export default function MailingPage() {
                                 setCustomWhen("");
                               }
                             }}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                              (opt.mins === -1 ? customWhen && !delayMinutes : delayMinutes === opt.mins)
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${(opt.mins === -1 ? customWhen && !delayMinutes : delayMinutes === opt.mins)
                                 ? "bg-indigo-50 border-indigo-300 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-300"
                                 : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                            }`}
+                              }`}
                           >
                             {opt.label}
                           </button>
@@ -392,13 +375,12 @@ export default function MailingPage() {
                   )}
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className={`w-full h-11 mt-4 transition-colors ${
-                    sendMode === "now"
+                <Button
+                  type="submit"
+                  className={`w-full h-11 mt-4 transition-colors ${sendMode === "now"
                       ? "bg-indigo-600 hover:bg-indigo-700"
                       : "bg-amber-600 hover:bg-amber-700"
-                  }`}
+                    }`}
                   disabled={isLoading}
                 >
                   {isLoading ? (

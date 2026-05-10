@@ -87,12 +87,24 @@ public class InboundEmailService {
                 int start = Math.max(1, messageCount - 19);
                 Message[] messages = inbox.getMessages(start, messageCount);
 
+                // Batch check for existing messages to avoid N+1 queries
+                java.util.List<String> messageIds = new java.util.ArrayList<>();
+                for (Message m : messages) {
+                    String mid = getMessageId(m);
+                    if (mid != null) messageIds.add(mid);
+                }
+                
+                java.util.Set<String> existingIds = emailMessageRepository.findByExternalMessageIdIn(messageIds)
+                        .stream()
+                        .map(EmailMessage::getExternalMessageId)
+                        .collect(java.util.stream.Collectors.toSet());
+
                 int newCount = 0;
                 for (Message message : messages) {
                     String messageId = getMessageId(message);
                     
                     // Перевіряємо чи вже збережений цей лист (за externalMessageId)
-                    if (messageId != null && emailMessageRepository.existsByExternalMessageId(messageId)) {
+                    if (messageId != null && existingIds.contains(messageId)) {
                         continue;
                     }
 

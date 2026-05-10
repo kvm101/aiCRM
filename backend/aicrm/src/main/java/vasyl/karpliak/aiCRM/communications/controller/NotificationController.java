@@ -34,7 +34,9 @@ public class NotificationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<NotificationDto>> getUserNotifications(@RequestHeader(name = "X-User-Id") String userId) {
+    public ResponseEntity<List<NotificationDto>> getUserNotifications(
+            @RequestHeader(name = "X-User-Id", required = false) String userId) {
+        if (userId == null) return ResponseEntity.ok(List.of());
         List<NotificationDto> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(getUserId(userId))
                 .stream()
                 .map(this::mapToDto)
@@ -43,7 +45,9 @@ public class NotificationController {
     }
 
     @GetMapping("/unread")
-    public ResponseEntity<List<NotificationDto>> getUnreadNotifications(@RequestHeader(name = "X-User-Id") String userId) {
+    public ResponseEntity<List<NotificationDto>> getUnreadNotifications(
+            @RequestHeader(name = "X-User-Id", required = false) String userId) {
+        if (userId == null) return ResponseEntity.ok(List.of());
         List<NotificationDto> notifications = notificationRepository.findByUserIdAndReadFalse(getUserId(userId))
                 .stream()
                 .map(this::mapToDto)
@@ -52,7 +56,9 @@ public class NotificationController {
     }
 
     @PatchMapping("/{id}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long id, @RequestHeader(name = "X-User-Id") String userId) {
+    public ResponseEntity<Void> markAsRead(@PathVariable Long id, 
+                                           @RequestHeader(name = "X-User-Id", required = false) String userId) {
+        if (userId == null) return ResponseEntity.badRequest().build();
         notificationRepository.findById(id).ifPresent(n -> {
             if (n.getUser().getId().equals(getUserId(userId))) {
                 n.setRead(true);
@@ -63,7 +69,8 @@ public class NotificationController {
     }
     
     @PostMapping("/read-all")
-    public ResponseEntity<Void> markAllAsRead(@RequestHeader(name = "X-User-Id") String userId) {
+    public ResponseEntity<Void> markAllAsRead(@RequestHeader(name = "X-User-Id", required = false) String userId) {
+        if (userId == null) return ResponseEntity.badRequest().build();
         List<Notification> unread = notificationRepository.findByUserIdAndReadFalse(getUserId(userId));
         unread.forEach(n -> n.setRead(true));
         notificationRepository.saveAll(unread);

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useProjectStore } from "@/store/useProjectStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/services/apiClient";
 
@@ -27,8 +28,9 @@ export type WSEvent =
   | { type: "CHAT_ASSIGNED"; payload: { chatId: string; assignedTo: string } };
 
 export const useChats = () => {
+  const activeProjectId = useProjectStore((state) => state.activeProjectId);
   return useQuery({
-    queryKey: ['chats'],
+    queryKey: ['chats', activeProjectId],
     queryFn: async (): Promise<ChatSessionType[]> => {
       const { data } = await apiClient.get('/chats', { withCredentials: true });
       return data;

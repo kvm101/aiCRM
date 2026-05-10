@@ -24,35 +24,43 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<TaskDTO> createTask(
             @RequestBody TaskDTO taskDTO,
+            @RequestHeader(name = "X-Project-Id") String projectId,
             @RequestHeader(name = "X-User-Id") String userId) {
 
         Task task = dtoToEntity(taskDTO);
-        Task createdTask = taskService.createTask(task, Long.parseLong(userId), taskDTO.getDealId(), taskDTO.getClientId());
+        Task createdTask = taskService.createTask(task, Long.parseLong(projectId), Long.parseLong(userId), taskDTO.getDealId(), taskDTO.getClientId());
         return new ResponseEntity<>(entityToDto(createdTask), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<TaskDTO>> getAllTasks(
-            @RequestHeader(name = "X-User-Id") String userIdStr) {
+            @RequestHeader(name = "X-Project-Id", required = false) String projectIdStr) {
 
-        Long userId = Long.parseLong(userIdStr);
+        Long projectId = resolveProjectId(projectIdStr);
 
-        List<TaskDTO> tasks = taskService.getAllTasks(userId)
+        List<TaskDTO> tasks = taskService.getAllTasks(projectId)
                 .stream()
                 .map(this::entityToDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(tasks);
     }
 
+    private Long resolveProjectId(String projectIdStr) {
+        if (projectIdStr != null && !projectIdStr.isBlank()) {
+            return Long.parseLong(projectIdStr);
+        }
+        return vasyl.karpliak.aiCRM.shared.context.RequestContextHelper.getCurrentProjectId();
+    }
+
     @GetMapping("/filtered")
     public ResponseEntity<List<TaskDTO>> getTasksBeforeDeadline(
             @RequestParam("deadline") String deadlineStr,
-            @RequestHeader(name = "X-User-Id") String userIdStr) {
+            @RequestHeader(name = "X-Project-Id", required = false) String projectIdStr) {
 
-        Long userId = Long.parseLong(userIdStr);
+        Long projectId = resolveProjectId(projectIdStr);
         LocalDateTime deadline = LocalDateTime.parse(deadlineStr);
 
-        List<TaskDTO> tasks = taskService.getTasksBeforeDeadline(userId, deadline)
+        List<TaskDTO> tasks = taskService.getTasksBeforeDeadline(projectId, deadline)
                 .stream()
                 .map(this::entityToDto)
                 .collect(Collectors.toList());
@@ -62,10 +70,10 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<TaskDTO> getTask(
             @PathVariable Long id,
-            @RequestHeader(name = "X-User-Id") String userIdStr) {
+            @RequestHeader(name = "X-Project-Id", required = false) String projectIdStr) {
 
-        Long userId = Long.parseLong(userIdStr);
-        Task task = taskService.getTask(userId, id);
+        Long projectId = resolveProjectId(projectIdStr);
+        Task task = taskService.getTask(projectId, id);
         return ResponseEntity.ok(entityToDto(task));
     }
 
@@ -73,21 +81,21 @@ public class TaskController {
     public ResponseEntity<TaskDTO> updateTask(
             @PathVariable Long id,
             @RequestBody TaskDTO taskDTO,
-            @RequestHeader(name = "X-User-Id") String userIdStr) {
+            @RequestHeader(name = "X-Project-Id") String projectIdStr) {
 
-        Long userId = Long.parseLong(userIdStr);
+        Long projectId = Long.parseLong(projectIdStr);
         Task updatedTask = dtoToEntity(taskDTO);
-        Task task = taskService.updateTask(userId, id, updatedTask, taskDTO.getDealId(), taskDTO.getClientId());
+        Task task = taskService.updateTask(projectId, id, updatedTask, taskDTO.getDealId(), taskDTO.getClientId());
         return ResponseEntity.ok(entityToDto(task));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(
             @PathVariable Long id,
-            @RequestHeader(name = "X-User-Id") String userIdStr) {
+            @RequestHeader(name = "X-Project-Id") String projectIdStr) {
 
-        Long userId = Long.parseLong(userIdStr);
-        taskService.deleteTask(userId, id);
+        Long projectId = Long.parseLong(projectIdStr);
+        taskService.deleteTask(projectId, id);
         return ResponseEntity.noContent().build();
     }
 

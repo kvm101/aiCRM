@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vasyl.karpliak.aiCRM.iam.domain.Project;
 import vasyl.karpliak.aiCRM.iam.domain.User;
 
 import vasyl.karpliak.aiCRM.sales.enums.TaskType;
@@ -43,6 +44,10 @@ public class Task {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
     private Client client;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")

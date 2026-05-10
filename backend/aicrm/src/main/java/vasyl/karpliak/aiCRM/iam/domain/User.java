@@ -77,6 +77,11 @@ public class User{
     @JoinColumn(name = "client_user_id")
     private List<Client> clients = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    @JsonIgnore
+    private Organization organization;
+
     @PrePersist
     public void prePersist() {
         if (lastEnter == null) {

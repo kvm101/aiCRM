@@ -25,15 +25,15 @@ public class AnalyticsService {
         this.userRepository = userRepository;
     }
 
-    public Map<String, Long> getFunnel(Long userId) {
+    public Map<String, Long> getFunnel(Long projectId) {
         Map<String, Long> funnel = new HashMap<>();
         for (DealStatus status : DealStatus.values()) {
-            funnel.put(status.name(), dealRepository.countByUserIdAndStatus(userId, status));
+            funnel.put(status.name(), dealRepository.countByProjectIdAndStatus(projectId, status));
         }
         return funnel;
     }
 
-    public Map<String, Object> getGoals(Long userId) {
+    public Map<String, Object> getGoals(Long projectId, Long userId) {
         Map<String, Object> goals = new HashMap<>();
         
         Optional<User> userOpt = userRepository.findById(userId);
@@ -53,8 +53,8 @@ public class AnalyticsService {
         java.time.LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
 
         // Fetch DONE deals тільки за поточний місяць
-        List<Deal> doneDeals = dealRepository.findByUserIdAndStatusAndUpdatedAtBetween(
-                userId, DealStatus.DONE, startOfMonth, endOfMonth);
+        List<Deal> doneDeals = dealRepository.findByProjectIdAndStatusAndUpdatedAtBetween(
+                projectId, DealStatus.DONE, startOfMonth, endOfMonth);
         BigDecimal achievedRevenue = BigDecimal.ZERO;
         
         for (Deal deal : doneDeals) {
@@ -70,7 +70,7 @@ public class AnalyticsService {
         return goals;
     }
 
-    public Map<String, Object> updateGoals(Long userId, BigDecimal targetRevenue, String currency) {
+    public Map<String, Object> updateGoals(Long projectId, Long userId, BigDecimal targetRevenue, String currency) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
@@ -78,7 +78,7 @@ public class AnalyticsService {
             user.setTargetCurrency(currency != null ? currency.toUpperCase() : "USD");
             userRepository.save(user);
         }
-        return getGoals(userId);
+        return getGoals(projectId, userId);
     }
 
     // A simple hardcoded exchange rate converter for demonstration purposes.
