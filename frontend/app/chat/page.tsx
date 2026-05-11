@@ -259,7 +259,7 @@ export default function ChatPage() {
               title="Відкрити AI з контекстом цього чату"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              Ask AI
+              Запитати ШІ
             </Button>
 
             <Button
@@ -320,7 +320,7 @@ export default function ChatPage() {
             }}
           >
             <Input
-              placeholder="Type your message..."
+              placeholder="Введіть ваше повідомлення..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               className="flex-1 rounded-full px-4"

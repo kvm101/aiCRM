@@ -226,7 +226,7 @@ export function GlobalAIChat() {
       <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0">
         <form className="flex gap-2" onSubmit={handleSend}>
           <Input
-            placeholder="Ask AI anything..."
+            placeholder="Запитайте ШІ про що завгодно..."
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={isGenerating}
