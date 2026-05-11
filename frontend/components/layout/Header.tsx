@@ -193,7 +193,7 @@ export function Header() {
           className="gap-2 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 rounded-full"
         >
           <Sparkles className="h-4 w-4" />
-          Ask AI
+          Запитати ШІ
         </Button>
 
         <Popover>
