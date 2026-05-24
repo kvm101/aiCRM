@@ -122,3 +122,7 @@ google:
   redirect:
     uri: "http://localhost:8080/iam/oauth2/google/callback"
     system-uri: "http://localhost:8080/auth/oauth2/google/callback"
+
+facebook:
+  messenger:
+    verify-token: ${FACEBOOK_VERIFY_TOKEN:my_super_secret_crm_token_2026}

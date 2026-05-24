@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useChatWS, useChats, useChatMessages, useDeleteChat, useMarkChatRead, useCreateTeamChat } from "@/hooks/useChatWS";
+import { useChatWS, useChats, useChatMessages, useDeleteChat, useMarkChatRead } from "@/hooks/useChatWS";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Loader2, Trash2, BarChart2, ChevronDown, Sparkles, Plus } from "lucide-react";
+import { Send, Bot, User, Loader2, Trash2, BarChart2, ChevronDown, Sparkles } from "lucide-react";
 import { useAIStore, SummaryPeriod, ChatContextMessage } from "@/store/useAIStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
@@ -17,8 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+// Removed Tabs and Dialog imports
 
 function ChatListItem({ chat, activeChatId, onClick }: { chat: any, activeChatId: number | null, onClick: () => void }) {
   return (
@@ -56,35 +55,27 @@ function ChatListItem({ chat, activeChatId, onClick }: { chat: any, activeChatId
 export default function ChatPage() {
   const { data: chats = [], isLoading: isLoadingChats } = useChats();
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"clients" | "team">("clients");
-  const [isCreateChatOpen, setIsCreateChatOpen] = useState(false);
-  const [newChatTitle, setNewChatTitle] = useState("");
   const { requestSummary, analyzeChat } = useAIStore();
   const { currentUser } = useAuthStore();
   
   const clientChats = chats.filter((c) => c.channelType !== "INTERNAL");
-  const teamChats = chats.filter((c) => c.channelType === "INTERNAL");
 
-  // Set active chat when tab changes or chats load
+  // Set active chat when chats load
   useEffect(() => {
-    if (activeTab === "clients" && clientChats.length > 0) {
+    if (clientChats.length > 0) {
       if (!clientChats.find(c => c.id === activeChatId)) {
         setActiveChatId(clientChats[0].id);
-      }
-    } else if (activeTab === "team" && teamChats.length > 0) {
-      if (!teamChats.find(c => c.id === activeChatId)) {
-        setActiveChatId(teamChats[0].id);
       }
     } else {
       setActiveChatId(null);
     }
-  }, [chats, activeTab]);
+  }, [chats]);
 
   const { data: serverMessages = [], isLoading: isLoadingMessages } = useChatMessages(activeChatId);
   const { liveMessages, sendMessage } = useChatWS();
   const { mutate: deleteChat } = useDeleteChat();
   const { mutate: markChatRead } = useMarkChatRead();
-  const { mutate: createTeamChat, isPending: isCreatingChat } = useCreateTeamChat();
+
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -138,53 +129,22 @@ export default function ChatPage() {
     <div className="flex h-[calc(100vh-8rem)] rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
       {/* Sidebar: Active Chats */}
       <div className="w-80 border-r border-zinc-200 dark:border-zinc-800 flex flex-col bg-zinc-50 dark:bg-zinc-950/50">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "clients" | "team")} className="flex flex-col h-full overflow-hidden">
-          <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 space-y-4">
-            <h2 className="font-semibold text-lg text-zinc-900 dark:text-zinc-50">Чати</h2>
-            <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="clients">Клієнти</TabsTrigger>
-              <TabsTrigger value="team">Команда</TabsTrigger>
-            </TabsList>
-            {activeTab === "team" && (
-              <Button onClick={() => setIsCreateChatOpen(true)} className="w-full gap-2" variant="outline" size="sm">
-                <Plus className="h-4 w-4" />
-                Створити чат
-              </Button>
-            )}
-          </div>
-          
-          <TabsContent value="clients" className="flex-1 m-0 data-[state=inactive]:hidden overflow-hidden flex flex-col">
-            <ScrollArea className="flex-1 h-full">
-              {isLoadingChats ? (
-                <div className="flex justify-center p-4">
-                  <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-                </div>
-              ) : clientChats.length === 0 ? (
-                <div className="p-4 text-center text-zinc-500 text-sm">
-                  Немає активних чатів з клієнтами.
-                </div>
-              ) : clientChats.map((chat) => (
-                <ChatListItem key={chat.id} chat={chat} activeChatId={activeChatId} onClick={() => setActiveChatId(chat.id)} />
-              ))}
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="team" className="flex-1 m-0 data-[state=inactive]:hidden overflow-hidden flex flex-col">
-            <ScrollArea className="flex-1 h-full">
-              {isLoadingChats ? (
-                <div className="flex justify-center p-4">
-                  <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-                </div>
-              ) : teamChats.length === 0 ? (
-                <div className="p-4 text-center text-zinc-500 text-sm">
-                  Немає командних чатів.
-                </div>
-              ) : teamChats.map((chat) => (
-                <ChatListItem key={chat.id} chat={chat} activeChatId={activeChatId} onClick={() => setActiveChatId(chat.id)} />
-              ))}
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
+        <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
+          <h2 className="font-semibold text-lg text-zinc-900 dark:text-zinc-50">Чати клієнтів</h2>
+        </div>
+        <ScrollArea className="flex-1 h-full">
+          {isLoadingChats ? (
+            <div className="flex justify-center p-4">
+              <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+            </div>
+          ) : clientChats.length === 0 ? (
+            <div className="p-4 text-center text-zinc-500 text-sm">
+              Немає активних чатів з клієнтами.
+            </div>
+          ) : clientChats.map((chat) => (
+            <ChatListItem key={chat.id} chat={chat} activeChatId={activeChatId} onClick={() => setActiveChatId(chat.id)} />
+          ))}
+        </ScrollArea>
       </div>
 
       {/* Main Chat Area */}
@@ -332,41 +292,7 @@ export default function ChatPage() {
         </div>
       </div>
       
-      <Dialog open={isCreateChatOpen} onOpenChange={setIsCreateChatOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Створити командний чат</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <Input
-              placeholder="Назва чату (наприклад: Маркетинг, Розробка)"
-              value={newChatTitle}
-              onChange={(e) => setNewChatTitle(e.target.value)}
-              autoFocus
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateChatOpen(false)}>Скасувати</Button>
-            <Button 
-              onClick={() => {
-                if (newChatTitle.trim()) {
-                  createTeamChat(newChatTitle.trim(), {
-                    onSuccess: (data: any) => {
-                      setNewChatTitle("");
-                      setIsCreateChatOpen(false);
-                      setActiveChatId(data.id);
-                    }
-                  });
-                }
-              }} 
-              disabled={isCreatingChat || !newChatTitle.trim()}
-            >
-              {isCreatingChat ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Створити
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }

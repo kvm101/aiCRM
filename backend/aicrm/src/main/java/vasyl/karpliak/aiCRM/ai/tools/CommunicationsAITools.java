@@ -55,7 +55,7 @@ public class CommunicationsAITools {
         return "Email успішно заплановано до відправки на " + to;
     }
 
-    @Tool(description = "Отримати список відкритих чатів (сесій) у Telegram для поточного користувача.")
+    @Tool(description = "Отримати список відкритих чатів (сесій) у Facebook Messenger для поточного користувача.")
     public List<ChatSessionResponse> getOpenChats(Long userId) {
         return chatSessionRepository.findByAssignedUserId(userId).stream()
                 .map(this::mapToSessionResponse)
@@ -69,8 +69,8 @@ public class CommunicationsAITools {
                 .collect(Collectors.toList());
     }
 
-    @Tool(description = "Відповісти клієнту безпосередньо у Telegram чат (за sessionId).")
-    public String replyToTelegramChat(Long sessionId, String replyText) {
+    @Tool(description = "Відповісти клієнту безпосередньо у Facebook Messenger чат (за sessionId).")
+    public String replyToFacebookChat(Long sessionId, String replyText) {
         ChatSession session = chatSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Чат не знайдено"));
 
@@ -97,7 +97,7 @@ public class CommunicationsAITools {
         message.setCreatedAt(unifiedMessage.timestamp());
         messageRepository.save(message);
 
-        return "Повідомлення успішно відправлено клієнту в Telegram.";
+        return "Повідомлення успішно відправлено клієнту в Facebook Messenger.";
     }
 
     @Tool(description = "Отримати всі вхідні повідомлення від клієнтів за вказаний період (since — ISO дата-час початку, наприклад '2026-05-01T00:00:00'). Використовується для сумаризації активності за день, тиждень або місяць.")

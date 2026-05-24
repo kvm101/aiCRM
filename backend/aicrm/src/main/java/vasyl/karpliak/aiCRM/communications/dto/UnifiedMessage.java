@@ -4,8 +4,8 @@ import vasyl.karpliak.aiCRM.communications.enums.ChannelType;
 import java.time.LocalDateTime;
 
 public record UnifiedMessage(
-    String externalId,       // e.g., Telegram message ID
-    String externalChatId,   // e.g., Telegram User ID or Email address
+    String externalId,       // e.g., Facebook message ID
+    String externalChatId,   // e.g., Facebook User ID or Email address
     ChannelType channel,     // Source platform
     Long teamId,             // Identified tenant/team
     String text,             // Message payload

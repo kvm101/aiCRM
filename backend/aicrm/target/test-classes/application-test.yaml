@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # Disable external integrations during tests
+  mail:
+    host: localhost
+    port: 3025
+
+  rabbitmq:
+    host: localhost
+    port: 5673 # dummy port
+
+  ai:
+    google:
+      genai:
+        api-key: "dummy-key"
+    openai:
+      api-key: "disabled"
+      chat:
+        enabled: false
+      embedding:
+        enabled: false
+
+facebook:
+  messenger:
+    verify-token: test_verify_token
+
+google:
+  client:
+    id: "test-client-id"
+    secret: "test-secret"
