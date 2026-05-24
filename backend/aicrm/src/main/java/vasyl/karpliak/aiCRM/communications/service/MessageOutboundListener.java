@@ -59,7 +59,7 @@ public class MessageOutboundListener {
 
         String botToken = optionalBot.get().getBotToken();
         
-        // 1. Відправляємо повідомлення в зовнішній світ (Telegram, Email тощо)
+        // 1. Відправляємо повідомлення в зовнішній світ (Facebook Messenger, Email тощо)
         adapter.sendMessage(unifiedMessage.externalChatId(), unifiedMessage.text(), botToken);
         
         // Повідомлення вже збережено в БД тим сервісом, який його відправив (напр. ChatController)

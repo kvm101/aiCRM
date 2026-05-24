@@ -57,8 +57,8 @@ public class DatabaseSeeder implements CommandLineRunner {
             ChatSession session = new ChatSession();
             session.setAssignedUserId(savedTeamLead.getId());
             session.setTeamId(1L);
-            session.setChannelType(ChannelType.TELEGRAM);
-            session.setExternalChatId("tg_12345");
+            session.setChannelType(ChannelType.FACEBOOK);
+            session.setExternalChatId("fb_12345");
             session.setStatus(SessionStatus.OPEN);
             ChatSession savedSession = chatSessionRepository.save(session);
 

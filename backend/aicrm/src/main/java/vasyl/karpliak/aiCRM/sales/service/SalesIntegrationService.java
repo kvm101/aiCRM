@@ -34,7 +34,7 @@ public class SalesIntegrationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Користувача не знайдено"));
 
-        // Try to find client by email (which acts as our contact identifier for both email and telegram username)
+        // Try to find client by email (which acts as our contact identifier for both email and facebook identifier)
         Optional<Client> existingClient = user.getClients().stream()
                 .filter(c -> c.getEmail().equalsIgnoreCase(contactIdentifier) || c.getName().equalsIgnoreCase(contactIdentifier))
                 .findFirst();

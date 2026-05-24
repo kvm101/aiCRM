@@ -5,6 +5,7 @@ import lombok.Setter;
 import vasyl.karpliak.aiCRM.iam.enums.UserRoles;
 
 @Getter
+@Setter
 public class RegistrationDTO {
     private String name;
     private String login;

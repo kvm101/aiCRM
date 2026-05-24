@@ -16,7 +16,7 @@ import {
 import { useChats } from "@/hooks/useChatWS";
 
 const navigation = [
-  { name: "Дашборд", href: "/", icon: LayoutDashboard },
+  { name: "Головна", href: "/", icon: LayoutDashboard },
   { name: "Клієнти", href: "/clients", icon: Users },
   { name: "Угоди", href: "/deals", icon: Briefcase },
   { name: "Канбан", href: "/kanban", icon: KanbanSquare },
@@ -35,9 +35,6 @@ export function Sidebar() {
     <div className="flex h-full w-64 flex-col border-r bg-zinc-950 text-zinc-50">
       <div className="flex h-16 items-center px-6 border-b border-zinc-800">
         <div className="flex items-center gap-2 font-semibold text-lg">
-          <div className="h-8 w-8 rounded-lg bg-indigo-500 flex items-center justify-center">
-            CRM
-          </div>
           <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
             AI CRM
           </span>
@@ -79,15 +76,7 @@ export function Sidebar() {
           })}
         </nav>
       </div>
-      <div className="border-t border-zinc-800 p-4">
-        <Link
-          href="/settings"
-          className="group flex items-center rounded-md px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-800/50 hover:text-white transition-colors"
-        >
-          <Settings className="mr-3 h-5 w-5 flex-shrink-0 text-zinc-500 group-hover:text-white" />
-          Settings
-        </Link>
-      </div>
+
     </div>
   );
 }

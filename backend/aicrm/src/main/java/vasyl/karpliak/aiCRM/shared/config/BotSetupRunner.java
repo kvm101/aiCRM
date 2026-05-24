@@ -17,16 +17,15 @@ public class BotSetupRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        String myToken = "***REMOVED***"; 
-        
-        Bot bot = botRepository.findByTeamIdAndChannelType(1L, ChannelType.TELEGRAM)
+        // 1. Створюємо або оновлюємо Facebook сторінку / бота
+        Bot bot = botRepository.findByTeamIdAndChannelType(1L, ChannelType.FACEBOOK)
                 .orElse(new Bot());
-                
-        bot.setTeamId(1L);
-        bot.setChannelType(ChannelType.TELEGRAM);
-        bot.setBotToken(myToken);
-        botRepository.save(bot);
         
-        System.out.println("✅ Telegram бот успішно збережено в базу!");
+        bot.setTeamId(1L);
+        bot.setChannelType(ChannelType.FACEBOOK);
+        bot.setBotToken("FACEBOOK_PAGE_ACCESS_TOKEN_PLACEHOLDER");
+        
+        botRepository.save(bot);
+        System.out.println("✅ Facebook сторінку успішно збережено в базу!");
     }
 }
