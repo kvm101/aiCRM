@@ -204,4 +204,20 @@ public class ChatController {
             return ResponseEntity.ok().<Void>build();
         }).orElse(ResponseEntity.notFound().build());
     }
+    /**
+     * PATCH /chats/{id}/rename — rename chat session client name
+     */
+    @PatchMapping("/{id}/rename")
+    public ResponseEntity<ChatSession> renameChat(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        return chatSessionRepository.findById(id).map(session -> {
+            String newName = body.get("clientName");
+            if (newName != null && !newName.trim().isEmpty()) {
+                session.setClientName(newName.trim());
+                chatSessionRepository.save(session);
+            }
+            return ResponseEntity.ok(session);
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }

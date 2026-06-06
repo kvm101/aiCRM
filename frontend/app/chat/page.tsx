@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useChatWS, useChats, useChatMessages, useDeleteChat, useMarkChatRead } from "@/hooks/useChatWS";
+import { useChatWS, useChats, useChatMessages, useDeleteChat, useMarkChatRead, useRenameChat } from "@/hooks/useChatWS";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Loader2, Trash2, BarChart2, ChevronDown, Sparkles } from "lucide-react";
+import { Send, Bot, User, Loader2, Trash2, BarChart2, ChevronDown, Sparkles, Pencil, Check as CheckIcon, ArrowLeft, MessageSquare } from "lucide-react";
 import { useAIStore, SummaryPeriod, ChatContextMessage } from "@/store/useAIStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useLanguageStore } from "@/store/useLanguageStore";
+import { t } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +60,8 @@ export default function ChatPage() {
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
   const { requestSummary, analyzeChat } = useAIStore();
   const { currentUser } = useAuthStore();
+  const { lang } = useLanguageStore();
+  const tr = t(lang);
   
   const clientChats = chats.filter((c) => c.channelType !== "INTERNAL");
 
@@ -75,8 +80,14 @@ export default function ChatPage() {
   const { liveMessages, sendMessage } = useChatWS();
   const { mutate: deleteChat } = useDeleteChat();
   const { mutate: markChatRead } = useMarkChatRead();
+  const { mutate: renameChat } = useRenameChat();
+
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const renameInputRef = useRef<HTMLInputElement>(null);
 
   
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const [inputText, setInputText] = useState("");
@@ -93,9 +104,12 @@ export default function ChatPage() {
 
   const lastClientMessage = [...allMessages].reverse().find(m => m.sender === "client");
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when messages change (scroll only inner container, not outer main)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   }, [allMessages]);
 
   // Mark chat as read when active
@@ -116,7 +130,7 @@ export default function ChatPage() {
 
   const handleDeleteChat = () => {
     if (!activeChatId) return;
-    if (window.confirm("Ви впевнені, що хочете видалити цей чат? Всі повідомлення будуть видалені назавжди.")) {
+    if (window.confirm(lang === 'ua' ? 'Ви впевнені, що хочете видалити цей чат? Всі повідомлення будуть видалені назавжди.' : 'Are you sure you want to delete this chat? All messages will be permanently deleted.')) {
       deleteChat(activeChatId, {
         onSuccess: () => {
           setActiveChatId(null);
@@ -125,12 +139,28 @@ export default function ChatPage() {
     }
   };
 
+  const handleStartRename = () => {
+    if (!activeChat) return;
+    setRenameValue(activeChat.clientName || "");
+    setIsRenaming(true);
+    setTimeout(() => renameInputRef.current?.focus(), 50);
+  };
+
+  const handleSaveRename = () => {
+    if (!activeChatId || !renameValue.trim()) {
+      setIsRenaming(false);
+      return;
+    }
+    renameChat({ chatId: activeChatId, clientName: renameValue.trim() });
+    setIsRenaming(false);
+  };
+
   return (
-    <div className="flex h-[calc(100vh-8rem)] rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
+    <div className="flex h-[calc(100vh-7rem)] max-w-6xl w-full mx-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
       {/* Sidebar: Active Chats */}
-      <div className="w-80 border-r border-zinc-200 dark:border-zinc-800 flex flex-col bg-zinc-50 dark:bg-zinc-950/50">
+      <div className={cn("w-full md:w-80 border-r border-zinc-200 dark:border-zinc-800 flex flex-col bg-zinc-50 dark:bg-zinc-950/50 shrink-0", activeChatId ? "hidden md:flex" : "flex")}>
         <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
-          <h2 className="font-semibold text-lg text-zinc-900 dark:text-zinc-50">Чати клієнтів</h2>
+          <h2 className="font-semibold text-lg text-zinc-900 dark:text-zinc-50">{tr.chatPage.title}</h2>
         </div>
         <ScrollArea className="flex-1 h-full">
           {isLoadingChats ? (
@@ -139,7 +169,7 @@ export default function ChatPage() {
             </div>
           ) : clientChats.length === 0 ? (
             <div className="p-4 text-center text-zinc-500 text-sm">
-              Немає активних чатів з клієнтами.
+              {tr.chatPage.noChats}
             </div>
           ) : clientChats.map((chat) => (
             <ChatListItem key={chat.id} chat={chat} activeChatId={activeChatId} onClick={() => setActiveChatId(chat.id)} />
@@ -148,16 +178,45 @@ export default function ChatPage() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col relative">
-        <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-white dark:bg-zinc-950">
-          <div className="flex items-center gap-3">
+      {!activeChatId ? (
+        <div className="hidden md:flex flex-1 flex-col items-center justify-center text-zinc-400 bg-white dark:bg-zinc-950">
+          <MessageSquare className="h-16 w-16 mb-4 opacity-10" />
+          <p>{tr.chatPage.selectChat}</p>
+        </div>
+      ) : (
+        <div className={cn("flex-1 flex flex-col relative bg-white dark:bg-zinc-950", !activeChatId ? "hidden md:flex" : "flex")}>
+          <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-white dark:bg-zinc-950">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveChatId(null)}
+                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md md:hidden text-zinc-500 hover:text-zinc-900 dark:hover:text-white mr-1"
+                title="Back to chats list"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
             <Avatar>
               <AvatarFallback className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
                 {activeChat?.clientName ? activeChat.clientName.substring(0, 2).toUpperCase() : "?"}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">{activeChat?.clientName || "Unknown Client"}</h2>
+              {isRenaming ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    ref={renameInputRef}
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSaveRename(); if (e.key === 'Escape') setIsRenaming(false); }}
+                    onBlur={handleSaveRename}
+                    className="font-semibold text-zinc-900 dark:text-zinc-50 bg-zinc-100 dark:bg-zinc-800 rounded px-2 py-0.5 text-sm outline-none ring-1 ring-indigo-400 w-48"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 group cursor-pointer" onClick={handleStartRename}>
+                  <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">{activeChat?.clientName || "Unknown Client"}</h2>
+                  <Pencil className="h-3.5 w-3.5 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              )}
               <p className="text-xs text-zinc-500">via {activeChat?.channelType || "..."}</p>
             </div>
           </div>
@@ -173,12 +232,12 @@ export default function ChatPage() {
                   disabled={!activeChatId}
                 >
                   <BarChart2 className="h-3.5 w-3.5" />
-                  Сумаризація
+                  {lang === 'ua' ? 'Сумаризація' : 'Summarize'}
                   <ChevronDown className="h-3 w-3 opacity-60" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel className="text-xs text-zinc-500">Проаналізувати за</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-xs text-zinc-500">{lang === 'ua' ? 'Проаналізувати за' : 'Analyze by'}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {(["day", "week", "month"] as SummaryPeriod[]).map((period) => (
                   <DropdownMenuItem
@@ -186,9 +245,9 @@ export default function ChatPage() {
                     onClick={() => requestSummary(period, currentUser?.id || "")}
                     className="cursor-pointer"
                   >
-                    {period === "day" && "📅 За день"}
-                    {period === "week" && "📆 За тиждень"}
-                    {period === "month" && "🗓️ За місяць"}
+                    {period === "day" && (lang === 'ua' ? '📅 За день' : '📅 By day')}
+                    {period === "week" && (lang === 'ua' ? '📆 За тиждень' : '📆 By week')}
+                    {period === "month" && (lang === 'ua' ? '🗓️ За місяць' : '🗓️ By month')}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -202,7 +261,7 @@ export default function ChatPage() {
               onClick={() => {
                 if (!activeChat) return;
                 const ctx: ChatContextMessage[] = allMessages.map((m) => ({
-                  sender: m.sender,
+                  sender: m.sender || "client",
                   text: m.text ?? "",
                   timestamp: m.timestamp,
                 }));
@@ -219,7 +278,7 @@ export default function ChatPage() {
               title="Відкрити AI з контекстом цього чату"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              Запитати ШІ
+              {tr.header.askAI}
             </Button>
 
             <Button
@@ -235,12 +294,12 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <div className="flex-1 p-4 bg-zinc-50/50 dark:bg-zinc-950/20 overflow-y-auto min-h-0">
+        <div ref={messagesContainerRef} className="flex-1 p-4 bg-zinc-50/50 dark:bg-zinc-950/20 overflow-y-auto min-h-0">
           <div className="flex flex-col gap-4 max-w-3xl mx-auto pb-4">
             {isLoadingMessages ? (
                <div className="flex justify-center p-10"><Loader2 className="h-6 w-6 animate-spin text-zinc-400" /></div>
             ) : allMessages.length === 0 ? (
-               <div className="text-center p-10 text-zinc-500 text-sm">Немає повідомлень. Почніть спілкування!</div>
+               <div className="text-center p-10 text-zinc-500 text-sm">{lang === 'ua' ? 'Немає повідомлень. Почніть спілкування!' : 'No messages yet. Start the conversation!'}</div>
             ) : allMessages.map((msg) => (
               <div
                 key={msg.id}
@@ -280,7 +339,7 @@ export default function ChatPage() {
             }}
           >
             <Input
-              placeholder="Введіть ваше повідомлення..."
+              placeholder={tr.chatPage.inputPlaceholder}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               className="flex-1 rounded-full px-4"
@@ -291,7 +350,7 @@ export default function ChatPage() {
           </form>
         </div>
       </div>
-      
+      )}
 
     </div>
   );

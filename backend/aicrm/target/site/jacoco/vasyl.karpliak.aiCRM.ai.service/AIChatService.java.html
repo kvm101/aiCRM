@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AIChatService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aiCRM</a> &gt; <a href="index.source.html" class="el_package">vasyl.karpliak.aiCRM.ai.service</a> &gt; <span class="el_source">AIChatService.java</span></div><h1>AIChatService.java</h1><pre class="source lang-java linenums">package vasyl.karpliak.aiCRM.ai.service;
+
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.stereotype.Service;
+import vasyl.karpliak.aiCRM.ai.dto.ChatRequest;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class AIChatService {
+
+    private final AiOrchestrator orchestrator;
+
+<span class="fc" id="L17">    public AIChatService(AiOrchestrator orchestrator) {</span>
+<span class="fc" id="L18">        this.orchestrator = orchestrator;</span>
+<span class="fc" id="L19">    }</span>
+
+    public String generateReply(String userMessage, Long currentUserId,
+                                List&lt;ChatRequest.HistoryMessage&gt; history,
+                                String modelProvider) {
+
+<span class="fc" id="L25">        String systemPrompt =</span>
+                &quot;Ти - корисний AI-асистент в системі CRM. &quot; +
+                &quot;Зараз ти спілкуєшся з користувачем, ID якого: &quot; + currentUserId + &quot;. &quot; +
+                &quot;Використовуй цей ID, коли викликаєш функції для отримання даних користувача. &quot; +
+                &quot;Відповідай тією мовою, якою тебе питають. &quot; +
+                &quot;CRITICAL RULES: &quot; +
+                &quot;1) You MUST use the native tool/function calling mechanism. NEVER print raw JSON function calls as text in your response. &quot; +
+                &quot;2) NEVER output XML tags like &lt;function=...&gt;. &quot; +
+                &quot;3) If you want to call a tool, use the tool call API — do NOT write {\&quot;type\&quot;: \&quot;function\&quot;, ...} as text. &quot; +
+                &quot;4) After tool results come back, summarize what was done in natural language for the user.&quot;;
+
+        // Конвертуємо DTO-історію у Spring AI Message об'єкти
+<span class="fc" id="L37">        List&lt;Message&gt; conversationHistory = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (history != null) {</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">            for (ChatRequest.HistoryMessage h : history) {</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">                if (&quot;user&quot;.equals(h.role())) {</span>
+<span class="fc" id="L41">                    conversationHistory.add(new UserMessage(h.content()));</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">                } else if (&quot;ai&quot;.equals(h.role())) {</span>
+<span class="fc" id="L43">                    conversationHistory.add(new AssistantMessage(h.content()));</span>
+                }
+<span class="fc" id="L45">            }</span>
+        }
+
+<span class="fc" id="L48">        return orchestrator.generateWithFallback(systemPrompt, userMessage, conversationHistory, modelProvider);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

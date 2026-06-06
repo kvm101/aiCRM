@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DealService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aiCRM</a> &gt; <a href="index.source.html" class="el_package">vasyl.karpliak.aiCRM.sales.service</a> &gt; <span class="el_source">DealService.java</span></div><h1>DealService.java</h1><pre class="source lang-java linenums">package vasyl.karpliak.aiCRM.sales.service;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import vasyl.karpliak.aiCRM.iam.domain.User;
+import vasyl.karpliak.aiCRM.iam.repository.UserRepository;
+import vasyl.karpliak.aiCRM.sales.domain.Client;
+import vasyl.karpliak.aiCRM.sales.domain.Deal;
+import vasyl.karpliak.aiCRM.sales.dto.DealCreateRequest;
+import vasyl.karpliak.aiCRM.sales.dto.DealUpdateRequest;
+import vasyl.karpliak.aiCRM.sales.enums.DealStatus;
+import vasyl.karpliak.aiCRM.sales.dto.DealEventDto;
+import vasyl.karpliak.aiCRM.sales.repository.ClientRepository;
+import vasyl.karpliak.aiCRM.sales.repository.DealRepository;
+import vasyl.karpliak.aiCRM.sales.repository.DealEventRepository;
+import vasyl.karpliak.aiCRM.sales.domain.DealEvent;
+import vasyl.karpliak.aiCRM.iam.repository.ProjectRepository;
+import vasyl.karpliak.aiCRM.iam.domain.Project;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class DealService {
+
+    private final DealRepository dealRepository;
+    private final ClientRepository clientRepository;
+    private final UserRepository userRepository;
+    private final DealEventRepository dealEventRepository;
+    private final ProjectRepository projectRepository;
+
+<span class="fc" id="L32">    public DealService(DealRepository dealRepository, ClientRepository clientRepository, UserRepository userRepository, DealEventRepository dealEventRepository, ProjectRepository projectRepository) {</span>
+<span class="fc" id="L33">        this.dealRepository = dealRepository;</span>
+<span class="fc" id="L34">        this.clientRepository = clientRepository;</span>
+<span class="fc" id="L35">        this.userRepository = userRepository;</span>
+<span class="fc" id="L36">        this.dealEventRepository = dealEventRepository;</span>
+<span class="fc" id="L37">        this.projectRepository = projectRepository;</span>
+<span class="fc" id="L38">    }</span>
+
+    public List&lt;Deal&gt; getAllDeals(Long projectId) {
+<span class="nc" id="L41">        return dealRepository.findByProjectId(projectId);</span>
+    }
+
+    public Deal getDeal(Long projectId, Long dealId) {
+<span class="fc" id="L45">        Deal deal = dealRepository.findById(dealId)</span>
+<span class="pc" id="L46">                .orElseThrow(() -&gt; new RuntimeException(&quot;Угоду не знайдено&quot;));</span>
+<span class="pc bpc" id="L47" title="1 of 4 branches missed.">        if (deal.getProject() == null || !deal.getProject().getId().equals(projectId)) {</span>
+<span class="fc" id="L48">            throw new RuntimeException(&quot;Доступ заборонено (невідповідність проєкту)&quot;);</span>
+        }
+<span class="fc" id="L50">        return deal;</span>
+    }
+
+    @Transactional
+    public Deal createDeal(Long projectId, Long userId, DealCreateRequest request) {
+<span class="fc" id="L55">        User user = userRepository.findById(userId)</span>
+<span class="pc" id="L56">                .orElseThrow(() -&gt; new RuntimeException(&quot;Користувача не знайдено&quot;));</span>
+<span class="fc" id="L57">        Client client = clientRepository.findById(request.clientId())</span>
+<span class="pc" id="L58">                .orElseThrow(() -&gt; new RuntimeException(&quot;Клієнта не знайдено&quot;));</span>
+<span class="fc" id="L59">        Project project = projectRepository.findById(projectId)</span>
+<span class="pc" id="L60">                .orElseThrow(() -&gt; new RuntimeException(&quot;Проєкт не знайдено&quot;));</span>
+
+<span class="fc" id="L62">        Deal deal = new Deal();</span>
+<span class="fc" id="L63">        deal.setTitle(request.title());</span>
+<span class="fc" id="L64">        deal.setBudget(request.budget());</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">        deal.setCurrency(request.currency() != null ? request.currency() : &quot;USD&quot;);</span>
+<span class="fc" id="L66">        deal.setClient(client);</span>
+<span class="fc" id="L67">        deal.setUser(user);</span>
+<span class="fc" id="L68">        deal.setProject(project);</span>
+
+<span class="fc" id="L70">        Deal savedDeal = dealRepository.save(deal);</span>
+        
+<span class="fc" id="L72">        logEvent(savedDeal, &quot;CREATED&quot;, &quot;Угоду створено.&quot;);</span>
+<span class="fc" id="L73">        return savedDeal;</span>
+    }
+
+    @Transactional
+    public Deal updateDeal(Long projectId, Long dealId, DealUpdateRequest request) {
+<span class="nc" id="L78">        Deal existing = getDeal(projectId, dealId);</span>
+<span class="nc bnc" id="L79" title="All 4 branches missed.">        if (request.title() != null &amp;&amp; !request.title().isBlank()) {</span>
+<span class="nc" id="L80">            existing.setTitle(request.title());</span>
+        }
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (request.budget() != null) {</span>
+<span class="nc" id="L83">            existing.setBudget(request.budget());</span>
+        }
+<span class="nc bnc" id="L85" title="All 4 branches missed.">        if (request.currency() != null &amp;&amp; !request.currency().isBlank()) {</span>
+<span class="nc" id="L86">            existing.setCurrency(request.currency());</span>
+        }
+<span class="nc bnc" id="L88" title="All 4 branches missed.">        if (request.status() != null &amp;&amp; existing.getStatus() != request.status()) {</span>
+<span class="nc" id="L89">            logEvent(existing, &quot;STATUS_CHANGED&quot;, &quot;Статус змінено з &quot; + existing.getStatus() + &quot; на &quot; + request.status());</span>
+<span class="nc" id="L90">            existing.setStatus(request.status());</span>
+        }
+<span class="nc" id="L92">        return dealRepository.save(existing);</span>
+    }
+
+    @Transactional
+    public Deal changeStatus(Long projectId, Long dealId, DealStatus newStatus) {
+<span class="fc" id="L97">        Deal existing = getDeal(projectId, dealId);</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (existing.getStatus() != newStatus) {</span>
+<span class="fc" id="L99">            logEvent(existing, &quot;STATUS_CHANGED&quot;, &quot;Статус змінено з &quot; + existing.getStatus() + &quot; на &quot; + newStatus);</span>
+<span class="fc" id="L100">            existing.setStatus(newStatus);</span>
+        }
+<span class="fc" id="L102">        return dealRepository.save(existing);</span>
+    }
+
+    @Transactional
+    public void deleteDeal(Long projectId, Long dealId) {
+<span class="nc" id="L107">        Deal existing = getDeal(projectId, dealId);</span>
+<span class="nc" id="L108">        dealRepository.delete(existing);</span>
+<span class="nc" id="L109">    }</span>
+
+    private void logEvent(Deal deal, String eventType, String description) {
+<span class="fc" id="L112">        DealEvent event = new DealEvent();</span>
+<span class="fc" id="L113">        event.setDeal(deal);</span>
+<span class="fc" id="L114">        event.setEventType(eventType);</span>
+<span class="fc" id="L115">        event.setDescription(description);</span>
+<span class="fc" id="L116">        dealEventRepository.save(event);</span>
+<span class="fc" id="L117">    }</span>
+
+    @Transactional
+    public DealEventDto addNoteToDeal(Long projectId, Long dealId, String text) {
+<span class="nc" id="L121">        Deal deal = getDeal(projectId, dealId);</span>
+<span class="nc" id="L122">        DealEvent event = new DealEvent();</span>
+<span class="nc" id="L123">        event.setDeal(deal);</span>
+<span class="nc" id="L124">        event.setEventType(&quot;NOTE&quot;);</span>
+<span class="nc" id="L125">        event.setDescription(text);</span>
+<span class="nc" id="L126">        DealEvent saved = dealEventRepository.save(event);</span>
+<span class="nc" id="L127">        return new DealEventDto(saved.getId(), saved.getDeal().getId(), saved.getEventType(), saved.getDescription(), saved.getCreatedAt());</span>
+    }
+
+    public List&lt;DealEventDto&gt; getDealEvents(Long projectId, Long dealId) {
+<span class="nc" id="L131">        Deal deal = getDeal(projectId, dealId); // Verify access</span>
+<span class="nc" id="L132">        return dealEventRepository.findByDealIdOrderByCreatedAtAsc(dealId)</span>
+<span class="nc" id="L133">                .stream()</span>
+<span class="nc" id="L134">                .map(e -&gt; new DealEventDto(e.getId(), e.getDeal().getId(), e.getEventType(), e.getDescription(), e.getCreatedAt()))</span>
+<span class="nc" id="L135">                .collect(Collectors.toList());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

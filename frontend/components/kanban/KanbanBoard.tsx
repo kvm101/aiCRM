@@ -27,6 +27,8 @@ import { useTasks, useUpdateTask, useCreateTask, Task, useDeals, useClients, use
 import { useProjectStore } from "@/store/useProjectStore";
 import { DeleteAttachmentDialog } from "@/components/attachments/DeleteAttachmentDialog";
 import { Button } from "@/components/ui/button";
+import { useLanguageStore } from "@/store/useLanguageStore";
+import { t } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -41,13 +43,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const COLUMNS: Task['tag'][] = ["PLANNED", "IN_WORK", "DONE"];
-const COLUMN_NAMES: Record<Task['tag'], string> = {
-  PLANNED: "Заплановано",
-  IN_WORK: "У роботі",
-  DONE: "Виконано",
-};
 
 export function KanbanBoard() {
+  const { lang } = useLanguageStore();
+  const tr = t(lang);
+
   const { data: serverTasks, isLoading } = useTasks();
   const { data: attachments = [] } = useAttachments();
   const { data: deals = [] } = useDeals();
@@ -123,10 +123,8 @@ export function KanbanBoard() {
 
     if (targetTag) {
       if (targetTag === "DONE" && activeTask.tag !== "DONE") {
-        // Замість миттєвого оновлення, відкриваємо модалку для введення результату
         setTaskToComplete({ id: activeIdNum, tag: targetTag });
       } else {
-        // Optimistic update
         setTasks(tasks.map(t => t.id === activeIdNum ? { ...t, tag: targetTag as Task['tag'] } : t));
         updateTask({ id: activeIdNum, tag: targetTag });
       }
@@ -136,12 +134,10 @@ export function KanbanBoard() {
   const handleCompleteTaskSave = () => {
     if (!taskToComplete) return;
     
-    // Оновлюємо стейт оптимістично
     setTasks(tasks.map(t => t.id === taskToComplete.id ? { ...t, tag: taskToComplete.tag } : t));
     
     updateTask({ id: taskToComplete.id, tag: taskToComplete.tag, result: taskResult }, {
       onSuccess: () => {
-        // Якщо потрібно створити наступне завдання
         if (createFollowup && followupTitle.trim()) {
           const originalTask = tasks.find(t => t.id === taskToComplete.id);
           const nextDeadline = new Date();
@@ -215,7 +211,7 @@ export function KanbanBoard() {
   }
 
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="flex flex-col space-y-4 h-full">
       <DeleteAttachmentDialog
         attachment={attachmentToDelete}
         open={attachmentToDelete != null}
@@ -234,21 +230,21 @@ export function KanbanBoard() {
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
-              <Plus className="h-4 w-4 mr-2" /> Додати завдання
+              <Plus className="h-4 w-4 mr-2" /> {tr.kanbanPage.addTask}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Нове завдання</DialogTitle>
+              <DialogTitle>{lang === 'ua' ? 'Нова задача' : 'New Task'}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <Input
-                placeholder="Назва"
+                placeholder={lang === 'ua' ? 'Назва' : 'Title'}
                 value={newTask.title}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTask({ ...newTask, title: e.target.value })}
               />
               <Textarea
-                placeholder="Опис"
+                placeholder={lang === 'ua' ? 'Опис' : 'Description'}
                 value={newTask.description}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewTask({ ...newTask, description: e.target.value })}
               />
@@ -262,10 +258,10 @@ export function KanbanBoard() {
                 onValueChange={(v) => setNewTask({ ...newTask, dealId: v === "none" ? undefined : Number(v) })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Прив'язати до Угоди (необов'язково)" />
+                  <SelectValue placeholder={lang === 'ua' ? "Прив'язати до угоди (необов'язково)" : "Link to Deal (optional)"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Без угоди</SelectItem>
+                  <SelectItem value="none">{lang === 'ua' ? 'Без угоди' : 'No deal'}</SelectItem>
                   {deals.map(d => (
                     <SelectItem key={d.id} value={String(d.id)}>{d.title}</SelectItem>
                   ))}
@@ -276,10 +272,10 @@ export function KanbanBoard() {
                 onValueChange={(v) => setNewTask({ ...newTask, clientId: v === "none" ? undefined : Number(v) })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Прив'язати до Контакту (необов'язково)" />
+                  <SelectValue placeholder={lang === 'ua' ? "Прив'язати до контакту (необов'язково)" : "Link to Contact (optional)"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Без контакту</SelectItem>
+                  <SelectItem value="none">{lang === 'ua' ? 'Без контакту' : 'No contact'}</SelectItem>
                   {clients.map(c => (
                     <SelectItem key={c.id} value={String(c.id)}>{c.name} {c.company ? `(${c.company})` : ""}</SelectItem>
                   ))}
@@ -287,26 +283,25 @@ export function KanbanBoard() {
               </Select>
             </div>
             <DialogFooter>
-              <Button onClick={handleCreateTask}>Створити</Button>
+              <Button onClick={handleCreateTask}>{lang === 'ua' ? 'Створити' : 'Create'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Edit Task Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Редагувати завдання</DialogTitle>
+              <DialogTitle>{lang === 'ua' ? 'Редагувати задачу' : 'Edit Task'}</DialogTitle>
             </DialogHeader>
             {editingTask && (
               <div className="grid gap-4 py-4">
                 <Input
-                  placeholder="Назва"
+                  placeholder={lang === 'ua' ? 'Назва' : 'Title'}
                   value={editingTask.title}
                   onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
                 />
                 <Textarea
-                  placeholder="Опис"
+                  placeholder={lang === 'ua' ? 'Опис' : 'Description'}
                   value={editingTask.description}
                   onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
                 />
@@ -320,10 +315,10 @@ export function KanbanBoard() {
                   onValueChange={(v) => setEditingTask({ ...editingTask, dealId: v === "none" ? undefined : Number(v) })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Прив'язати до Угоди (необов'язково)" />
+                    <SelectValue placeholder={lang === 'ua' ? "Прив'язати до угоди (необов'язково)" : "Link to Deal (optional)"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Без угоди</SelectItem>
+                    <SelectItem value="none">{lang === 'ua' ? 'Без угоди' : 'No deal'}</SelectItem>
                     {deals.map(d => (
                       <SelectItem key={d.id} value={String(d.id)}>{d.title}</SelectItem>
                     ))}
@@ -334,10 +329,10 @@ export function KanbanBoard() {
                   onValueChange={(v) => setEditingTask({ ...editingTask, clientId: v === "none" ? undefined : Number(v) })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Прив'язати до Контакту (необов'язково)" />
+                    <SelectValue placeholder={lang === 'ua' ? "Прив'язати до контакту (необов'язково)" : "Link to Contact (optional)"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Без контакту</SelectItem>
+                    <SelectItem value="none">{lang === 'ua' ? 'Без контакту' : 'No contact'}</SelectItem>
                     {clients.map(c => (
                       <SelectItem key={c.id} value={String(c.id)}>{c.name} {c.company ? `(${c.company})` : ""}</SelectItem>
                     ))}
@@ -346,17 +341,16 @@ export function KanbanBoard() {
               </div>
             )}
             <DialogFooter>
-              <Button onClick={handleEditTaskSave}>Зберегти</Button>
+              <Button onClick={handleEditTaskSave}>{lang === 'ua' ? 'Зберегти' : 'Save'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* View Task Dialog */}
         <Dialog open={!!viewingTask} onOpenChange={(open) => !open && setViewingTask(null)}>
           <DialogContent className="sm:max-w-[700px]">
             <DialogHeader>
               <DialogTitle className="flex items-center justify-between gap-4">
-                <span className="truncate">{viewingTask?.title || "Завдання"}</span>
+                <span className="truncate">{viewingTask?.title || (lang === 'ua' ? 'Задача' : 'Task')}</span>
                 {viewingTask && (
                   <Button
                     size="sm"
@@ -367,7 +361,7 @@ export function KanbanBoard() {
                     }}
                   >
                     <Pencil className="h-4 w-4 mr-2" />
-                    Редагувати
+                    {lang === 'ua' ? 'Редагувати' : 'Edit'}
                   </Button>
                 )}
               </DialogTitle>
@@ -376,7 +370,7 @@ export function KanbanBoard() {
                   {viewingTask.description}
                 </DialogDescription>
               ) : (
-                <DialogDescription>Опис відсутній.</DialogDescription>
+                <DialogDescription>{lang === 'ua' ? 'Опис відсутній.' : 'No description.'}</DialogDescription>
               )}
             </DialogHeader>
 
@@ -384,33 +378,33 @@ export function KanbanBoard() {
               <div className="grid gap-3 text-sm">
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="secondary" className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                    Статус: {viewingTask.tag}
+                    {lang === 'ua' ? 'Статус' : 'Status'}: {tr.taskStatus[viewingTask.tag as keyof typeof tr.taskStatus] || viewingTask.tag}
                   </Badge>
                   {(viewingTask.dealTitle || viewingTask.dealId) && (
                     <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
-                      Угода: {viewingTask.dealTitle || `#${viewingTask.dealId}`}
+                      {lang === 'ua' ? 'Угода' : 'Deal'}: {viewingTask.dealTitle || `#${viewingTask.dealId}`}
                     </Badge>
                   )}
                   {(viewingTask.clientName || viewingTask.clientId) && (
                     <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                      Клієнт: {viewingTask.clientName || `#${viewingTask.clientId}`}
+                      {lang === 'ua' ? 'Клієнт' : 'Client'}: {viewingTask.clientName || `#${viewingTask.clientId}`}
                     </Badge>
                   )}
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-                    <div className="text-xs text-zinc-500 mb-1">Дедлайн</div>
+                    <div className="text-xs text-zinc-500 mb-1">{lang === 'ua' ? 'Дедлайн' : 'Deadline'}</div>
                     <div className="font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-zinc-400" />
                       {new Date(viewingTask.dueDate || viewingTask.deadline).toLocaleString()}
                     </div>
                   </div>
                   <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 sm:col-span-2">
-                    <div className="text-xs text-zinc-500 mb-2">Вкладення</div>
+                    <div className="text-xs text-zinc-500 mb-2">{lang === 'ua' ? 'Вкладення' : 'Attachments'}</div>
                     {attachments.filter((a) => a.taskId === viewingTask.id).length === 0 ? (
                       <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                        Немає файлів. Додайте через іконку скріпки на картці.
+                        {lang === 'ua' ? 'Немає файлів. Додайте через іконку скріпки на картці.' : 'No files. Add via paperclip icon on the card.'}
                       </div>
                     ) : (
                       <ul className="space-y-2">
@@ -426,7 +420,7 @@ export function KanbanBoard() {
                                 <button
                                   type="button"
                                   className="opacity-50 hover:opacity-100 p-1 rounded text-red-600 hover:text-red-700"
-                                  title="Видалити"
+                                  title={lang === 'ua' ? 'Видалити' : 'Delete'}
                                   onPointerDown={(e) => e.stopPropagation()}
                                   onClick={() => setAttachmentToDelete(f)}
                                 >
@@ -435,7 +429,7 @@ export function KanbanBoard() {
                                 <button
                                   type="button"
                                   className="opacity-50 hover:opacity-100 p-1 rounded"
-                                  title="Скачати"
+                                  title={lang === 'ua' ? 'Завантажити' : 'Download'}
                                   onPointerDown={(e) => e.stopPropagation()}
                                   onClick={() => {
                                     const pid = useProjectStore.getState().activeProjectId;
@@ -455,7 +449,7 @@ export function KanbanBoard() {
 
                 {viewingTask.result && (
                   <div className="rounded-lg border border-emerald-200 dark:border-emerald-900 bg-emerald-50/60 dark:bg-emerald-950/20 p-3">
-                    <div className="text-xs text-emerald-700 dark:text-emerald-300 mb-1">Результат</div>
+                    <div className="text-xs text-emerald-700 dark:text-emerald-300 mb-1">{lang === 'ua' ? 'Результат виконання' : 'Result'}</div>
                     <div className="text-sm text-emerald-800 dark:text-emerald-200 whitespace-pre-wrap">
                       {viewingTask.result}
                     </div>
@@ -466,18 +460,17 @@ export function KanbanBoard() {
           </DialogContent>
         </Dialog>
 
-        {/* Complete Task Modal */}
         <Dialog open={!!taskToComplete} onOpenChange={(open) => !open && setTaskToComplete(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Завершення завдання</DialogTitle>
+              <DialogTitle>{lang === 'ua' ? 'Завершення завдання' : 'Task Completion'}</DialogTitle>
               <DialogDescription>
-                Опишіть результат виконання цього завдання (наприклад, "Клієнт погодився на зустріч").
+                {lang === 'ua' ? 'Опишіть результат виконання цього завдання.' : 'Describe the result of this task.'}
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
               <Textarea
-                placeholder="Результат завдання..."
+                placeholder={lang === 'ua' ? 'Результат завдання...' : 'Result...'}
                 value={taskResult}
                 onChange={(e) => setTaskResult(e.target.value)}
                 className="min-h-[100px]"
@@ -493,27 +486,27 @@ export function KanbanBoard() {
                     className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
                   />
                   <label htmlFor="followup" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    Створити наступне завдання
+                    {lang === 'ua' ? 'Створити наступне завдання' : 'Create follow-up task'}
                   </label>
                 </div>
                 
                 {createFollowup && (
                   <div className="grid gap-3 pl-6 border-l-2 border-indigo-100 dark:border-indigo-900 ml-1">
                     <Input 
-                      placeholder="Що потрібно зробити?" 
+                      placeholder={lang === 'ua' ? 'Що потрібно зробити?' : 'What needs to be done?'} 
                       value={followupTitle}
                       onChange={(e) => setFollowupTitle(e.target.value)}
                     />
                     <Select value={followupDays} onValueChange={setFollowupDays}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Коли?" />
+                        <SelectValue placeholder={lang === 'ua' ? "Коли?" : "When?"} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">На завтра</SelectItem>
-                        <SelectItem value="3">Через 3 дні</SelectItem>
-                        <SelectItem value="7">Через тиждень</SelectItem>
-                        <SelectItem value="14">Через 2 тижні</SelectItem>
-                        <SelectItem value="30">Через місяць</SelectItem>
+                        <SelectItem value="1">{lang === 'ua' ? 'На завтра' : 'Tomorrow'}</SelectItem>
+                        <SelectItem value="3">{lang === 'ua' ? 'Через 3 дні' : 'In 3 days'}</SelectItem>
+                        <SelectItem value="7">{lang === 'ua' ? 'Через тиждень' : 'In a week'}</SelectItem>
+                        <SelectItem value="14">{lang === 'ua' ? 'Через 2 тижні' : 'In 2 weeks'}</SelectItem>
+                        <SelectItem value="30">{lang === 'ua' ? 'Через місяць' : 'In a month'}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -521,14 +514,14 @@ export function KanbanBoard() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setTaskToComplete(null)}>Скасувати</Button>
-              <Button onClick={handleCompleteTaskSave}>Зберегти результат</Button>
+              <Button variant="outline" onClick={() => setTaskToComplete(null)}>{lang === 'ua' ? 'Скасувати' : 'Cancel'}</Button>
+              <Button onClick={handleCompleteTaskSave}>{lang === 'ua' ? 'Зберегти результат' : 'Save result'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="flex w-full gap-4 overflow-x-auto pb-4 items-start">
+      <div className="flex-1 flex w-full gap-4 overflow-x-auto pb-4 items-start min-h-0">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -583,19 +576,21 @@ function Column({
   const { setNodeRef } = useDroppable({
     id: columnId,
   });
+  const { lang } = useLanguageStore();
+  const tr = t(lang);
 
   return (
-    <div className="flex flex-col flex-shrink-0 w-80 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+    <div className="flex flex-col flex-shrink-0 w-80 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 max-h-full">
       <div className="flex justify-between items-center mb-6 px-1">
         <h3 className="font-bold text-sm text-zinc-800 dark:text-zinc-200 uppercase tracking-widest">
-          {COLUMN_NAMES[columnId]}
+          {tr.taskStatus[columnId]}
         </h3>
         <Badge variant="secondary" className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
           {tasks.length}
         </Badge>
       </div>
 
-      <div ref={setNodeRef} className="flex flex-col gap-3 min-h-[80px]">
+      <div ref={setNodeRef} className="flex-1 flex flex-col gap-3 min-h-[80px] overflow-y-auto pr-1">
         <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
             <SortableTaskCard
@@ -676,6 +671,8 @@ function TaskCard({
   onRequestDeleteAttachment?: (f: FileAttachment) => void;
   uploadingTaskId?: number | null;
 }) {
+  const { lang } = useLanguageStore();
+
   return (
     <Card
       className={`cursor-grab active:cursor-grabbing hover:border-indigo-500/50 transition-all ${isOverlay ? 'shadow-xl border-indigo-500' : ''}`}
@@ -695,7 +692,7 @@ function TaskCard({
               <button 
                 className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
                 onPointerDown={(e) => {
-                  e.stopPropagation(); // Запобігаємо DND
+                  e.stopPropagation();
                   onEditTask(task);
                 }}
               >
@@ -704,7 +701,7 @@ function TaskCard({
             )}
             {onAttachFile && (
               <label
-                title="Прикріпити файл"
+                title={lang === 'ua' ? 'Прикріпити файл' : 'Attach file'}
                 className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-indigo-500 transition-colors cursor-pointer"
                 onPointerDown={(e) => e.stopPropagation()}
               >
@@ -734,7 +731,7 @@ function TaskCard({
         <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
           {task.dealTitle && (
             <div className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded w-fit">
-              Угода: {task.dealTitle}
+              {lang === 'ua' ? 'Угода' : 'Deal'}: {task.dealTitle}
             </div>
           )}
           {task.clientName && (
@@ -753,7 +750,7 @@ function TaskCard({
             </div>
           )}
           {uploadingTaskId === task.id && (
-            <div className="text-[10px] text-zinc-400">Завантаження файлу...</div>
+            <div className="text-[10px] text-zinc-400">{lang === 'ua' ? 'Завантаження файлу...' : 'Uploading file...'}</div>
           )}
           {taskFiles.length > 0 && (
             <div className="mt-1 space-y-1">
@@ -771,7 +768,7 @@ function TaskCard({
                       <button
                         type="button"
                         className="opacity-45 hover:opacity-100 p-0.5 text-red-600 hover:text-red-700"
-                        title="Видалити"
+                        title={lang === 'ua' ? 'Видалити' : 'Delete'}
                         onPointerDown={(e) => e.stopPropagation()}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -784,7 +781,7 @@ function TaskCard({
                     <button
                       type="button"
                       className="opacity-45 hover:opacity-100 p-0.5"
-                      title="Скачати"
+                      title={lang === 'ua' ? 'Завантажити' : 'Download'}
                       onPointerDown={(e) => e.stopPropagation()}
                       onClick={(e) => {
                         e.stopPropagation();

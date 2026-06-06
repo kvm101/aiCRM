@@ -54,6 +54,9 @@ public class User{
     @Column(name = "target_currency")
     private String targetCurrency;
 
+    @Column(name = "target_period")
+    private String targetPeriod;
+
     @Column(name = "last_enter", nullable = false)
     private LocalDateTime lastEnter;
 

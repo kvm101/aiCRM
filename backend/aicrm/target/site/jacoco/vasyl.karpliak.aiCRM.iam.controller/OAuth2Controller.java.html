@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OAuth2Controller.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aiCRM</a> &gt; <a href="index.source.html" class="el_package">vasyl.karpliak.aiCRM.iam.controller</a> &gt; <span class="el_source">OAuth2Controller.java</span></div><h1>OAuth2Controller.java</h1><pre class="source lang-java linenums">package vasyl.karpliak.aiCRM.iam.controller;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.view.RedirectView;
+import vasyl.karpliak.aiCRM.iam.domain.User;
+import vasyl.karpliak.aiCRM.iam.repository.UserRepository;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping(&quot;/iam/oauth2/google&quot;)
+public class OAuth2Controller {
+
+    @Value(&quot;${spring.ai.google.client.id:${google.client.id:YOUR_CLIENT_ID}}&quot;)
+    private String clientId;
+
+    @Value(&quot;${spring.ai.google.client.secret:${google.client.secret:YOUR_CLIENT_SECRET}}&quot;)
+    private String clientSecret;
+
+    @Value(&quot;${spring.ai.google.redirect.uri:${google.redirect.uri:http://localhost:8080/iam/oauth2/google/callback}}&quot;)
+    private String redirectUri;
+
+    private final UserRepository userRepository;
+<span class="nc" id="L31">    private final RestTemplate restTemplate = new RestTemplate();</span>
+
+<span class="nc" id="L33">    public OAuth2Controller(UserRepository userRepository) {</span>
+<span class="nc" id="L34">        this.userRepository = userRepository;</span>
+<span class="nc" id="L35">    }</span>
+
+    @GetMapping(&quot;/login&quot;)
+    public RedirectView login(@RequestParam(&quot;userId&quot;) Long userId) {
+<span class="nc" id="L39">        String authUrl = &quot;https://accounts.google.com/o/oauth2/v2/auth?&quot; +</span>
+                &quot;client_id=&quot; + clientId +
+<span class="nc" id="L41">                &quot;&amp;redirect_uri=&quot; + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +</span>
+                &quot;&amp;response_type=code&quot; +
+<span class="nc" id="L43">                &quot;&amp;scope=&quot; + URLEncoder.encode(&quot;https://mail.google.com/ openid email&quot;, StandardCharsets.UTF_8) +</span>
+                &quot;&amp;access_type=offline&quot; +
+                &quot;&amp;prompt=consent%20select_account&quot; +
+                &quot;&amp;state=&quot; + userId;
+
+<span class="nc" id="L48">        return new RedirectView(authUrl);</span>
+    }
+
+    @GetMapping(&quot;/callback&quot;)
+    public RedirectView callback(@RequestParam(&quot;code&quot;) String code, @RequestParam(&quot;state&quot;) String state) {
+<span class="nc" id="L53">        Long userId = Long.parseLong(state);</span>
+        
+<span class="nc" id="L55">        String tokenUrl = &quot;https://oauth2.googleapis.com/token&quot;;</span>
+        
+<span class="nc" id="L57">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="nc" id="L58">        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);</span>
+        
+<span class="nc" id="L60">        String body = &quot;code=&quot; + URLEncoder.encode(code, StandardCharsets.UTF_8) +</span>
+<span class="nc" id="L61">                &quot;&amp;client_id=&quot; + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +</span>
+<span class="nc" id="L62">                &quot;&amp;client_secret=&quot; + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8) +</span>
+<span class="nc" id="L63">                &quot;&amp;redirect_uri=&quot; + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +</span>
+                &quot;&amp;grant_type=authorization_code&quot;;
+                
+<span class="nc" id="L66">        HttpEntity&lt;String&gt; request = new HttpEntity&lt;&gt;(body, headers);</span>
+        
+        try {
+<span class="nc" id="L69">            ResponseEntity&lt;Map&gt; response = restTemplate.postForEntity(tokenUrl, request, Map.class);</span>
+<span class="nc" id="L70">            Map&lt;String, Object&gt; responseBody = response.getBody();</span>
+            
+<span class="nc bnc" id="L72" title="All 4 branches missed.">            if (responseBody != null &amp;&amp; responseBody.containsKey(&quot;access_token&quot;)) {</span>
+<span class="nc" id="L73">                String accessToken = (String) responseBody.get(&quot;access_token&quot;);</span>
+<span class="nc" id="L74">                String refreshToken = (String) responseBody.get(&quot;refresh_token&quot;);</span>
+<span class="nc" id="L75">                Integer expiresIn = (Integer) responseBody.get(&quot;expires_in&quot;);</span>
+                
+<span class="nc" id="L77">                Optional&lt;User&gt; userOpt = userRepository.findById(userId);</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                if (userOpt.isPresent()) {</span>
+<span class="nc" id="L79">                    User user = userOpt.get();</span>
+<span class="nc" id="L80">                    user.setGoogleAccessToken(accessToken);</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">                    if (refreshToken != null) {</span>
+<span class="nc" id="L82">                        user.setGoogleRefreshToken(refreshToken);</span>
+                    }
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                    if (expiresIn != null) {</span>
+<span class="nc" id="L85">                        user.setGoogleTokenExpiry(LocalDateTime.now().plusSeconds(expiresIn));</span>
+                    }
+                    
+                    // Fetch user's email from Google to save it
+                    try {
+<span class="nc" id="L90">                        String userInfoUrl = &quot;https://www.googleapis.com/oauth2/v3/userinfo&quot;;</span>
+<span class="nc" id="L91">                        HttpHeaders userHeaders = new HttpHeaders();</span>
+<span class="nc" id="L92">                        userHeaders.setBearerAuth(accessToken);</span>
+<span class="nc" id="L93">                        HttpEntity&lt;String&gt; userRequest = new HttpEntity&lt;&gt;(userHeaders);</span>
+<span class="nc" id="L94">                        ResponseEntity&lt;Map&gt; userResponse = restTemplate.exchange(userInfoUrl, HttpMethod.GET, userRequest, Map.class);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                        if (userResponse.getBody() != null) {</span>
+<span class="nc" id="L96">                            String email = (String) userResponse.getBody().get(&quot;email&quot;);</span>
+<span class="nc" id="L97">                            user.setGoogleEmail(email);</span>
+                        }
+<span class="nc" id="L99">                    } catch (Exception ex) {</span>
+<span class="nc" id="L100">                        ex.printStackTrace();</span>
+<span class="nc" id="L101">                    }</span>
+                    
+<span class="nc" id="L103">                    userRepository.save(user);</span>
+                }
+            }
+<span class="nc" id="L106">        } catch (Exception e) {</span>
+<span class="nc" id="L107">            e.printStackTrace();</span>
+<span class="nc" id="L108">        }</span>
+        
+        // Повертаємось на фронтенд сторінку пошти
+<span class="nc" id="L111">        return new RedirectView(&quot;http://localhost:3000/mailing&quot;); </span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

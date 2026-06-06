@@ -47,7 +47,8 @@ public class AnalyticsController {
         java.math.BigDecimal targetRevenue = payload.containsKey("targetRevenue") ? 
             new java.math.BigDecimal(payload.get("targetRevenue")) : null;
         String currency = payload.get("currency");
+        String targetPeriod = payload.get("targetPeriod");
         
-        return ResponseEntity.ok(analyticsService.updateGoals(getProjectId(projectId), Long.parseLong(userId), targetRevenue, currency));
+        return ResponseEntity.ok(analyticsService.updateGoals(getProjectId(projectId), Long.parseLong(userId), targetRevenue, currency, targetPeriod));
     }
 }

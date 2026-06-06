@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatabaseSeeder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aiCRM</a> &gt; <a href="index.source.html" class="el_package">vasyl.karpliak.aiCRM.shared.config</a> &gt; <span class="el_source">DatabaseSeeder.java</span></div><h1>DatabaseSeeder.java</h1><pre class="source lang-java linenums">package vasyl.karpliak.aiCRM.shared.config;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+import vasyl.karpliak.aiCRM.iam.domain.User;
+import vasyl.karpliak.aiCRM.iam.enums.UserRoles;
+import vasyl.karpliak.aiCRM.iam.repository.UserRepository;
+import vasyl.karpliak.aiCRM.communications.domain.ChatSession;
+import vasyl.karpliak.aiCRM.communications.domain.Message;
+import vasyl.karpliak.aiCRM.communications.enums.ChannelType;
+import vasyl.karpliak.aiCRM.communications.enums.SessionStatus;
+import vasyl.karpliak.aiCRM.communications.enums.SenderType;
+import vasyl.karpliak.aiCRM.communications.repository.ChatSessionRepository;
+import vasyl.karpliak.aiCRM.communications.repository.MessageRepository;
+
+import java.time.LocalDateTime;
+
+@Component
+public class DatabaseSeeder implements CommandLineRunner {
+
+    private final UserRepository userRepository;
+    private final ChatSessionRepository chatSessionRepository;
+    private final MessageRepository messageRepository;
+
+<span class="nc" id="L25">    public DatabaseSeeder(UserRepository userRepository, ChatSessionRepository chatSessionRepository, MessageRepository messageRepository) {</span>
+<span class="nc" id="L26">        this.userRepository = userRepository;</span>
+<span class="nc" id="L27">        this.chatSessionRepository = chatSessionRepository;</span>
+<span class="nc" id="L28">        this.messageRepository = messageRepository;</span>
+<span class="nc" id="L29">    }</span>
+
+    @Override
+    public void run(String... args) {
+        // Seed default Team Lead
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        if (userRepository.count() == 0) {</span>
+<span class="nc" id="L35">            User teamLead = new User();</span>
+<span class="nc" id="L36">            teamLead.setName(&quot;Team Lead&quot;);</span>
+<span class="nc" id="L37">            teamLead.setLogin(&quot;teamlead&quot;);</span>
+<span class="nc" id="L38">            teamLead.setPassword(&quot;password&quot;);</span>
+<span class="nc" id="L39">            teamLead.setEmail(&quot;teamlead@example.com&quot;);</span>
+<span class="nc" id="L40">            teamLead.setCompany(&quot;AI CRM Inc.&quot;);</span>
+<span class="nc" id="L41">            teamLead.setPhone(&quot;+380000000001&quot;);</span>
+<span class="nc" id="L42">            teamLead.setRole(UserRoles.ADMIN);</span>
+<span class="nc" id="L43">            User savedTeamLead = userRepository.save(teamLead);</span>
+
+            // Seed default Sales Rep
+<span class="nc" id="L46">            User sales = new User();</span>
+<span class="nc" id="L47">            sales.setName(&quot;Sales Rep&quot;);</span>
+<span class="nc" id="L48">            sales.setLogin(&quot;sales&quot;);</span>
+<span class="nc" id="L49">            sales.setPassword(&quot;password&quot;);</span>
+<span class="nc" id="L50">            sales.setEmail(&quot;sales@example.com&quot;);</span>
+<span class="nc" id="L51">            sales.setCompany(&quot;AI CRM Inc.&quot;);</span>
+<span class="nc" id="L52">            sales.setPhone(&quot;+380000000002&quot;);</span>
+<span class="nc" id="L53">            sales.setRole(UserRoles.MANAGER);</span>
+<span class="nc" id="L54">            userRepository.save(sales);</span>
+
+            // Seed a mock chat session
+<span class="nc" id="L57">            ChatSession session = new ChatSession();</span>
+<span class="nc" id="L58">            session.setAssignedUserId(savedTeamLead.getId());</span>
+<span class="nc" id="L59">            session.setTeamId(1L);</span>
+<span class="nc" id="L60">            session.setChannelType(ChannelType.FACEBOOK);</span>
+<span class="nc" id="L61">            session.setExternalChatId(&quot;fb_12345&quot;);</span>
+<span class="nc" id="L62">            session.setStatus(SessionStatus.OPEN);</span>
+<span class="nc" id="L63">            ChatSession savedSession = chatSessionRepository.save(session);</span>
+
+<span class="nc" id="L65">            Message msg = new Message();</span>
+<span class="nc" id="L66">            msg.setSession(savedSession);</span>
+<span class="nc" id="L67">            msg.setSenderType(SenderType.CLIENT);</span>
+<span class="nc" id="L68">            msg.setText(&quot;Привіт! Я зацікавлений у ваших послугах, підкажіть ціну.&quot;);</span>
+<span class="nc" id="L69">            msg.setCreatedAt(LocalDateTime.now().minusMinutes(5));</span>
+<span class="nc" id="L70">            messageRepository.save(msg);</span>
+        }
+<span class="nc" id="L72">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

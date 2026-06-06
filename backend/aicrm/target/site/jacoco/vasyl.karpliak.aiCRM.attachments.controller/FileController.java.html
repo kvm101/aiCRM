@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aiCRM</a> &gt; <a href="index.source.html" class="el_package">vasyl.karpliak.aiCRM.attachments.controller</a> &gt; <span class="el_source">FileController.java</span></div><h1>FileController.java</h1><pre class="source lang-java linenums">package vasyl.karpliak.aiCRM.attachments.controller;
+
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import vasyl.karpliak.aiCRM.attachments.domain.FileAttachment;
+import vasyl.karpliak.aiCRM.attachments.dto.FileAttachmentDTO;
+import vasyl.karpliak.aiCRM.attachments.repository.FileAttachmentRepository;
+import vasyl.karpliak.aiCRM.attachments.service.FileAttachmentService;
+import vasyl.karpliak.aiCRM.shared.context.RequestContextHelper;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/files&quot;)
+public class FileController {
+
+    private final FileAttachmentService fileAttachmentService;
+    private final FileAttachmentRepository fileAttachmentRepository;
+
+<span class="nc" id="L31">    public FileController(FileAttachmentService fileAttachmentService, FileAttachmentRepository fileAttachmentRepository) {</span>
+<span class="nc" id="L32">        this.fileAttachmentService = fileAttachmentService;</span>
+<span class="nc" id="L33">        this.fileAttachmentRepository = fileAttachmentRepository;</span>
+<span class="nc" id="L34">    }</span>
+
+    private Long resolveProjectId(String projectIdHeader) {
+<span class="nc bnc" id="L37" title="All 4 branches missed.">        if (projectIdHeader != null &amp;&amp; !projectIdHeader.isBlank()) {</span>
+<span class="nc" id="L38">            return Long.parseLong(projectIdHeader);</span>
+        }
+<span class="nc" id="L40">        return RequestContextHelper.getCurrentProjectId();</span>
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;FileAttachmentDTO&gt;&gt; list(
+            @RequestHeader(name = &quot;X-Project-Id&quot;, required = false) String projectId) {
+<span class="nc" id="L46">        return ResponseEntity.ok(fileAttachmentService.listForProject(resolveProjectId(projectId)));</span>
+    }
+
+    @PostMapping(value = &quot;/upload&quot;, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity&lt;FileAttachmentDTO&gt; upload(
+            @RequestPart(&quot;file&quot;) MultipartFile file,
+            @RequestParam(required = false) Long dealEventId,
+            @RequestParam(required = false) Long taskId,
+            @RequestParam(required = false) Long clientId,
+            @RequestParam(required = false) Integer clientNoteIndex,
+            @RequestHeader(name = &quot;X-Project-Id&quot;, required = false) String projectId) throws IOException {
+<span class="nc" id="L57">        return ResponseEntity.ok(fileAttachmentService.upload(</span>
+                file,
+<span class="nc" id="L59">                resolveProjectId(projectId),</span>
+                dealEventId,
+                taskId,
+                clientId,
+                clientNoteIndex
+        ));
+    }
+
+    @GetMapping(&quot;/{id}/download&quot;)
+    public ResponseEntity&lt;Resource&gt; download(
+            @PathVariable Long id,
+            @RequestHeader(name = &quot;X-Project-Id&quot;, required = false) String projectIdHeader) throws IOException {
+<span class="nc" id="L71">        Long projectId = resolveProjectId(projectIdHeader);</span>
+<span class="nc" id="L72">        FileAttachment attachment = fileAttachmentRepository.findByIdAndProjectId(id, projectId)</span>
+<span class="nc" id="L73">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Файл не знайдено&quot;));</span>
+
+<span class="nc" id="L75">        Path path = Path.of(attachment.getStoredPath());</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (!Files.exists(path)) {</span>
+<span class="nc" id="L77">            throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Файл відсутній на диску&quot;);</span>
+        }
+
+<span class="nc" id="L80">        FileSystemResource resource = new FileSystemResource(path);</span>
+<span class="nc" id="L81">        String filename = path.getFileName().toString();</span>
+<span class="nc" id="L82">        MediaType mediaType = resolveDownloadMediaType(attachment.getContentType(), filename);</span>
+
+<span class="nc" id="L84">        return ResponseEntity.ok()</span>
+<span class="nc" id="L85">                .contentType(mediaType)</span>
+<span class="nc" id="L86">                .header(HttpHeaders.CONTENT_DISPOSITION, &quot;attachment; filename=\&quot;&quot; + filename.replace(&quot;\&quot;&quot;, &quot;&quot;) + &quot;\&quot;&quot;)</span>
+<span class="nc" id="L87">                .body(resource);</span>
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; delete(
+            @PathVariable Long id,
+            @RequestHeader(name = &quot;X-Project-Id&quot;, required = false) String projectIdHeader) {
+<span class="nc" id="L94">        Long projectId = resolveProjectId(projectIdHeader);</span>
+<span class="nc" id="L95">        fileAttachmentService.delete(id, projectId);</span>
+<span class="nc" id="L96">        return ResponseEntity.noContent().build();</span>
+    }
+
+    private static MediaType resolveDownloadMediaType(String storedContentType, String filename) {
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (StringUtils.hasText(storedContentType)) {</span>
+            try {
+<span class="nc" id="L102">                String ct = storedContentType.trim();</span>
+<span class="nc" id="L103">                int semi = ct.indexOf(';');</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">                if (semi &gt; 0) {</span>
+<span class="nc" id="L105">                    ct = ct.substring(0, semi).trim();</span>
+                }
+<span class="nc" id="L107">                return MediaType.parseMediaType(ct);</span>
+<span class="nc" id="L108">            } catch (Exception ignored) {</span>
+                // fall through
+            }
+        }
+<span class="nc" id="L112">        String lower = filename.toLowerCase();</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (lower.endsWith(&quot;.pdf&quot;)) {</span>
+<span class="nc" id="L114">            return MediaType.APPLICATION_PDF;</span>
+        }
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (lower.endsWith(&quot;.png&quot;)) {</span>
+<span class="nc" id="L117">            return MediaType.IMAGE_PNG;</span>
+        }
+<span class="nc bnc" id="L119" title="All 4 branches missed.">        if (lower.endsWith(&quot;.jpg&quot;) || lower.endsWith(&quot;.jpeg&quot;)) {</span>
+<span class="nc" id="L120">            return MediaType.IMAGE_JPEG;</span>
+        }
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        if (lower.endsWith(&quot;.csv&quot;)) {</span>
+<span class="nc" id="L123">            return MediaType.parseMediaType(&quot;text/csv&quot;);</span>
+        }
+<span class="nc" id="L125">        return MediaType.APPLICATION_OCTET_STREAM;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

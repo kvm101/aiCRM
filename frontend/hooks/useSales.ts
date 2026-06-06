@@ -337,7 +337,7 @@ export const useGoalsAnalytics = () => {
   const activeProjectId = useProjectStore((state) => state.activeProjectId);
   return useQuery({
     queryKey: ['analytics', 'goals', activeProjectId],
-    queryFn: async (): Promise<{ achievedRevenue: number; targetRevenue: number; currency: string }> => {
+    queryFn: async (): Promise<{ achievedRevenue: number; targetRevenue: number; currency: string; targetPeriod: string }> => {
       const { data } = await apiClient.get('/analytics/goals', { withCredentials: true });
       return data;
     },
@@ -349,7 +349,7 @@ export const useGoalsAnalytics = () => {
 export const useUpdateGoalsAnalytics = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (goals: { targetRevenue: string; currency: string }) => {
+    mutationFn: async (goals: { targetRevenue: string; currency: string; targetPeriod: string }) => {
       const { data } = await apiClient.put('/analytics/goals', goals, { withCredentials: true });
       return data;
     },

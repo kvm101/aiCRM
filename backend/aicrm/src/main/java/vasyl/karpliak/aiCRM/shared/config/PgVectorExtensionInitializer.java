@@ -36,7 +36,15 @@ public class PgVectorExtensionInitializer implements ApplicationListener<Context
         }
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
+            log.info("Initializing PgVector extension and vector_store schema...");
             statement.execute("CREATE EXTENSION IF NOT EXISTS vector");
+            statement.execute("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"");
+            statement.execute("CREATE TABLE IF NOT EXISTS vector_store (" +
+                    "id uuid DEFAULT uuid_generate_v4 () PRIMARY KEY, " +
+                    "content text, " +
+                    "metadata json, " +
+                    "embedding vector(768))");
+            log.info("Successfully initialized vector_store schema.");
         } catch (Exception e) {
             log.warn("Could not run CREATE EXTENSION vector: {}", e.getMessage());
         }

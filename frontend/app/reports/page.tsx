@@ -130,13 +130,13 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6 max-w-6xl mx-auto flex flex-col h-[calc(100vh-7rem)]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
             Reporting Center
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
             Асинхронна генерація CSV через чергу; завантаження після статусу Completed.
           </p>
         </div>
@@ -209,8 +209,9 @@ export default function ReportsPage() {
         </Dialog>
       </div>
 
-      <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-        <Table>
+      <div className="flex-1 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm min-h-0">
+        <div className="overflow-y-auto h-full">
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Report Name</TableHead>
@@ -277,7 +278,8 @@ export default function ReportsPage() {
               </TableRow>
             )}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </div>
     </div>
   );
