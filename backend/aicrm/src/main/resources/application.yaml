@@ -7,7 +7,7 @@ spring:
       # OpenAI starter тягне EmbeddingModel; для pgvector лишаємо лише Google GenAI embeddings
       - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
       # Тимчасово вимикаємо PgVectorStore, щоб при attach файлів не йшли embeddings/LLM виклики назовні
-      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+      # - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
 
   threads:
     virtual:
@@ -24,6 +24,7 @@ spring:
         index-type: HNSW
         distance-type: COSINE_DISTANCE
         dimensions: 768
+        initialize-schema: true
 
     mcp:
       server:
@@ -36,12 +37,13 @@ spring:
 
     google:
       genai:
-        api-key: ${GEMINI_API_KEY:AIzaSyABaMRAbypXDyxv0dOoQb0DvO2aGcAgO7k}
+        api-key: ${GEMINI_API_KEY:AIzaSyDd-SxvOf5GLW75Y3Pr0sTbrLLDwyBp8ks}
         embedding:
-          api-key: ${GEMINI_API_KEY:AIzaSyABaMRAbypXDyxv0dOoQb0DvO2aGcAgO7k}
+          api-key: ${GEMINI_API_KEY:AIzaSyDd-SxvOf5GLW75Y3Pr0sTbrLLDwyBp8ks}
           text:
             options:
-              model: text-embedding-004
+              model: gemini-embedding-2
+              output-dimensionality: 768
         chat:
           options:
             model: gemini-2.5-flash
@@ -68,7 +70,7 @@ spring:
       api-key: ${GITHUB_TOKEN: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}
       
     mistralai:
-      api-key: ${MISTRAL_API_KEY:QjnXYGwjeawhXw6mmX0cEKBOg8ShG5WV}
+      api-key: ${MISTRAL_API_KEY:LvAgUq6rbOlnempIEjMRB8t5aWU7tHy8}
 
   datasource:
     url: jdbc:postgresql://localhost:5432/mydatabase
@@ -113,7 +115,11 @@ management:
 
 springdoc:
   api-docs:
-    version: OPENAPI_3_0
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
 
 google:
   client:
@@ -126,3 +132,8 @@ google:
 facebook:
   messenger:
     verify-token: ${FACEBOOK_VERIFY_TOKEN:my_super_secret_crm_token_2026}
+
+aicrm:
+  attachments:
+    vector-indexing:
+      enabled: true

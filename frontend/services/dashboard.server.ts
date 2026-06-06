@@ -1,11 +1,10 @@
 import { serverFetch } from './serverApiClient';
 
 export interface DashboardStat {
-  title: string;
-  value: string;
-  change: string;
+  iconKey: string; // 'users' | 'tasks' | 'chats' | 'unread' | 'deals' | 'won'
+  value: number;
+  rawData: Record<string, number>; // raw numbers for client-side i18n formatting
   trend: 'up' | 'down';
-  icon: string; // ключ для іконки
 }
 
 export interface DashboardData {
@@ -28,7 +27,7 @@ interface BackendDashboardStats {
 
 /**
  * BFF Aggregation Service for the Dashboard.
- * Fetches real data from the backend /dashboard/stats endpoint.
+ * Returns raw numeric data — client translates labels via i18n.
  */
 export async function getDashboardStats(): Promise<DashboardData> {
   try {
@@ -36,46 +35,40 @@ export async function getDashboardStats(): Promise<DashboardData> {
 
     const stats: DashboardStat[] = [
       {
-        title: "Контакти",
-        value: s.totalContacts.toLocaleString(),
-        change: `${s.totalContacts} загалом`,
-        trend: "up",
-        icon: "users",
+        iconKey: 'users',
+        value: s.totalContacts,
+        rawData: { total: s.totalContacts },
+        trend: 'up',
       },
       {
-        title: "Активні задачі",
-        value: s.totalTasks.toLocaleString(),
-        change: "на Kanban-дошці",
-        trend: "up",
-        icon: "tasks",
+        iconKey: 'tasks',
+        value: s.totalTasks,
+        rawData: { total: s.totalTasks },
+        trend: 'up',
       },
       {
-        title: "Відкриті чати",
-        value: s.openChats.toLocaleString(),
-        change: s.openChats > 0 ? `${s.openChats} активних` : "Немає активних",
-        trend: s.openChats > 0 ? "up" : "down",
-        icon: "chats",
+        iconKey: 'chats',
+        value: s.openChats,
+        rawData: { openChats: s.openChats },
+        trend: s.openChats > 0 ? 'up' : 'down',
       },
       {
-        title: "Непрочитані повідомлення",
-        value: s.unreadMessages.toLocaleString(),
-        change: s.unreadMessages > 0 ? "Потребують уваги" : "Все прочитано",
-        trend: s.unreadMessages > 0 ? "up" : "down",
-        icon: "unread",
+        iconKey: 'unread',
+        value: s.unreadMessages,
+        rawData: { unread: s.unreadMessages },
+        trend: s.unreadMessages > 0 ? 'up' : 'down',
       },
       {
-        title: "Усього угод",
-        value: s.totalDeals.toLocaleString(),
-        change: `${s.activeDeals} активних`,
-        trend: "up",
-        icon: "deals",
+        iconKey: 'deals',
+        value: s.totalDeals,
+        rawData: { total: s.totalDeals, active: s.activeDeals },
+        trend: 'up',
       },
       {
-        title: "Виграні угоди",
-        value: s.wonDeals.toLocaleString(),
-        change: s.totalDeals > 0 ? `${Math.round((s.wonDeals / s.totalDeals) * 100)}% win rate` : "0%",
-        trend: s.wonDeals > 0 ? "up" : "down",
-        icon: "won",
+        iconKey: 'won',
+        value: s.wonDeals,
+        rawData: { won: s.wonDeals, total: s.totalDeals },
+        trend: s.wonDeals > 0 ? 'up' : 'down',
       },
     ];
 
@@ -87,15 +80,15 @@ export async function getDashboardStats(): Promise<DashboardData> {
       unreadMessages: s.unreadMessages,
     };
   } catch (error) {
-    console.error("BFF Dashboard aggregation failed:", error);
+    console.error('BFF Dashboard aggregation failed:', error);
     return {
       stats: [
-        { title: "Контакти", value: "N/A", change: "—", trend: "up", icon: "users" },
-        { title: "Активні задачі", value: "N/A", change: "—", trend: "up", icon: "tasks" },
-        { title: "Відкриті чати", value: "N/A", change: "—", trend: "down", icon: "chats" },
-        { title: "Непрочитані повідомлення", value: "N/A", change: "—", trend: "down", icon: "unread" },
-        { title: "Усього угод", value: "N/A", change: "—", trend: "up", icon: "deals" },
-        { title: "Виграні угоди", value: "N/A", change: "—", trend: "down", icon: "won" },
+        { iconKey: 'users',  value: 0, rawData: { total: 0 }, trend: 'up' },
+        { iconKey: 'tasks',  value: 0, rawData: { total: 0 }, trend: 'up' },
+        { iconKey: 'chats',  value: 0, rawData: { openChats: 0 }, trend: 'down' },
+        { iconKey: 'unread', value: 0, rawData: { unread: 0 }, trend: 'down' },
+        { iconKey: 'deals',  value: 0, rawData: { total: 0, active: 0 }, trend: 'up' },
+        { iconKey: 'won',    value: 0, rawData: { won: 0, total: 0 }, trend: 'down' },
       ],
       totalDeals: 0,
       activeDeals: 0,

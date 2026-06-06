@@ -32,27 +32,19 @@ import {
 import { Search, Plus, Trash2, Pencil, FolderOpen, MessageSquare, Send, User, Bot, History, Clock, CheckCircle2, Paperclip, X, Download } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
-  useDeals,
-  useCreateDeal,
-  useUpdateDeal,
-  useDeleteDeal,
-  useUpdateDealStatus,
-  Deal,
-  useClients,
-  useDealEvents,
-  useCreateDealNote,
-  useCreateTask,
-  useUploadAttachment,
-  useAttachments,
-  useDeleteAttachment,
-  type FileAttachment,
+  useDeals, useCreateDeal, useUpdateDeal, useDeleteDeal, useUpdateDealStatus,
+  Deal, useClients, useDealEvents, useCreateDealNote, useCreateTask,
+  useUploadAttachment, useAttachments, useDeleteAttachment, type FileAttachment,
 } from "@/hooks/useSales";
 import { useProjectStore } from "@/store/useProjectStore";
 import { DeleteAttachmentDialog } from "@/components/attachments/DeleteAttachmentDialog";
+import { useLanguageStore } from "@/store/useLanguageStore";
+import { t } from "@/lib/i18n";
 
 const STATUS_MAP: Record<string, string> = {
   NEW: "Нові",
@@ -70,6 +62,11 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 };
 
 export default function DealsPage() {
+  const { lang } = useLanguageStore();
+  const tr = t(lang);
+
+  const STATUS_MAP_I18N = tr.dealStatus;
+
   const [searchTerm, setSearchTerm] = useState("");
   const { data: deals = [], isLoading } = useDeals();
   const { data: clients = [] } = useClients();
@@ -102,31 +99,31 @@ export default function DealsPage() {
 
   if (selectedDeal) {
     return (
-      <div className="h-[calc(100vh-4rem)] p-2 sm:p-6 w-full max-w-7xl mx-auto">
+      <div className="h-[calc(100vh-7rem)] w-full max-w-6xl mx-auto">
         <DealDetailsPanel deal={selectedDeal} onClose={() => setSelectedDeal(null)} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto flex flex-col h-[calc(100vh-4rem)]">
+    <div className="space-y-6 max-w-6xl mx-auto flex flex-col h-[calc(100vh-7rem)]">
       {/* Панель: Таблиця угод */}
       <div className="flex-1 flex flex-col space-y-4 w-full">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <div className="flex items-baseline gap-3">
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Угоди</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">{tr.dealsPage.title}</h1>
               <Badge variant="secondary" className="text-sm rounded-full px-3 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">
-                Всього: {deals.length}
+                {tr.dealsPage.title}: {deals.length}
               </Badge>
             </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Керуйте угодами та продажами.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">{tr.dealsPage.subtitle}</p>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-72">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
               <Input
-                placeholder="Пошук угод..."
+                placeholder={tr.dealsPage.searchPlaceholder}
                 className="pl-9"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -140,7 +137,7 @@ export default function DealsPage() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Створити угоду</DialogTitle>
+                  <DialogTitle>{tr.dealsPage.addDeal}</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <Input
@@ -187,7 +184,7 @@ export default function DealsPage() {
                 </div>
                 <DialogFooter>
                   <Button onClick={handleAddDeal} disabled={createDeal.isPending}>
-                    {createDeal.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Створити"}
+                    {createDeal.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : tr.dealsPage.save}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -195,26 +192,27 @@ export default function DealsPage() {
           </div>
         </div>
 
-        <div className="flex-1 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-          {isLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
-            </div>
-          ) : (
+        <div className="flex-1 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm min-h-0">
+          <div className="overflow-auto h-full">
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+              </div>
+            ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Назва</TableHead>
-                  <TableHead>Контакт</TableHead>
-                  <TableHead>Етап</TableHead>
-                  <TableHead className="text-right">Бюджет</TableHead>
+                  <TableHead>{tr.dealsPage.colTitle}</TableHead>
+                  <TableHead>{tr.dealsPage.colClient}</TableHead>
+                  <TableHead>{tr.dealsPage.colStatus}</TableHead>
+                  <TableHead className="text-right">{tr.dealsPage.colBudget}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredDeals.map((deal) => (
                   <TableRow 
                     key={deal.id} 
-                    className={`cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 ${selectedDeal?.id === deal.id ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : ''}`}
+                    className={`cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 ${(selectedDeal as any)?.id === deal.id ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : ''}`}
                     onClick={() => setSelectedDeal(deal)}
                   >
                     <TableCell className="font-medium">{deal.title}</TableCell>
@@ -224,7 +222,7 @@ export default function DealsPage() {
                         value={deal.status} 
                         onValueChange={(v) => {
                           updateDealStatus.mutate({ id: deal.id, status: v });
-                          if (selectedDeal?.id === deal.id) setSelectedDeal({...deal, status: v as any});
+                          if ((selectedDeal as any)?.id === deal.id) setSelectedDeal({...deal, status: v as any});
                         }}
                       >
                         <SelectTrigger className="h-8 w-[130px] text-xs">
@@ -232,7 +230,7 @@ export default function DealsPage() {
                         </SelectTrigger>
                         <SelectContent>
                           {Object.entries(STATUS_MAP).map(([key, label]) => (
-                            <SelectItem key={key} value={key}>{label}</SelectItem>
+                            <SelectItem key={key} value={key}>{STATUS_MAP_I18N[key as keyof typeof STATUS_MAP_I18N] || label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -245,13 +243,14 @@ export default function DealsPage() {
                 {filteredDeals.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="h-24 text-center text-zinc-500">
-                      Угод не знайдено
+                      {tr.dealsPage.notFound}
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -269,6 +268,9 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
   const deleteDeal = useDeleteDeal();
 
   const [attachmentToDelete, setAttachmentToDelete] = useState<FileAttachment | null>(null);
+  
+  const { lang } = useLanguageStore();
+  const [activeView, setActiveView] = useState<"info" | "feed">("info");
   
   const [inputText, setInputText] = useState("");
   const [mode, setMode] = useState<"note" | "task">("note");
@@ -366,8 +368,24 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
         isPending={deleteAttachment.isPending}
       />
       
+      {/* Mobile view tabs switcher */}
+      <div className="flex border-b border-zinc-200 dark:border-zinc-800 md:hidden shrink-0 w-full bg-zinc-50 dark:bg-zinc-900/50">
+        <button
+          onClick={() => setActiveView("info")}
+          className={cn("flex-1 py-3 text-sm font-semibold text-center border-b-2 transition-colors", activeView === "info" ? "border-indigo-600 text-indigo-600 dark:text-indigo-400" : "border-transparent text-zinc-500")}
+        >
+          {lang === 'ua' ? 'Деталі' : 'Details'}
+        </button>
+        <button
+          onClick={() => setActiveView("feed")}
+          className={cn("flex-1 py-3 text-sm font-semibold text-center border-b-2 transition-colors", activeView === "feed" ? "border-indigo-600 text-indigo-600 dark:text-indigo-400" : "border-transparent text-zinc-500")}
+        >
+          {lang === 'ua' ? 'Історія та нотатки' : 'History & Notes'}
+        </button>
+      </div>
+
       {/* Ліва колонка (1/3): Статична інформація */}
-      <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 p-6 flex flex-col gap-6 overflow-y-auto bg-white dark:bg-zinc-950 shrink-0">
+      <div className={cn("w-full md:w-1/3 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 p-6 flex flex-col gap-6 overflow-y-auto bg-white dark:bg-zinc-950 shrink-0 h-full", activeView === "info" ? "flex" : "hidden md:flex")}>
         <div className="flex items-start justify-between">
           <Button variant="ghost" size="sm" onClick={onClose} className="h-8 px-2 -ml-2 text-zinc-500 hover:text-zinc-900">
             &larr; Назад
@@ -421,7 +439,7 @@ function DealDetailsPanel({ deal, onClose }: { deal: Deal, onClose: () => void }
       </div>
 
       {/* Права колонка (2/3): Історія та Чат */}
-      <div className="w-full md:w-2/3 flex flex-col h-full bg-zinc-50 dark:bg-zinc-900/20">
+      <div className={cn("w-full md:w-2/3 flex flex-col h-full bg-zinc-50 dark:bg-zinc-900/20", activeView === "feed" ? "flex" : "hidden md:flex")}>
         
         {/* Хедер зони історії */}
         <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0 flex items-center justify-between">

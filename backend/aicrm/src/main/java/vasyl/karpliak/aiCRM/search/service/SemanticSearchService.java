@@ -14,16 +14,22 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@ConditionalOnBean(VectorStore.class)
 public class SemanticSearchService {
 
     private final VectorStore vectorStore;
 
-    public SemanticSearchService(VectorStore vectorStore) {
-        this.vectorStore = vectorStore;
+    public SemanticSearchService(org.springframework.beans.factory.ObjectProvider<VectorStore> vectorStoreProvider) {
+        this.vectorStore = vectorStoreProvider.getIfAvailable();
+    }
+
+    public boolean isAvailable() {
+        return this.vectorStore != null;
     }
 
     public SemanticSearchResponseDTO search(String query, int topK, Long projectId) {
+        if (vectorStore == null) {
+            throw new IllegalStateException("VectorStore is disabled or unavailable");
+        }
         if (!StringUtils.hasText(query)) {
             throw new IllegalArgumentException("query is required");
         }

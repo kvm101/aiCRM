@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntegrationController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aiCRM</a> &gt; <a href="index.source.html" class="el_package">vasyl.karpliak.aiCRM.sales.controller</a> &gt; <span class="el_source">IntegrationController.java</span></div><h1>IntegrationController.java</h1><pre class="source lang-java linenums">package vasyl.karpliak.aiCRM.sales.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import vasyl.karpliak.aiCRM.sales.service.SalesIntegrationService;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping(&quot;/integration&quot;)
+public class IntegrationController {
+
+    private final SalesIntegrationService salesIntegrationService;
+
+<span class="nc" id="L15">    public IntegrationController(SalesIntegrationService salesIntegrationService) {</span>
+<span class="nc" id="L16">        this.salesIntegrationService = salesIntegrationService;</span>
+<span class="nc" id="L17">    }</span>
+
+    @PostMapping(&quot;/incoming-message&quot;)
+    public ResponseEntity&lt;Void&gt; receiveIncomingMessage(
+            @RequestHeader(name = &quot;X-User-Id&quot;) String userIdStr,
+            @RequestBody Map&lt;String, String&gt; payload) {
+        
+<span class="nc" id="L24">        Long userId = Long.parseLong(userIdStr);</span>
+<span class="nc" id="L25">        String identifier = payload.get(&quot;identifier&quot;);</span>
+<span class="nc" id="L26">        String name = payload.get(&quot;name&quot;);</span>
+<span class="nc" id="L27">        String text = payload.get(&quot;text&quot;);</span>
+
+<span class="nc" id="L29">        salesIntegrationService.processIncomingMessage(userId, identifier, name, text);</span>
+        
+<span class="nc" id="L31">        return ResponseEntity.ok().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

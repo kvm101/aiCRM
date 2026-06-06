@@ -5,14 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send, Loader2, Calendar, Inbox, Paperclip, Search, Clock, Plus, Check } from "lucide-react";
+import { Mail, Send, Loader2, Calendar, Inbox, Paperclip, Search, Clock, Plus, Check, ArrowLeft } from "lucide-react";
 import { apiClient } from "@/services/apiClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFolderEmails, useMarkEmailAsRead } from "@/hooks/useMail";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useLanguageStore } from "@/store/useLanguageStore";
+import { t } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 export default function MailingPage() {
+  const { lang } = useLanguageStore();
+  const tr = t(lang);
+
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [text, setText] = useState("");
@@ -43,6 +49,11 @@ export default function MailingPage() {
 
   const [activeTab, setActiveTab] = useState("inbox");
   const [selectedEmail, setSelectedEmail] = useState<any>(null);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSelectedEmail(null);
+  };
 
   const computeSendTime = (): string => {
     let date: Date;
@@ -141,24 +152,24 @@ export default function MailingPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 py-8 flex flex-col h-[calc(100vh-4rem)]">
+    <div className="max-w-6xl mx-auto space-y-6 flex flex-col h-[calc(100vh-7rem)]">
       <div className="flex-1 flex flex-col min-h-0 space-y-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Пошта</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Керуйте вашою електронною поштою.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">{tr.mailingPage.title}</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">{tr.mailingPage.subtitle}</p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 px-4 pt-4 rounded-t-xl shrink-0 flex items-center justify-between">
             <TabsList className="justify-start h-10 bg-transparent p-0 gap-6">
               <TabsTrigger value="inbox" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-2 pb-3 pt-2 text-sm relative">
-                <Inbox className="h-4 w-4 mr-2" /> Вхідні
+                <Inbox className="h-4 w-4 mr-2" /> {lang === 'ua' ? 'Вхідні' : 'Inbox'}
               </TabsTrigger>
               <TabsTrigger value="sent" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-2 pb-3 pt-2 text-sm">
-                <Send className="h-4 w-4 mr-2" /> Надіслані
+                <Send className="h-4 w-4 mr-2" /> {lang === 'ua' ? 'Надіслані' : 'Sent'}
               </TabsTrigger>
               <TabsTrigger value="compose" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-2 pb-3 pt-2 text-sm">
-                <Plus className="h-4 w-4 mr-2" /> Написати
+                <Plus className="h-4 w-4 mr-2" /> {lang === 'ua' ? 'Написати' : 'Compose'}
               </TabsTrigger>
             </TabsList>
             <div className="ml-auto pb-3">
@@ -172,13 +183,13 @@ export default function MailingPage() {
           </div>
 
           <TabsContent value="inbox" className="flex-1 flex min-h-0 m-0 overflow-hidden">
-            <div className="w-1/3 min-w-[300px] border-r border-zinc-200 dark:border-zinc-800 flex flex-col min-h-0">
+            <div className={cn("w-full md:w-1/3 md:min-w-[300px] md:border-r border-zinc-200 dark:border-zinc-800 flex flex-col min-h-0 shrink-0", selectedEmail ? "hidden md:flex" : "flex")}>
               <div className="p-3 bg-zinc-50 dark:bg-zinc-900/30 flex flex-col gap-2 shrink-0">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center">
-                    Вхідні
+                    {lang === 'ua' ? 'Вхідні' : 'Inbox'}
                     <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 px-2 py-0.5 rounded-full font-bold">
-                      {unreadEmailsCount} нових
+                      {unreadEmailsCount} {lang === 'ua' ? 'нових' : 'new'}
                     </span>
                   </span>
                   <select
@@ -186,18 +197,25 @@ export default function MailingPage() {
                     onChange={(e) => setTimeFilter(e.target.value as any)}
                     className="text-xs border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-950 px-2 py-1 outline-none text-zinc-600 dark:text-zinc-400"
                   >
-                    <option value="all">За весь час</option>
-                    <option value="day">За день</option>
-                    <option value="3days">За 3 дні</option>
-                    <option value="week">За тиждень</option>
+                    <option value="all">{lang === 'ua' ? 'За весь час' : 'All time'}</option>
+                    <option value="day">{lang === 'ua' ? 'За день' : 'Last day'}</option>
+                    <option value="3days">{lang === 'ua' ? 'За 3 дні' : 'Last 3 days'}</option>
+                    <option value="week">{lang === 'ua' ? 'За тиждень' : 'Last week'}</option>
                   </select>
                 </div>
               </div>
               <EmailList emails={filteredInboxEmails} type="inbox" />
             </div>
-            <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-zinc-950">
+            <div className={cn("flex-1 p-4 sm:p-6 overflow-y-auto bg-white dark:bg-zinc-950", !selectedEmail ? "hidden md:flex" : "flex")}>
               {selectedEmail ? (
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
+                  <button
+                    onClick={() => setSelectedEmail(null)}
+                    className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md md:hidden text-zinc-500 hover:text-zinc-900 dark:hover:text-white mb-2 flex items-center gap-1.5 text-xs font-semibold"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    {lang === 'ua' ? 'Назад до списку' : 'Back to list'}
+                  </button>
                   <div>
                     <h2 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-zinc-50">{selectedEmail.subject}</h2>
                     <div className="flex flex-col gap-2 text-sm text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 pb-4">
@@ -228,15 +246,22 @@ export default function MailingPage() {
           </TabsContent>
 
           <TabsContent value="sent" className="flex-1 flex min-h-0 m-0 overflow-hidden">
-            <div className="w-1/3 min-w-[300px] border-r border-zinc-200 dark:border-zinc-800 flex flex-col min-h-0">
+            <div className={cn("w-full md:w-1/3 md:min-w-[300px] md:border-r border-zinc-200 dark:border-zinc-800 flex flex-col min-h-0 shrink-0", selectedEmail ? "hidden md:flex" : "flex")}>
               <div className="p-3 bg-zinc-50 dark:bg-zinc-900/30 shrink-0 border-b border-zinc-200 dark:border-zinc-800">
-                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Надіслані</span>
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{lang === 'ua' ? 'Надіслані' : 'Sent'}</span>
               </div>
               <EmailList emails={sentEmails} type="sent" />
             </div>
-            <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-zinc-950">
+            <div className={cn("flex-1 p-4 sm:p-6 overflow-y-auto bg-white dark:bg-zinc-950", !selectedEmail ? "hidden md:flex" : "flex")}>
               {selectedEmail ? (
                 <div className="space-y-6">
+                  <button
+                    onClick={() => setSelectedEmail(null)}
+                    className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md md:hidden text-zinc-500 hover:text-zinc-900 dark:hover:text-white mb-2 flex items-center gap-1.5 text-xs font-semibold"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    {lang === 'ua' ? 'Назад до списку' : 'Back to list'}
+                  </button>
                   <div>
                     <h2 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-zinc-50">{selectedEmail.subject}</h2>
                     <div className="flex flex-col gap-2 text-sm text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 pb-4">
@@ -271,7 +296,7 @@ export default function MailingPage() {
 
               <form onSubmit={handleSend} className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Отримувачі (через кому)</label>
+                  <label className="text-sm font-medium">{lang === 'ua' ? 'Отримувачі (через кому)' : 'Recipients (comma separated)'}</label>
                   <Input
                     placeholder="client1@example.com, client2@example.com"
                     value={to}
@@ -281,9 +306,9 @@ export default function MailingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Тема</label>
+                  <label className="text-sm font-medium">{tr.mailingPage.subject}</label>
                   <Input
-                    placeholder="Введіть тему листа"
+                    placeholder={lang === 'ua' ? 'Введіть тему листа' : 'Enter email subject'}
                     value={subject}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSubject(e.target.value)}
                     required
@@ -291,9 +316,9 @@ export default function MailingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Текст повідомлення</label>
+                  <label className="text-sm font-medium">{tr.mailingPage.body}</label>
                   <Textarea
-                    placeholder="Напишіть ваше повідомлення тут..."
+                    placeholder={lang === 'ua' ? 'Напишіть ваше повідомлення тут...' : 'Write your message here...'}
                     className="min-h-[120px]"
                     value={text}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)}
@@ -303,7 +328,7 @@ export default function MailingPage() {
 
                 {/* Режим відправки */}
                 <div className="space-y-3">
-                  <label className="text-sm font-medium">Відправлення</label>
+                  <label className="text-sm font-medium">{lang === 'ua' ? 'Відправлення' : 'Send timing'}</label>
                   <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1 w-fit">
                     <button
                       type="button"
@@ -314,7 +339,7 @@ export default function MailingPage() {
                         }`}
                     >
                       <Send className="h-3.5 w-3.5 inline mr-1.5" />
-                      Зараз
+                      {lang === 'ua' ? 'Зараз' : 'Now'}
                     </button>
                     <button
                       type="button"
@@ -325,7 +350,7 @@ export default function MailingPage() {
                         }`}
                     >
                       <Clock className="h-3.5 w-3.5 inline mr-1.5" />
-                      Запланувати
+                      {lang === 'ua' ? 'Запланувати' : 'Schedule'}
                     </button>
                   </div>
 
@@ -390,7 +415,7 @@ export default function MailingPage() {
                   ) : (
                     <Calendar className="h-5 w-5 mr-2" />
                   )}
-                  {sendMode === "now" ? "Надіслати зараз" : "Запланувати"}
+                  {sendMode === "now" ? `${lang === 'ua' ? 'Надіслати зараз' : 'Send now'}` : `${lang === 'ua' ? 'Запланувати' : 'Schedule'}`}
                 </Button>
               </form>
             </div>

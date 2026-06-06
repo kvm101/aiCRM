@@ -1,0 +1,10 @@
+vasyl\karpliak\aiCRM\iam\controller\AuthControllerTest.class
+vasyl\karpliak\aiCRM\ai\service\AIChatServiceTest.class
+vasyl\karpliak\aiCRM\ClientControllerTest.class
+vasyl\karpliak\aiCRM\sales\service\ClientServiceTest.class
+vasyl\karpliak\aiCRM\sales\service\DealServiceTest.class
+vasyl\karpliak\aiCRM\sales\service\TaskServiceTest.class
+vasyl\karpliak\aiCRM\communications\controller\FacebookWebhookControllerIT.class
+vasyl\karpliak\aiCRM\sales\controller\DealControllerTest.class
+vasyl\karpliak\aiCRM\iam\service\UserServiceTest.class
+vasyl\karpliak\aiCRM\sales\service\SalesIntegrationServiceTest.class

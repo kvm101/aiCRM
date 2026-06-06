@@ -133,3 +133,17 @@ export const useCreateTeamChat = () => {
     }
   });
 };
+
+export const useRenameChat = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ chatId, clientName }: { chatId: number; clientName: string }) => {
+      const { data } = await apiClient.patch(`/chats/${chatId}/rename`, { clientName }, { withCredentials: true });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
+    }
+  });
+};

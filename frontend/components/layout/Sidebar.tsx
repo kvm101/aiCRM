@@ -4,32 +4,29 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
-  Users,
-  KanbanSquare,
-  MessageSquare,
-  FileBarChart,
-  Settings,
-  Mail,
-  Briefcase,
+  LayoutDashboard, Users, KanbanSquare,
+  MessageSquare, FileBarChart, Mail, Briefcase,
 } from "lucide-react";
 import { useChats } from "@/hooks/useChatWS";
-
-const navigation = [
-  { name: "Головна", href: "/", icon: LayoutDashboard },
-  { name: "Клієнти", href: "/clients", icon: Users },
-  { name: "Угоди", href: "/deals", icon: Briefcase },
-  { name: "Канбан", href: "/kanban", icon: KanbanSquare },
-  { name: "Чати", href: "/chat", icon: MessageSquare },
-  { name: "Пошта", href: "/mailing", icon: Mail },
-];
+import { useLanguageStore } from "@/store/useLanguageStore";
+import { t } from "@/lib/i18n";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { data: chats = [] } = useChats();
+  const { lang } = useLanguageStore();
+  const tr = t(lang);
 
-  // Сума всіх непрочитаних повідомлень по всіх чатах
   const totalUnread = chats.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+
+  const navigation = [
+    { name: tr.nav.home,    href: "/",        icon: LayoutDashboard },
+    { name: tr.nav.clients, href: "/clients", icon: Users },
+    { name: tr.nav.deals,   href: "/deals",   icon: Briefcase },
+    { name: tr.nav.kanban,  href: "/kanban",  icon: KanbanSquare },
+    { name: tr.nav.chats,   href: "/chat",    icon: MessageSquare },
+    { name: tr.nav.mailing, href: "/mailing", icon: Mail },
+  ];
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-zinc-950 text-zinc-50">
@@ -47,7 +44,7 @@ export function Sidebar() {
             const isChat = item.href === "/chat";
             return (
               <Link
-                key={item.name}
+                key={item.href}
                 href={item.href}
                 className={cn(
                   "group flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
@@ -76,7 +73,6 @@ export function Sidebar() {
           })}
         </nav>
       </div>
-
     </div>
   );
 }

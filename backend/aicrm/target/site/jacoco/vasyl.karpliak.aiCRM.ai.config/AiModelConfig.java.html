@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AiModelConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aiCRM</a> &gt; <a href="index.source.html" class="el_package">vasyl.karpliak.aiCRM.ai.config</a> &gt; <span class="el_source">AiModelConfig.java</span></div><h1>AiModelConfig.java</h1><pre class="source lang-java linenums">package vasyl.karpliak.aiCRM.ai.config;
+
+import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.api.OpenAiApi;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Фабрика AI-моделей: Gemini (primary) -&gt; GitHub Models -&gt; Mistral -&gt; Groq (fallback).
+ * Groq та GitHub використовують OpenAI-сумісний протокол.
+ */
+@Configuration
+<span class="nc" id="L15">public class AiModelConfig {</span>
+
+    @Value(&quot;${spring.ai.groq.api-key:}&quot;)
+    private String groqApiKey;
+
+    @Value(&quot;${spring.ai.github.api-key:}&quot;)
+    private String githubApiKey;
+
+    /**
+     * Groq — OpenAI-compatible API, дуже швидкий inference.
+     * Модель: llama3-groq-70b-8192-tool-use-preview — оптимізована для tool calling.
+     */
+    @Bean(name = &quot;groqModel&quot;)
+    public OpenAiChatModel groqModel() {
+<span class="nc" id="L29">        OpenAiApi groqApi = OpenAiApi.builder()</span>
+<span class="nc" id="L30">                .baseUrl(&quot;https://api.groq.com/openai&quot;)</span>
+<span class="nc" id="L31">                .apiKey(groqApiKey)</span>
+<span class="nc" id="L32">                .build();</span>
+
+<span class="nc" id="L34">        return OpenAiChatModel.builder()</span>
+<span class="nc" id="L35">                .openAiApi(groqApi)</span>
+<span class="nc" id="L36">                .defaultOptions(OpenAiChatOptions.builder()</span>
+<span class="nc" id="L37">                        .model(&quot;llama3-groq-70b-8192-tool-use-preview&quot;)</span>
+<span class="nc" id="L38">                        .temperature(0.1)</span>
+<span class="nc" id="L39">                        .build())</span>
+<span class="nc" id="L40">                .build();</span>
+    }
+
+    /**
+     * GitHub Models — OpenAI-compatible API.
+     * Модель: gpt-4o-mini
+     */
+    @Bean(name = &quot;githubModel&quot;)
+    public OpenAiChatModel githubModelsChatModel() {
+<span class="nc" id="L49">        OpenAiApi githubApi = OpenAiApi.builder()</span>
+<span class="nc" id="L50">                .baseUrl(&quot;https://models.inference.ai.azure.com&quot;)</span>
+<span class="nc" id="L51">                .apiKey(githubApiKey)</span>
+<span class="nc" id="L52">                .build();</span>
+
+<span class="nc" id="L54">        return OpenAiChatModel.builder()</span>
+<span class="nc" id="L55">                .openAiApi(githubApi)</span>
+<span class="nc" id="L56">                .defaultOptions(OpenAiChatOptions.builder()</span>
+<span class="nc" id="L57">                        .model(&quot;gpt-4o-mini&quot;)</span>
+<span class="nc" id="L58">                        .temperature(0.1)</span>
+<span class="nc" id="L59">                        .build())</span>
+<span class="nc" id="L60">                .build();</span>
+    }
+    /**
+     * Mistral AI — OpenAI-compatible API.
+     * Модель: mistral-small-latest
+     */
+    @Bean(name = &quot;mistralModel&quot;)
+    public OpenAiChatModel mistralModelsChatModel(@Value(&quot;${spring.ai.mistralai.api-key:}&quot;) String mistralApiKey) {
+<span class="nc" id="L68">        OpenAiApi mistralApi = OpenAiApi.builder()</span>
+<span class="nc" id="L69">                .baseUrl(&quot;https://api.mistral.ai&quot;)</span>
+<span class="nc" id="L70">                .apiKey(mistralApiKey)</span>
+<span class="nc" id="L71">                .build();</span>
+
+<span class="nc" id="L73">        return OpenAiChatModel.builder()</span>
+<span class="nc" id="L74">                .openAiApi(mistralApi)</span>
+<span class="nc" id="L75">                .defaultOptions(OpenAiChatOptions.builder()</span>
+<span class="nc" id="L76">                        .model(&quot;mistral-small-latest&quot;)</span>
+<span class="nc" id="L77">                        .temperature(0.1)</span>
+<span class="nc" id="L78">                        .build())</span>
+<span class="nc" id="L79">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

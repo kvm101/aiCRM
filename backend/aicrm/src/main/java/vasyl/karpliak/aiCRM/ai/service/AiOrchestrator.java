@@ -11,8 +11,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import vasyl.karpliak.aiCRM.ai.tools.CommunicationsAITools;
 import vasyl.karpliak.aiCRM.ai.tools.SalesAITools;
+import vasyl.karpliak.aiCRM.ai.tools.SearchAITools;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * AiOrchestrator — реалізує стратегію Gemini -> GitHub -> Mistral -> Groq з автоматичним fallback.
@@ -29,6 +31,7 @@ public class AiOrchestrator {
     
     private final SalesAITools salesAITools;
     private final CommunicationsAITools communicationsAITools;
+    private final Optional<SearchAITools> searchAITools;
 
     @Autowired
     public AiOrchestrator(
@@ -37,13 +40,15 @@ public class AiOrchestrator {
             @Qualifier("githubModel") OpenAiChatModel githubModel,
             @Qualifier("mistralModel") OpenAiChatModel mistralModel,
             SalesAITools salesAITools,
-            CommunicationsAITools communicationsAITools) {
+            CommunicationsAITools communicationsAITools,
+            Optional<SearchAITools> searchAITools) {
         this.geminiModel = geminiModel;
         this.groqModel = groqModel;
         this.githubModel = githubModel;
         this.mistralModel = mistralModel;
         this.salesAITools = salesAITools;
         this.communicationsAITools = communicationsAITools;
+        this.searchAITools = searchAITools;
     }
 
     public String generateWithFallback(String systemPrompt,
@@ -122,11 +127,16 @@ public class AiOrchestrator {
                 .builder(model)
                 .build();
 
+        java.util.List<Object> toolsList = new java.util.ArrayList<>();
+        toolsList.add(salesAITools);
+        toolsList.add(communicationsAITools);
+        searchAITools.ifPresent(toolsList::add);
+
         return chatClient.prompt()
                 .system(systemPrompt)
                 .messages(history)
                 .user(userMessage)
-                .tools(salesAITools, communicationsAITools)
+                .tools(toolsList.toArray())
                 .call()
                 .content();
     }

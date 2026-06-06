@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReportDownloadController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aiCRM</a> &gt; <a href="index.source.html" class="el_package">vasyl.karpliak.aiCRM.reporting.controller</a> &gt; <span class="el_source">ReportDownloadController.java</span></div><h1>ReportDownloadController.java</h1><pre class="source lang-java linenums">package vasyl.karpliak.aiCRM.reporting.controller;
+
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import vasyl.karpliak.aiCRM.reporting.domain.ReportTask;
+import vasyl.karpliak.aiCRM.reporting.enums.ReportStatus;
+import vasyl.karpliak.aiCRM.reporting.repository.ReportTaskRepository;
+import vasyl.karpliak.aiCRM.shared.context.RequestContextHelper;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+@RestController
+@RequestMapping(&quot;/reports&quot;)
+public class ReportDownloadController {
+
+    private final ReportTaskRepository reportTaskRepository;
+
+<span class="nc" id="L23">    public ReportDownloadController(ReportTaskRepository reportTaskRepository) {</span>
+<span class="nc" id="L24">        this.reportTaskRepository = reportTaskRepository;</span>
+<span class="nc" id="L25">    }</span>
+
+    private Long resolveProjectId(String projectIdHeader) {
+<span class="nc bnc" id="L28" title="All 4 branches missed.">        if (projectIdHeader != null &amp;&amp; !projectIdHeader.isBlank()) {</span>
+<span class="nc" id="L29">            return Long.parseLong(projectIdHeader);</span>
+        }
+<span class="nc" id="L31">        return RequestContextHelper.getCurrentProjectId();</span>
+    }
+
+    @GetMapping(&quot;/{id}/download&quot;)
+    public ResponseEntity&lt;Resource&gt; download(
+            @PathVariable String id,
+            @RequestHeader(name = &quot;X-Project-Id&quot;, required = false) String projectId) {
+<span class="nc" id="L38">        Long pid = resolveProjectId(projectId);</span>
+<span class="nc" id="L39">        ReportTask task = reportTaskRepository.findByIdAndProjectId(id, pid)</span>
+<span class="nc" id="L40">                .orElseThrow(() -&gt; new RuntimeException(&quot;Звіт не знайдено&quot;));</span>
+
+<span class="nc bnc" id="L42" title="All 4 branches missed.">        if (task.getStatus() != ReportStatus.COMPLETED || task.getFilePath() == null) {</span>
+<span class="nc" id="L43">            throw new RuntimeException(&quot;Файл звіту ще не готовий&quot;);</span>
+        }
+
+<span class="nc" id="L46">        Path path = Path.of(task.getFilePath());</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if (!Files.exists(path)) {</span>
+<span class="nc" id="L48">            throw new RuntimeException(&quot;Файл звіту відсутній на диску&quot;);</span>
+        }
+
+<span class="nc" id="L51">        FileSystemResource resource = new FileSystemResource(path);</span>
+<span class="nc" id="L52">        String filename = path.getFileName().toString();</span>
+
+<span class="nc" id="L54">        return ResponseEntity.ok()</span>
+<span class="nc" id="L55">                .contentType(MediaType.parseMediaType(&quot;text/csv&quot;))</span>
+<span class="nc" id="L56">                .header(HttpHeaders.CONTENT_DISPOSITION, &quot;attachment; filename=\&quot;&quot; + filename + &quot;\&quot;&quot;)</span>
+<span class="nc" id="L57">                .body(resource);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

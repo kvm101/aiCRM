@@ -1,7 +1,8 @@
 package vasyl.karpliak.aiCRM.search.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ai.vectorstore.VectorStore;
 import vasyl.karpliak.aiCRM.search.dto.SemanticSearchRequestDTO;
@@ -11,7 +12,6 @@ import vasyl.karpliak.aiCRM.shared.context.RequestContextHelper;
 
 @RestController
 @RequestMapping("/search")
-@ConditionalOnBean(VectorStore.class)
 public class SemanticSearchController {
 
     private final SemanticSearchService semanticSearchService;
@@ -31,6 +31,11 @@ public class SemanticSearchController {
     public ResponseEntity<SemanticSearchResponseDTO> search(
             @RequestBody SemanticSearchRequestDTO request,
             @RequestHeader(name = "X-Project-Id", required = false) String projectIdHeader) {
+        
+        if (!semanticSearchService.isAvailable()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Semantic search is disabled");
+        }
+        
         int topK = request.topK() == null ? 5 : request.topK();
         return ResponseEntity.ok(
                 semanticSearchService.search(request.query(), topK, resolveProjectId(projectIdHeader))

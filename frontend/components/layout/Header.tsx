@@ -1,9 +1,12 @@
 "use client";
 
-import { Bell, Search, Sparkles, Check } from "lucide-react";
+import { Bell, Search, Sparkles, Check, Menu } from "lucide-react";
+import { useSidebarStore } from "@/store/useSidebarStore";
 import { useAuthStore, Role } from "@/store/useAuthStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useAIStore } from "@/store/useAIStore";
+import { useLanguageStore } from "@/store/useLanguageStore";
+import { t } from "@/lib/i18n";
 import { FolderGit2, Building2, Plus, Settings } from "lucide-react";
 import {
   DropdownMenu,
@@ -151,7 +154,10 @@ function ProjectSwitcher() {
 
 export function Header() {
   const { currentUser, logout, fetchCurrentUser, isLoading } = useAuthStore();
+  const toggleSidebar = useSidebarStore((s) => s.toggle);
   const { toggleOpen } = useAIStore();
+  const { lang, toggle } = useLanguageStore();
+  const tr = t(lang);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -180,8 +186,15 @@ export function Header() {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-zinc-950">
-      <div className="flex flex-1 items-center gap-4">
+    <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="flex flex-1 items-center gap-2 sm:gap-4">
+        <button
+          onClick={toggleSidebar}
+          className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-950 dark:hover:text-white md:hidden hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+          title="Toggle Menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
         <ProjectSwitcher />
       </div>
 
@@ -193,8 +206,23 @@ export function Header() {
           className="gap-2 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 rounded-full"
         >
           <Sparkles className="h-4 w-4" />
-          Запитати ШІ
+          {tr.header.askAI}
         </Button>
+
+        {/* Language toggle */}
+        <button
+          onClick={toggle}
+          className="flex items-center gap-1 rounded-full border border-zinc-200 dark:border-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors select-none"
+          title={lang === 'ua' ? 'Switch to English' : 'Перемкнути на українську'}
+        >
+          <span className={lang === 'ua' ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-400'}>
+            UA
+          </span>
+          <span className="text-zinc-300 dark:text-zinc-600">/</span>
+          <span className={lang === 'en' ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-400'}>
+            EN
+          </span>
+        </button>
 
         <Popover>
           <PopoverTrigger asChild>
@@ -209,14 +237,14 @@ export function Header() {
           </PopoverTrigger>
           <PopoverContent side="bottom" align="end" className="w-80 p-0">
             <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
-              <h3 className="font-semibold text-sm">Сповіщення</h3>
+              <h3 className="font-semibold text-sm">{tr.header.notifications}</h3>
               {unreadNotifications.length > 0 && (
                 <button 
                   onClick={() => markAllAsRead.mutate()}
                   className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center"
                 >
                   <Check className="h-3 w-3 mr-1" />
-                  Прочитано
+                  {tr.header.markRead}
                 </button>
               )}
             </div>
@@ -224,7 +252,7 @@ export function Header() {
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-32 text-zinc-500">
                   <Bell className="h-6 w-6 opacity-20 mb-2" />
-                  <p className="text-sm">Немає нових сповіщень</p>
+                  <p className="text-sm">{tr.header.noNotifications}</p>
                 </div>
               ) : (
                 <div className="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -285,7 +313,7 @@ export function Header() {
               </>
             )}
             <DropdownMenuItem onClick={logout} className="text-red-600 dark:text-red-400 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/50 cursor-pointer">
-              Вийти
+              {tr.header.logout}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

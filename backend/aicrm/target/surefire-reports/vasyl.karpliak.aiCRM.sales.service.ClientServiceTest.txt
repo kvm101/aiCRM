@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: vasyl.karpliak.aiCRM.sales.service.ClientServiceTest
+-------------------------------------------------------------------------------
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.425 s -- in vasyl.karpliak.aiCRM.sales.service.ClientServiceTest

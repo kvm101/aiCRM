@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { MobileSidebar } from "@/components/layout/MobileSidebar";
 import { Header } from "@/components/layout/Header";
 import { GlobalAIChat } from "@/components/ai/GlobalAIChat";
 import { GlobalWSProvider } from "@/components/providers/GlobalWSProvider";
@@ -37,10 +38,13 @@ export default function RootLayout({
         <QueryProvider>
           <GlobalWSProvider />
           <div className="flex h-screen overflow-hidden">
-            <Sidebar />
+            <div className="hidden md:block h-full shrink-0">
+              <Sidebar />
+            </div>
+            <MobileSidebar />
             <div className="flex flex-1 flex-col overflow-hidden">
               <Header />
-              <main className="flex-1 overflow-y-auto p-6">
+              <main className="flex-1 overflow-y-auto p-4 sm:p-6">
                 <AuthGuard>{children}</AuthGuard>
               </main>
             </div>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClientController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aiCRM</a> &gt; <a href="index.source.html" class="el_package">vasyl.karpliak.aiCRM.sales.controller</a> &gt; <span class="el_source">ClientController.java</span></div><h1>ClientController.java</h1><pre class="source lang-java linenums">package vasyl.karpliak.aiCRM.sales.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import vasyl.karpliak.aiCRM.sales.domain.Client;
+import vasyl.karpliak.aiCRM.sales.dto.ClientDTO;
+import vasyl.karpliak.aiCRM.sales.service.ClientService;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping(&quot;/clients&quot;)
+public class ClientController {
+
+    private final ClientService clientService;
+
+<span class="fc" id="L19">    public ClientController(ClientService clientService) {</span>
+<span class="fc" id="L20">        this.clientService = clientService;</span>
+<span class="fc" id="L21">    }</span>
+
+    @PostMapping
+    public ResponseEntity&lt;ClientDTO&gt; createClient(
+            @RequestBody Client client,
+            @RequestHeader(name = &quot;X-Project-Id&quot;) String projectId) {
+
+<span class="fc" id="L28">        ClientDTO createdClient = clientService.createClient(client, Long.parseLong(projectId));</span>
+<span class="fc" id="L29">        return new ResponseEntity&lt;&gt;(createdClient, HttpStatus.CREATED);</span>
+    }
+
+    @GetMapping(&quot;/filtered&quot;)
+    public ResponseEntity&lt;List&lt;ClientDTO&gt;&gt; listOfClients(
+            @RequestParam(required = false) String name,
+            @RequestHeader(name = &quot;X-Project-Id&quot;, required = false) String projectId) {
+
+<span class="fc" id="L37">        List&lt;ClientDTO&gt; clients = clientService.getAllClients(resolveProjectId(projectId), name);</span>
+<span class="fc" id="L38">        return ResponseEntity.ok(clients);</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;ClientDTO&gt; readClient(
+            @PathVariable Long id,
+            @RequestHeader(name = &quot;X-Project-Id&quot;, required = false) String projectId) {
+
+<span class="fc" id="L46">        Optional&lt;ClientDTO&gt; client = Optional.ofNullable(clientService.getClientById(resolveProjectId(projectId), id));</span>
+<span class="fc" id="L47">        return client.map(ResponseEntity::ok)</span>
+<span class="fc" id="L48">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+
+    private Long resolveProjectId(String projectIdStr) {
+<span class="pc bpc" id="L52" title="2 of 4 branches missed.">        if (projectIdStr != null &amp;&amp; !projectIdStr.isBlank()) {</span>
+<span class="fc" id="L53">            return Long.parseLong(projectIdStr);</span>
+        }
+<span class="nc" id="L55">        return vasyl.karpliak.aiCRM.shared.context.RequestContextHelper.getCurrentProjectId();</span>
+    }
+
+    @PatchMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;ClientDTO&gt; updateClient(
+            @PathVariable Long id,
+            @RequestBody Client patchClient,
+            @RequestHeader(name = &quot;X-Project-Id&quot;) String projectId) {
+
+<span class="nc" id="L64">        ClientDTO updatedClient = clientService.updateClient(id, Long.parseLong(projectId), patchClient);</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        return updatedClient != null</span>
+<span class="nc" id="L66">                ? ResponseEntity.ok(updatedClient)</span>
+<span class="nc" id="L67">                : ResponseEntity.notFound().build();</span>
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteClient(
+            @PathVariable Long id,
+            @RequestHeader(name = &quot;X-Project-Id&quot;) String projectId) {
+
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (projectId != null) {</span>
+<span class="nc" id="L76">            boolean deleted = clientService.deleteClient(Long.parseLong(projectId), id);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();</span>
+        }
+<span class="nc" id="L79">        return ResponseEntity.notFound().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

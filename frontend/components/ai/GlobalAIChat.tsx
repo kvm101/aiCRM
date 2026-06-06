@@ -7,10 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Send, Square, Bot, User, Loader2, Sparkles, X, Trash2, AlertTriangle } from "lucide-react";
+import { useLanguageStore } from "@/store/useLanguageStore";
+import { t } from "@/lib/i18n";
 import { apiClient } from "@/services/apiClient";
 import axios from "axios";
 
 export function GlobalAIChat() {
+  const { lang } = useLanguageStore();
+  const tr = t(lang);
+
   const { 
     isOpen, setIsOpen, messages, addMessage, isGenerating, setGenerating, 
     modelProvider, setModelProvider, loadHistory, clearMessages, 
@@ -74,10 +79,10 @@ export function GlobalAIChat() {
       });
     } catch (error) {
       if (axios.isCancel(error) || (error as Error)?.name === "CanceledError") {
-        addMessage({ role: "ai", content: "⏹ Запит скасовано." });
+        addMessage({ role: "ai", content: tr.aiPanel.requestCancelled });
       } else {
         console.error("AI Chat Error:", error);
-        addMessage({ role: "ai", content: "Вибачте, сталася помилка при з'єднанні з сервером." });
+        addMessage({ role: "ai", content: tr.aiPanel.errorConn });
       }
     } finally {
       abortControllerRef.current = null;
@@ -90,14 +95,23 @@ export function GlobalAIChat() {
   };
 
   return (
-    <div
-      className={`
-        flex flex-col h-full border-l border-zinc-200 dark:border-zinc-800
-        bg-zinc-50 dark:bg-zinc-950 overflow-hidden shrink-0
-        transition-all duration-300 ease-in-out
-        ${isOpen ? "w-[380px]" : "w-0"}
-      `}
-    >
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 z-40 bg-zinc-900/40 backdrop-blur-sm md:hidden"
+        />
+      )}
+      <div
+        className={`
+          flex flex-col h-full border-l border-zinc-200 dark:border-zinc-800
+          bg-zinc-50 dark:bg-zinc-950 overflow-hidden shrink-0
+          transition-all duration-300 ease-in-out
+          fixed inset-y-0 right-0 z-50 md:relative md:z-auto
+          ${isOpen ? "w-full sm:w-[380px] translate-x-0" : "w-0 translate-x-full md:translate-x-0"}
+        `}
+      >
       {/* Заголовок */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0">
         <div className="flex items-center gap-2">
@@ -105,11 +119,11 @@ export function GlobalAIChat() {
             <Sparkles className="h-3.5 w-3.5 text-white" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">AI Assistant</p>
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{tr.aiPanel.title}</p>
             <div className="mt-0.5">
               <Select value={modelProvider} onValueChange={setModelProvider}>
                 <SelectTrigger className="h-6 w-[130px] text-[10px] border-none bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900 px-1 py-0 shadow-none focus:ring-0 text-zinc-500">
-                  <SelectValue placeholder="Виберіть модель" />
+                  <SelectValue placeholder={tr.aiPanel.selectModel} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="auto" className="text-xs">Auto (Gemini → GitHub → Mistral → Groq)</SelectItem>
@@ -129,7 +143,7 @@ export function GlobalAIChat() {
               size="icon"
               onClick={handleClearHistory}
               className="h-7 w-7 text-zinc-500 hover:text-red-600 dark:hover:text-red-400"
-              title="Очистити історію"
+              title={tr.aiPanel.clearHistory}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
@@ -150,7 +164,7 @@ export function GlobalAIChat() {
         <div className="px-4 py-2.5 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 flex items-center gap-2 shrink-0">
           <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
           <p className="text-xs text-amber-700 dark:text-amber-300 flex-1">
-            {totalMessages}+ повідомлень. Рекомендуємо очистити історію для кращої роботи AI.
+            {totalMessages}+ {tr.aiPanel.recommendedClear}
           </p>
           <Button
             variant="outline"
@@ -158,7 +172,7 @@ export function GlobalAIChat() {
             onClick={handleClearHistory}
             className="h-6 text-[10px] px-2 border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900/40 shrink-0"
           >
-            Очистити
+            {tr.aiPanel.clear}
           </Button>
         </div>
       )}
@@ -168,12 +182,12 @@ export function GlobalAIChat() {
         {!isHistoryLoaded ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
             <Loader2 className="h-8 w-8 animate-spin text-zinc-400 mb-3" />
-            <p className="text-sm text-zinc-500">Завантаження історії...</p>
+            <p className="text-sm text-zinc-500">{tr.aiPanel.loadingHistory}</p>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-50">
             <Bot className="h-12 w-12 mb-4 text-zinc-400" />
-            <p className="text-sm text-zinc-500">Чим я можу допомогти вам сьогодні?</p>
+            <p className="text-sm text-zinc-500">{tr.aiPanel.greeting}</p>
           </div>
         ) : (
           messages.map((msg) => (
@@ -226,7 +240,7 @@ export function GlobalAIChat() {
       <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0">
         <form className="flex gap-2" onSubmit={handleSend}>
           <Input
-            placeholder="Запитайте ШІ про що завгодно..."
+            placeholder={tr.aiPanel.placeholder}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={isGenerating}
@@ -238,7 +252,7 @@ export function GlobalAIChat() {
               size="icon"
               onClick={handleAbort}
               className="rounded-full shrink-0 bg-red-500 hover:bg-red-600 transition-colors"
-              title="Скасувати генерацію"
+              title={tr.aiPanel.cancelGeneration}
             >
               <Square className="h-4 w-4 fill-white text-white" />
             </Button>
@@ -255,5 +269,6 @@ export function GlobalAIChat() {
         </form>
       </div>
     </div>
+  </>
   );
 }

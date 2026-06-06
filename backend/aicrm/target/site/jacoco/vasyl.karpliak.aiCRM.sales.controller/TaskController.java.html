@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TaskController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aiCRM</a> &gt; <a href="index.source.html" class="el_package">vasyl.karpliak.aiCRM.sales.controller</a> &gt; <span class="el_source">TaskController.java</span></div><h1>TaskController.java</h1><pre class="source lang-java linenums">package vasyl.karpliak.aiCRM.sales.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import vasyl.karpliak.aiCRM.sales.domain.Task;
+import vasyl.karpliak.aiCRM.sales.dto.TaskDTO;
+import vasyl.karpliak.aiCRM.sales.service.TaskService;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping(&quot;/tasks&quot;)
+public class TaskController {
+
+    private final TaskService taskService;
+
+<span class="nc" id="L20">    public TaskController(TaskService taskService) {</span>
+<span class="nc" id="L21">        this.taskService = taskService;</span>
+<span class="nc" id="L22">    }</span>
+
+    @PostMapping
+    public ResponseEntity&lt;TaskDTO&gt; createTask(
+            @RequestBody TaskDTO taskDTO,
+            @RequestHeader(name = &quot;X-Project-Id&quot;) String projectId,
+            @RequestHeader(name = &quot;X-User-Id&quot;) String userId) {
+
+<span class="nc" id="L30">        Task task = dtoToEntity(taskDTO);</span>
+<span class="nc" id="L31">        Task createdTask = taskService.createTask(task, Long.parseLong(projectId), Long.parseLong(userId), taskDTO.getDealId(), taskDTO.getClientId());</span>
+<span class="nc" id="L32">        return new ResponseEntity&lt;&gt;(entityToDto(createdTask), HttpStatus.CREATED);</span>
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;TaskDTO&gt;&gt; getAllTasks(
+            @RequestHeader(name = &quot;X-Project-Id&quot;, required = false) String projectIdStr) {
+
+<span class="nc" id="L39">        Long projectId = resolveProjectId(projectIdStr);</span>
+
+<span class="nc" id="L41">        List&lt;TaskDTO&gt; tasks = taskService.getAllTasks(projectId)</span>
+<span class="nc" id="L42">                .stream()</span>
+<span class="nc" id="L43">                .map(this::entityToDto)</span>
+<span class="nc" id="L44">                .collect(Collectors.toList());</span>
+<span class="nc" id="L45">        return ResponseEntity.ok(tasks);</span>
+    }
+
+    private Long resolveProjectId(String projectIdStr) {
+<span class="nc bnc" id="L49" title="All 4 branches missed.">        if (projectIdStr != null &amp;&amp; !projectIdStr.isBlank()) {</span>
+<span class="nc" id="L50">            return Long.parseLong(projectIdStr);</span>
+        }
+<span class="nc" id="L52">        return vasyl.karpliak.aiCRM.shared.context.RequestContextHelper.getCurrentProjectId();</span>
+    }
+
+    @GetMapping(&quot;/filtered&quot;)
+    public ResponseEntity&lt;List&lt;TaskDTO&gt;&gt; getTasksBeforeDeadline(
+            @RequestParam(&quot;deadline&quot;) String deadlineStr,
+            @RequestHeader(name = &quot;X-Project-Id&quot;, required = false) String projectIdStr) {
+
+<span class="nc" id="L60">        Long projectId = resolveProjectId(projectIdStr);</span>
+<span class="nc" id="L61">        LocalDateTime deadline = LocalDateTime.parse(deadlineStr);</span>
+
+<span class="nc" id="L63">        List&lt;TaskDTO&gt; tasks = taskService.getTasksBeforeDeadline(projectId, deadline)</span>
+<span class="nc" id="L64">                .stream()</span>
+<span class="nc" id="L65">                .map(this::entityToDto)</span>
+<span class="nc" id="L66">                .collect(Collectors.toList());</span>
+<span class="nc" id="L67">        return ResponseEntity.ok(tasks);</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;TaskDTO&gt; getTask(
+            @PathVariable Long id,
+            @RequestHeader(name = &quot;X-Project-Id&quot;, required = false) String projectIdStr) {
+
+<span class="nc" id="L75">        Long projectId = resolveProjectId(projectIdStr);</span>
+<span class="nc" id="L76">        Task task = taskService.getTask(projectId, id);</span>
+<span class="nc" id="L77">        return ResponseEntity.ok(entityToDto(task));</span>
+    }
+
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;TaskDTO&gt; updateTask(
+            @PathVariable Long id,
+            @RequestBody TaskDTO taskDTO,
+            @RequestHeader(name = &quot;X-Project-Id&quot;) String projectIdStr) {
+
+<span class="nc" id="L86">        Long projectId = Long.parseLong(projectIdStr);</span>
+<span class="nc" id="L87">        Task updatedTask = dtoToEntity(taskDTO);</span>
+<span class="nc" id="L88">        Task task = taskService.updateTask(projectId, id, updatedTask, taskDTO.getDealId(), taskDTO.getClientId());</span>
+<span class="nc" id="L89">        return ResponseEntity.ok(entityToDto(task));</span>
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteTask(
+            @PathVariable Long id,
+            @RequestHeader(name = &quot;X-Project-Id&quot;) String projectIdStr) {
+
+<span class="nc" id="L97">        Long projectId = Long.parseLong(projectIdStr);</span>
+<span class="nc" id="L98">        taskService.deleteTask(projectId, id);</span>
+<span class="nc" id="L99">        return ResponseEntity.noContent().build();</span>
+    }
+
+    private Task dtoToEntity(TaskDTO dto) {
+<span class="nc" id="L103">        Task task = new Task();</span>
+<span class="nc" id="L104">        task.setTitle(dto.getTitle());</span>
+<span class="nc" id="L105">        task.setDescription(dto.getDescription());</span>
+<span class="nc" id="L106">        task.setDeadline(dto.getDeadline());</span>
+<span class="nc" id="L107">        task.setTag(dto.getTag());</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (dto.getType() != null) {</span>
+<span class="nc" id="L109">            task.setType(vasyl.karpliak.aiCRM.sales.enums.TaskType.valueOf(dto.getType()));</span>
+        }
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        task.setDueDate(dto.getDueDate() != null ? dto.getDueDate() : dto.getDeadline());</span>
+<span class="nc" id="L112">        task.setResult(dto.getResult());</span>
+        // Note: dealId mapping requires DealRepository, but we can skip it for update/create for now if not sent, 
+        // or let TaskService handle Deal attachment. Currently we only create tasks with Deal attached from somewhere else.
+<span class="nc" id="L115">        return task;</span>
+    }
+
+    private TaskDTO entityToDto(Task task) {
+<span class="nc" id="L119">        TaskDTO dto = new TaskDTO();</span>
+<span class="nc" id="L120">        dto.setId(task.getId());</span>
+<span class="nc" id="L121">        dto.setTitle(task.getTitle());</span>
+<span class="nc" id="L122">        dto.setDescription(task.getDescription());</span>
+<span class="nc" id="L123">        dto.setDeadline(task.getDeadline());</span>
+<span class="nc" id="L124">        dto.setTag(task.getTag());</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        dto.setDealId(task.getDeal() != null ? task.getDeal().getId() : null);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        dto.setDealTitle(task.getDeal() != null ? task.getDeal().getTitle() : null);</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        dto.setClientId(task.getClient() != null ? task.getClient().getId() : null);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        dto.setClientName(task.getClient() != null ? task.getClient().getName() : null);</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        dto.setType(task.getType() != null ? task.getType().name() : null);</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        dto.setDueDate(task.getDueDate() != null ? task.getDueDate() : task.getDeadline());</span>
+<span class="nc" id="L131">        dto.setResult(task.getResult());</span>
+<span class="nc" id="L132">        return dto;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
