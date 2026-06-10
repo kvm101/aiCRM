@@ -54,8 +54,8 @@ export const t = (lang: Lang) => ({
     revenue: lang === 'ua' ? 'Отриманий дохід' : 'Revenue Achieved',
     wonDealsPeriod: (currency: string, period: string) => {
       const pStr = period === 'WEEK' ? (lang === 'ua' ? 'поточний тиждень' : 'current week') :
-                   period === 'YEAR' ? (lang === 'ua' ? 'поточний рік' : 'current year') :
-                   (lang === 'ua' ? 'поточний місяць' : 'current month');
+        period === 'YEAR' ? (lang === 'ua' ? 'поточний рік' : 'current year') :
+          (lang === 'ua' ? 'поточний місяць' : 'current month');
       return lang === 'ua' ? `Виграні угоди за ${pStr} (${currency})` : `Won deals for ${pStr} (${currency})`;
     },
     target: lang === 'ua' ? 'Цільовий орієнтир' : 'Target Goal',
@@ -64,8 +64,8 @@ export const t = (lang: Lang) => ({
     planExecution: lang === 'ua' ? 'Виконання плану' : 'Plan Execution',
     planExecutionPeriod: (period: string) => {
       const pStr = period === 'WEEK' ? (lang === 'ua' ? 'тижневого' : 'weekly') :
-                   period === 'YEAR' ? (lang === 'ua' ? 'річного' : 'yearly') :
-                   (lang === 'ua' ? 'місячного' : 'monthly');
+        period === 'YEAR' ? (lang === 'ua' ? 'річного' : 'yearly') :
+          (lang === 'ua' ? 'місячного' : 'monthly');
       return lang === 'ua' ? `Виконання ${pStr} плану` : `${pStr.charAt(0).toUpperCase() + pStr.slice(1)} plan execution`;
     },
     winRate: lang === 'ua' ? 'Коефіцієнт конверсії' : 'Win Rate',
@@ -101,6 +101,13 @@ export const t = (lang: Lang) => ({
     PLANNED: lang === 'ua' ? 'Заплановано' : 'Planned',
     IN_WORK: lang === 'ua' ? 'В роботі' : 'In Progress',
     DONE: lang === 'ua' ? 'Виконано' : 'Done',
+  },
+
+  reportStatus: {
+    PENDING: lang === 'ua' ? 'Очікує' : 'Pending',
+    PROCESSING: lang === 'ua' ? 'Обробка' : 'Processing',
+    COMPLETED: lang === 'ua' ? 'Готово' : 'Completed',
+    FAILED: lang === 'ua' ? 'Помилка' : 'Failed',
   },
 
   // Deal status labels
@@ -271,4 +278,110 @@ export const t = (lang: Lang) => ({
     cancelGeneration: lang === 'ua' ? 'Скасувати генерацію' : 'Cancel generation',
     recommendedClear: lang === 'ua' ? 'повідомлень. Рекомендуємо очистити історію для кращої роботи AI.' : 'messages. We recommend clearing history for better AI performance.',
   },
+  pendingTool: {
+    modalTitle: lang === 'ua' ? 'Підтвердження виклику інструменту AI' : 'AI Tool Call Confirmation',
+    modalDesc: lang === 'ua' ? 'ШІ хоче викликати системну функцію' : 'AI wants to execute a system function',
+    toolBadge: lang === 'ua' ? 'Інструмент' : 'Tool',
+    viewDetails: lang === 'ua' ? 'Подивитись деталі' : 'View details',
+    hideDetails: lang === 'ua' ? 'Приховати деталі' : 'Hide details',
+    runBtn: lang === 'ua' ? 'Запустити' : 'Run',
+    rejectBtn: lang === 'ua' ? 'Відхилити' : 'Reject',
+    arguments: lang === 'ua' ? 'Аргументи запиту:' : 'Request arguments:',
+  },
+  // Event types (Плашки в історії подій)
+  eventTypes: {
+    CREATED: lang === 'ua' ? 'Створено' : 'Created',
+    STATUS_CHANGED: lang === 'ua' ? 'Зміна статусу' : 'Status Changed',
+    TASK_CREATED: lang === 'ua' ? 'Нове завдання' : 'Task Created',
+    TASK_COMPLETED: lang === 'ua' ? 'Завдання виконано' : 'Task Completed',
+    NOTE: lang === 'ua' ? 'Нотатка' : 'Note',
+  },
+
+  // Event descriptions (Динамічний текст для описів подій)
+  events: {
+    createdDesc: lang === 'ua' ? 'Угоду створено' : 'Deal was created',
+    statusChangedDesc: (from: string, to: string) =>
+      lang === 'ua'
+        ? `Статус змінено з «${from}» на «${to}»`
+        : `Status changed from "${from}" to "${to}"`,
+    taskCreatedDesc: (title: string) =>
+      lang === 'ua' ? `Створено нове завдання: ${title}` : `New task created: ${title}`,
+    taskCompletedDesc: (title: string, result?: string) => {
+      const base = lang === 'ua' ? `Завдання «${title}» виконано` : `Task "${title}" completed`;
+      if (!result) return base;
+      return lang === 'ua' ? `${base}. Результат: ${result}` : `${base}. Result: ${result}`;
+    },
+  },
+
+  // Deal details panel
+  dealDetails: {
+    back: lang === 'ua' ? 'Назад' : 'Back',
+    historyTitle: lang === 'ua' ? 'Історія подій та Нотатки' : 'Event History & Notes',
+    historyEmpty: lang === 'ua' ? 'Історія порожня. Додайте першу нотатку.' : 'History is empty. Add the first note.',
+    createdAt: lang === 'ua' ? 'Створено' : 'Created',
+    budget: lang === 'ua' ? 'Бюджет' : 'Budget',
+    client: lang === 'ua' ? 'Клієнт' : 'Client',
+    responsible: lang === 'ua' ? 'Відповідальний' : 'Assignee',
+    you: lang === 'ua' ? 'Ви' : 'You',
+    attachmentSaved: lang === 'ua' ? 'Збережено' : 'Saved',
+    attachmentFailed: lang === 'ua' ? 'Помилка' : 'Failed',
+    attachmentProcessing: lang === 'ua' ? 'Обробка...' : 'Processing...',
+    deleteAttachment: lang === 'ua' ? 'Видалити' : 'Delete',
+    downloadAttachment: lang === 'ua' ? 'Скачати' : 'Download',
+  },
 });
+
+export function getDealStatusLabel(lang: Lang, status: string): string {
+  const labels = t(lang).dealStatus as Record<string, string>;
+  return labels[status] ?? status;
+}
+
+export function getEventTypeLabel(lang: Lang, eventType: string): string {
+  const labels = t(lang).eventTypes as Record<string, string>;
+  return labels[eventType] ?? eventType;
+}
+
+/** Перекладає опис системної події угоди (статуси, типи подій з бекенду). */
+export function formatDealEventDescription(
+  lang: Lang,
+  eventType: string,
+  description: string,
+): string {
+  const tr = t(lang);
+
+  if (eventType === 'CREATED') {
+    const suffix = description
+      .replace(/^Угоду створено\.?\s*/iu, '')
+      .replace(/^Deal was created\.?\s*/i, '')
+      .trim();
+    return suffix ? `${tr.events.createdDesc}. ${suffix}` : `${tr.events.createdDesc}.`;
+  }
+
+  if (eventType === 'STATUS_CHANGED') {
+    const match =
+      description.match(/Статус змінено з\s+(\w+)\s+на\s+(\w+)/iu) ??
+      description.match(/Status changed from\s+(\w+)\s+to\s+(\w+)/i);
+    if (match) {
+      return tr.events.statusChangedDesc(
+        getDealStatusLabel(lang, match[1]),
+        getDealStatusLabel(lang, match[2]),
+      );
+    }
+  }
+
+  if (eventType === 'TASK_CREATED') {
+    const match =
+      description.match(/Створено нове завдання:\s*(.+)/iu) ??
+      description.match(/New task created:\s*(.+)/i);
+    if (match) return tr.events.taskCreatedDesc(match[1].trim());
+  }
+
+  if (eventType === 'TASK_COMPLETED') {
+    const match =
+      description.match(/Завдання "(.+)" виконано(?:\. Результат:\s*(.+))?/iu) ??
+      description.match(/Task "(.+)" completed(?:\. Result:\s*(.+))?/i);
+    if (match) return tr.events.taskCompletedDesc(match[1], match[2]?.trim());
+  }
+
+  return description;
+}

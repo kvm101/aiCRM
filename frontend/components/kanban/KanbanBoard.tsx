@@ -22,6 +22,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { TaskStatusBadge } from "@/components/ui/status-badge";
 import { GripVertical, Loader2, Calendar, Plus, Pencil, CheckCircle2, User, Paperclip, Download, Trash2 } from "lucide-react";
 import { useTasks, useUpdateTask, useCreateTask, Task, useDeals, useClients, useUploadAttachment, useAttachments, useDeleteAttachment, FileAttachment } from "@/hooks/useSales";
 import { useProjectStore } from "@/store/useProjectStore";
@@ -229,7 +230,7 @@ export function KanbanBoard() {
       <div className="flex justify-end">
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
+            <Button size="sm">
               <Plus className="h-4 w-4 mr-2" /> {tr.kanbanPage.addTask}
             </Button>
           </DialogTrigger>
@@ -377,16 +378,17 @@ export function KanbanBoard() {
             {viewingTask && (
               <div className="grid gap-3 text-sm">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary" className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                    {lang === 'ua' ? 'Статус' : 'Status'}: {tr.taskStatus[viewingTask.tag as keyof typeof tr.taskStatus] || viewingTask.tag}
-                  </Badge>
+                  <TaskStatusBadge
+                    status={viewingTask.tag}
+                    label={tr.taskStatus[viewingTask.tag as keyof typeof tr.taskStatus] || viewingTask.tag}
+                  />
                   {(viewingTask.dealTitle || viewingTask.dealId) && (
-                    <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+                    <Badge variant="outline" className="border-2 font-semibold">
                       {lang === 'ua' ? 'Угода' : 'Deal'}: {viewingTask.dealTitle || `#${viewingTask.dealId}`}
                     </Badge>
                   )}
                   {(viewingTask.clientName || viewingTask.clientId) && (
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                    <Badge variant="outline" className="border-2 font-semibold">
                       {lang === 'ua' ? 'Клієнт' : 'Client'}: {viewingTask.clientName || `#${viewingTask.clientId}`}
                     </Badge>
                   )}
@@ -419,8 +421,9 @@ export function KanbanBoard() {
                               <div className="flex shrink-0 items-center gap-0.5">
                                 <button
                                   type="button"
-                                  className="opacity-50 hover:opacity-100 p-1 rounded text-red-600 hover:text-red-700"
+                                  className="inline-flex min-h-8 min-w-8 items-center justify-center rounded-md text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
                                   title={lang === 'ua' ? 'Видалити' : 'Delete'}
+                                  aria-label={lang === 'ua' ? 'Видалити файл' : 'Delete file'}
                                   onPointerDown={(e) => e.stopPropagation()}
                                   onClick={() => setAttachmentToDelete(f)}
                                 >
@@ -428,8 +431,9 @@ export function KanbanBoard() {
                                 </button>
                                 <button
                                   type="button"
-                                  className="opacity-50 hover:opacity-100 p-1 rounded"
+                                  className="inline-flex min-h-8 min-w-8 items-center justify-center rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
                                   title={lang === 'ua' ? 'Завантажити' : 'Download'}
+                                  aria-label={lang === 'ua' ? 'Завантажити файл' : 'Download file'}
                                   onPointerDown={(e) => e.stopPropagation()}
                                   onClick={() => {
                                     const pid = useProjectStore.getState().activeProjectId;
@@ -483,7 +487,7 @@ export function KanbanBoard() {
                     id="followup" 
                     checked={createFollowup} 
                     onChange={(e) => setCreateFollowup(e.target.checked)}
-                    className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
+                    className="rounded border-zinc-300 text-primary focus:ring-primary"
                   />
                   <label htmlFor="followup" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     {lang === 'ua' ? 'Створити наступне завдання' : 'Create follow-up task'}
@@ -491,7 +495,7 @@ export function KanbanBoard() {
                 </div>
                 
                 {createFollowup && (
-                  <div className="grid gap-3 pl-6 border-l-2 border-indigo-100 dark:border-indigo-900 ml-1">
+                  <div className="grid gap-3 pl-6 border-l-2 border-primary/30 ml-1">
                     <Input 
                       placeholder={lang === 'ua' ? 'Що потрібно зробити?' : 'What needs to be done?'} 
                       value={followupTitle}
@@ -581,11 +585,13 @@ function Column({
 
   return (
     <div className="flex flex-col flex-shrink-0 w-80 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 max-h-full">
-      <div className="flex justify-between items-center mb-6 px-1">
-        <h3 className="font-bold text-sm text-zinc-800 dark:text-zinc-200 uppercase tracking-widest">
-          {tr.taskStatus[columnId]}
-        </h3>
-        <Badge variant="secondary" className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+      <div className="flex justify-between items-center mb-6 px-1 gap-2">
+        <TaskStatusBadge
+          status={columnId}
+          label={tr.taskStatus[columnId]}
+          variant="chip"
+        />
+        <Badge variant="outline" className="border-2 font-data tabular-nums" aria-label={`${tasks.length} ${lang === 'ua' ? 'задач' : 'tasks'}`}>
           {tasks.length}
         </Badge>
       </div>
@@ -675,7 +681,7 @@ function TaskCard({
 
   return (
     <Card
-      className={`cursor-grab active:cursor-grabbing hover:border-indigo-500/50 transition-all ${isOverlay ? 'shadow-xl border-indigo-500' : ''}`}
+      className={`cursor-grab active:cursor-grabbing hover:border-primary/50 transition-all ${isOverlay ? 'shadow-xl border-primary' : ''}`}
       onClick={() => {
         if (!isOverlay && onViewTask) {
           onViewTask(task);
@@ -690,7 +696,8 @@ function TaskCard({
           <div className="flex items-center gap-1">
             {onEditTask && (
               <button 
-                className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
+                className="inline-flex min-h-8 min-w-8 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-primary dark:hover:bg-zinc-800 transition-colors"
+                aria-label={lang === 'ua' ? 'Редагувати' : 'Edit'}
                 onPointerDown={(e) => {
                   e.stopPropagation();
                   onEditTask(task);
@@ -702,7 +709,8 @@ function TaskCard({
             {onAttachFile && (
               <label
                 title={lang === 'ua' ? 'Прикріпити файл' : 'Attach file'}
-                className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-indigo-500 transition-colors cursor-pointer"
+                className="inline-flex min-h-8 min-w-8 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-primary dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                aria-label={lang === 'ua' ? 'Прикріпити файл' : 'Attach file'}
                 onPointerDown={(e) => e.stopPropagation()}
               >
                 <Paperclip className="h-3.5 w-3.5" />
@@ -723,19 +731,19 @@ function TaskCard({
         </div>
         
         {task.description && (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 italic">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2">
             {task.description}
           </p>
         )}
 
         <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
           {task.dealTitle && (
-            <div className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded w-fit">
+            <div className="text-[11px] font-semibold text-foreground border-2 border-border px-2 py-0.5 rounded w-fit">
               {lang === 'ua' ? 'Угода' : 'Deal'}: {task.dealTitle}
             </div>
           )}
           {task.clientName && (
-            <div className="flex items-center gap-1.5 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded w-fit">
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground border-2 border-border px-2 py-0.5 rounded w-fit">
               <User className="h-3 w-3" /> {task.clientName}
             </div>
           )}
@@ -767,7 +775,7 @@ function TaskCard({
                     {onRequestDeleteAttachment && (
                       <button
                         type="button"
-                        className="opacity-45 hover:opacity-100 p-0.5 text-red-600 hover:text-red-700"
+                        className="inline-flex min-h-7 min-w-7 items-center justify-center text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded"
                         title={lang === 'ua' ? 'Видалити' : 'Delete'}
                         onPointerDown={(e) => e.stopPropagation()}
                         onClick={(e) => {
@@ -780,7 +788,7 @@ function TaskCard({
                     )}
                     <button
                       type="button"
-                      className="opacity-45 hover:opacity-100 p-0.5"
+                      className="inline-flex min-h-7 min-w-7 items-center justify-center rounded hover:bg-zinc-200 dark:hover:bg-zinc-700"
                       title={lang === 'ua' ? 'Завантажити' : 'Download'}
                       onPointerDown={(e) => e.stopPropagation()}
                       onClick={(e) => {

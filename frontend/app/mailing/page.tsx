@@ -14,6 +14,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 export default function MailingPage() {
   const { lang } = useLanguageStore();
@@ -118,7 +119,7 @@ export default function MailingPage() {
             return (
               <div
                 key={email.id}
-                className={`p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer ${selectedEmail?.id === email.id ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''} ${!isUnread ? 'opacity-70 bg-zinc-50/50 dark:bg-zinc-950/50' : ''}`}
+                className={`p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer ${selectedEmail?.id === email.id ? 'bg-accent' : ''} ${!isUnread ? 'opacity-80 bg-zinc-50/50 dark:bg-zinc-950/50' : ''}`}
                 onClick={() => {
                   setSelectedEmail(email);
                   if (isUnread) {
@@ -128,7 +129,11 @@ export default function MailingPage() {
               >
                 <div className="flex justify-between items-start mb-1">
                   <div className="flex items-center gap-2 w-2/3">
-                    {isUnread && <div className="w-2 h-2 rounded-full bg-indigo-600 shrink-0" />}
+                    {isUnread && (
+                      <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0 shrink-0" aria-hidden="true">
+                        {lang === 'ua' ? 'Нове' : 'New'}
+                      </Badge>
+                    )}
                     <span className={`font-semibold truncate ${isUnread ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500 dark:text-zinc-400 font-normal'}`}>
                       {type === 'inbox' ? email.sender : email.recipient}
                     </span>
@@ -162,13 +167,13 @@ export default function MailingPage() {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 px-4 pt-4 rounded-t-xl shrink-0 flex items-center justify-between">
             <TabsList className="justify-start h-10 bg-transparent p-0 gap-6">
-              <TabsTrigger value="inbox" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-2 pb-3 pt-2 text-sm relative">
+              <TabsTrigger value="inbox" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 pb-3 pt-2 text-sm relative">
                 <Inbox className="h-4 w-4 mr-2" /> {lang === 'ua' ? 'Вхідні' : 'Inbox'}
               </TabsTrigger>
-              <TabsTrigger value="sent" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-2 pb-3 pt-2 text-sm">
+              <TabsTrigger value="sent" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 pb-3 pt-2 text-sm">
                 <Send className="h-4 w-4 mr-2" /> {lang === 'ua' ? 'Надіслані' : 'Sent'}
               </TabsTrigger>
-              <TabsTrigger value="compose" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-2 pb-3 pt-2 text-sm">
+              <TabsTrigger value="compose" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 pb-3 pt-2 text-sm">
                 <Plus className="h-4 w-4 mr-2" /> {lang === 'ua' ? 'Написати' : 'Compose'}
               </TabsTrigger>
             </TabsList>
@@ -188,14 +193,14 @@ export default function MailingPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center">
                     {lang === 'ua' ? 'Вхідні' : 'Inbox'}
-                    <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 px-2 py-0.5 rounded-full font-bold">
+                    <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-bold font-data tabular-nums">
                       {unreadEmailsCount} {lang === 'ua' ? 'нових' : 'new'}
                     </span>
                   </span>
                   <select
                     value={timeFilter}
                     onChange={(e) => setTimeFilter(e.target.value as any)}
-                    className="text-xs border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-950 px-2 py-1 outline-none text-zinc-600 dark:text-zinc-400"
+                    className="text-xs border-2 border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-950 px-2 py-1.5 outline-none text-zinc-700 dark:text-zinc-300 min-h-9"
                   >
                     <option value="all">{lang === 'ua' ? 'За весь час' : 'All time'}</option>
                     <option value="day">{lang === 'ua' ? 'За день' : 'Last day'}</option>
@@ -211,7 +216,7 @@ export default function MailingPage() {
                 <div className="space-y-6 w-full">
                   <button
                     onClick={() => setSelectedEmail(null)}
-                    className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md md:hidden text-zinc-500 hover:text-zinc-900 dark:hover:text-white mb-2 flex items-center gap-1.5 text-xs font-semibold"
+                    className="inline-flex min-h-10 items-center gap-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md md:hidden text-zinc-600 hover:text-foreground mb-2 text-xs font-semibold px-2"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     {lang === 'ua' ? 'Назад до списку' : 'Back to list'}
@@ -257,7 +262,7 @@ export default function MailingPage() {
                 <div className="space-y-6">
                   <button
                     onClick={() => setSelectedEmail(null)}
-                    className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md md:hidden text-zinc-500 hover:text-zinc-900 dark:hover:text-white mb-2 flex items-center gap-1.5 text-xs font-semibold"
+                    className="inline-flex min-h-10 items-center gap-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md md:hidden text-zinc-600 hover:text-foreground mb-2 text-xs font-semibold px-2"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     {lang === 'ua' ? 'Назад до списку' : 'Back to list'}
@@ -378,9 +383,9 @@ export default function MailingPage() {
                                 setCustomWhen("");
                               }
                             }}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${(opt.mins === -1 ? customWhen && !delayMinutes : delayMinutes === opt.mins)
-                                ? "bg-indigo-50 border-indigo-300 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-300"
-                                : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-colors ${(opt.mins === -1 ? customWhen && !delayMinutes : delayMinutes === opt.mins)
+                                ? "bg-accent border-primary text-foreground"
+                                : "border-zinc-200 text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                               }`}
                           >
                             {opt.label}
@@ -402,10 +407,11 @@ export default function MailingPage() {
 
                 <Button
                   type="submit"
-                  className={`w-full h-11 mt-4 transition-colors ${sendMode === "now"
-                      ? "bg-indigo-600 hover:bg-indigo-700"
-                      : "bg-amber-600 hover:bg-amber-700"
-                    }`}
+                  variant={sendMode === "now" ? "default" : "default"}
+                  className={cn(
+                    "w-full h-11 mt-4",
+                    sendMode === "later" && "bg-amber-600 text-white hover:bg-amber-700"
+                  )}
                   disabled={isLoading}
                 >
                   {isLoading ? (

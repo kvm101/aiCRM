@@ -199,8 +199,8 @@ export function GlobalAIChat() {
                 <AvatarFallback
                   className={
                     msg.role === "user"
-                      ? "bg-indigo-500 text-white"
-                      : "bg-gradient-to-br from-indigo-500 to-purple-500 text-white"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground"
                   }
                 >
                   {msg.role === "user" ? <User className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
@@ -209,8 +209,8 @@ export function GlobalAIChat() {
               <div
                 className={`p-3 rounded-2xl text-sm shadow-sm ${
                   msg.role === "user"
-                    ? "bg-indigo-500 text-white rounded-br-sm"
-                    : "bg-white border border-zinc-200 text-zinc-900 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100 rounded-bl-sm"
+                    ? "bg-primary text-primary-foreground rounded-br-sm"
+                    : "bg-white border-2 border-zinc-200 text-zinc-900 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100 rounded-bl-sm"
                 }`}
               >
                 <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -224,12 +224,12 @@ export function GlobalAIChat() {
         {isGenerating && (
           <div className="flex gap-3 max-w-[90%]">
             <Avatar className="h-7 w-7 mt-auto flex-shrink-0">
-              <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
+              <AvatarFallback className="bg-secondary text-secondary-foreground">
                 <Sparkles className="h-3.5 w-3.5" />
               </AvatarFallback>
             </Avatar>
             <div className="p-3 rounded-2xl text-sm shadow-sm bg-white border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800 rounded-bl-sm">
-              <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
             </div>
           </div>
         )}
@@ -261,7 +261,8 @@ export function GlobalAIChat() {
               type="submit"
               size="icon"
               disabled={!inputText.trim()}
-              className="rounded-full shrink-0 bg-indigo-600 hover:bg-indigo-700"
+              className="rounded-full shrink-0"
+              aria-label={tr.aiPanel.send}
             >
               <Send className="h-4 w-4" />
             </Button>

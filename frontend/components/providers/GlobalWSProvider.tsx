@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useAIStore } from "@/store/useAIStore";
 
 const WS_URL = "ws://localhost:8080/ws/chats";
 
@@ -47,6 +48,9 @@ export function GlobalWSProvider() {
           if (data.type === "NEW_NOTIFICATION") {
             // Миттєво оновлюємо дзвоник у хедері на будь-якій сторінці
             queryClient.invalidateQueries({ queryKey: ["notifications"] });
+          }
+          if (data.type === "PENDING_TOOL_CALL") {
+            useAIStore.getState().setPendingToolCall(data.payload);
           }
         } catch (e) {
           console.error("[GlobalWS] Parse error:", e);

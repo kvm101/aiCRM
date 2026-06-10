@@ -7,6 +7,7 @@ import vasyl.karpliak.aiCRM.ai.domain.AiChatMessage;
 import vasyl.karpliak.aiCRM.ai.dto.ChatRequest;
 import vasyl.karpliak.aiCRM.ai.repository.AiChatMessageRepository;
 import vasyl.karpliak.aiCRM.ai.service.AIChatService;
+import vasyl.karpliak.aiCRM.shared.config.PendingToolRegistry;
 
 import java.util.List;
 import java.util.Map;
@@ -17,10 +18,26 @@ public class AIChatController {
 
     private final AIChatService aiChatService;
     private final AiChatMessageRepository chatMessageRepository;
+    private final PendingToolRegistry pendingToolRegistry;
 
-    public AIChatController(AIChatService aiChatService, AiChatMessageRepository chatMessageRepository) {
+    public AIChatController(AIChatService aiChatService,
+                            AiChatMessageRepository chatMessageRepository,
+                            PendingToolRegistry pendingToolRegistry) {
         this.aiChatService = aiChatService;
         this.chatMessageRepository = chatMessageRepository;
+        this.pendingToolRegistry = pendingToolRegistry;
+    }
+
+    @PostMapping("/tools/approve/{id}")
+    public ResponseEntity<Map<String, Object>> approveTool(@PathVariable("id") String id) {
+        boolean success = pendingToolRegistry.approve(id);
+        return ResponseEntity.ok(Map.of("success", success));
+    }
+
+    @PostMapping("/tools/reject/{id}")
+    public ResponseEntity<Map<String, Object>> rejectTool(@PathVariable("id") String id) {
+        boolean success = pendingToolRegistry.reject(id);
+        return ResponseEntity.ok(Map.of("success", success));
     }
 
     @PostMapping("/chat")

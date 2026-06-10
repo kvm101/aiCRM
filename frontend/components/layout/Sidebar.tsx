@@ -29,8 +29,8 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-zinc-950 text-zinc-50">
-      <div className="flex h-16 items-center px-6 border-b border-zinc-800">
+    <div className="flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+      <div className="flex h-16 items-center px-6 border-b border-sidebar-border">
         <div className="flex items-center gap-2 font-semibold text-lg">
           <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
             AI CRM
@@ -47,10 +47,10 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "group flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "group flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring",
                   isActive
-                    ? "bg-zinc-800 text-white"
-                    : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )}
               >
                 <div className="flex items-center">
@@ -64,7 +64,7 @@ export function Sidebar() {
                   {item.name}
                 </div>
                 {isChat && totalUnread > 0 && (
-                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-500 px-1.5 text-[10px] font-bold text-white">
+                  <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
                     {totalUnread > 99 ? "99+" : totalUnread}
                   </span>
                 )}

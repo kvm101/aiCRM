@@ -16,6 +16,12 @@ export interface ChatContextMessage {
   timestamp?: string;
 }
 
+export interface PendingToolCallType {
+  id: string;
+  toolName: string;
+  arguments: any;
+}
+
 interface AIStore {
   isOpen: boolean;
   messages: AIMessage[];
@@ -24,6 +30,7 @@ interface AIStore {
   modelProvider: string;
   shouldClear: boolean;
   totalMessages: number;
+  pendingToolCall: PendingToolCallType | null;
   setIsOpen: (isOpen: boolean) => void;
   toggleOpen: () => void;
   addMessage: (message: Omit<AIMessage, 'id' | 'timestamp'>) => void;
@@ -40,6 +47,9 @@ interface AIStore {
     userId: string;
     recentMessages: ChatContextMessage[];
   }) => Promise<void>;
+  setPendingToolCall: (call: PendingToolCallType | null) => void;
+  approvePendingToolCall: () => Promise<void>;
+  rejectPendingToolCall: () => Promise<void>;
 }
 
 const PERIOD_LABELS: Record<SummaryPeriod, string> = {
@@ -58,10 +68,37 @@ export const useAIStore = create<AIStore>((set, get) => ({
   modelProvider: 'auto',
   shouldClear: false,
   totalMessages: 0,
+  pendingToolCall: null,
 
   setIsOpen: (isOpen) => set({ isOpen }),
   
   setModelProvider: (provider) => set({ modelProvider: provider }),
+
+  setPendingToolCall: (pendingToolCall) => set({ pendingToolCall }),
+
+  approvePendingToolCall: async () => {
+    const { pendingToolCall } = get();
+    if (!pendingToolCall) return;
+    try {
+      await apiClient.post(`/ai/tools/approve/${pendingToolCall.id}`, {}, { withCredentials: true });
+    } catch (e) {
+      console.error("Failed to approve tool call:", e);
+    } finally {
+      set({ pendingToolCall: null });
+    }
+  },
+
+  rejectPendingToolCall: async () => {
+    const { pendingToolCall } = get();
+    if (!pendingToolCall) return;
+    try {
+      await apiClient.post(`/ai/tools/reject/${pendingToolCall.id}`, {}, { withCredentials: true });
+    } catch (e) {
+      console.error("Failed to reject tool call:", e);
+    } finally {
+      set({ pendingToolCall: null });
+    }
+  },
 
   toggleOpen: () => set((state) => ({ isOpen: !state.isOpen })),
 

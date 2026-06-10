@@ -22,12 +22,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 // Removed Tabs and Dialog imports
 
-function ChatListItem({ chat, activeChatId, onClick }: { chat: any, activeChatId: number | null, onClick: () => void }) {
+function ChatListItem({ chat, activeChatId, onClick, lang }: { chat: any, activeChatId: number | null, onClick: () => void, lang: string }) {
   return (
     <div
       onClick={onClick}
       className={`flex items-start gap-3 p-4 cursor-pointer transition-colors border-b border-zinc-100 dark:border-zinc-800/50 ${
-        activeChatId === chat.id ? "bg-indigo-50 dark:bg-indigo-900/20" : "hover:bg-zinc-100 dark:hover:bg-zinc-900"
+        activeChatId === chat.id ? "bg-accent" : "hover:bg-zinc-100 dark:hover:bg-zinc-900"
       }`}
     >
       <Avatar>
@@ -42,7 +42,10 @@ function ChatListItem({ chat, activeChatId, onClick }: { chat: any, activeChatId
           </h3>
           <div className="flex items-center gap-2">
             {chat.unreadCount > 0 && (
-              <span className="bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span
+                className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full min-h-5 min-w-5 inline-flex items-center justify-center"
+                aria-label={`${chat.unreadCount} ${lang === 'ua' ? 'непрочитаних' : 'unread'}`}
+              >
                 {chat.unreadCount}
               </span>
             )}
@@ -172,7 +175,7 @@ export default function ChatPage() {
               {tr.chatPage.noChats}
             </div>
           ) : clientChats.map((chat) => (
-            <ChatListItem key={chat.id} chat={chat} activeChatId={activeChatId} onClick={() => setActiveChatId(chat.id)} />
+            <ChatListItem key={chat.id} chat={chat} activeChatId={activeChatId} lang={lang} onClick={() => setActiveChatId(chat.id)} />
           ))}
         </ScrollArea>
       </div>
@@ -189,13 +192,14 @@ export default function ChatPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setActiveChatId(null)}
-                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md md:hidden text-zinc-500 hover:text-zinc-900 dark:hover:text-white mr-1"
-                title="Back to chats list"
+                className="inline-flex min-h-10 min-w-10 items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md md:hidden text-zinc-600 hover:text-foreground mr-1"
+                title={lang === 'ua' ? 'Назад до списку' : 'Back to chats list'}
+                aria-label={lang === 'ua' ? 'Назад до списку чатів' : 'Back to chat list'}
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
             <Avatar>
-              <AvatarFallback className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+              <AvatarFallback className="bg-primary text-primary-foreground">
                 {activeChat?.clientName ? activeChat.clientName.substring(0, 2).toUpperCase() : "?"}
               </AvatarFallback>
             </Avatar>
@@ -208,7 +212,7 @@ export default function ChatPage() {
                     onChange={(e) => setRenameValue(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleSaveRename(); if (e.key === 'Escape') setIsRenaming(false); }}
                     onBlur={handleSaveRename}
-                    className="font-semibold text-zinc-900 dark:text-zinc-50 bg-zinc-100 dark:bg-zinc-800 rounded px-2 py-0.5 text-sm outline-none ring-1 ring-indigo-400 w-48"
+                    className="font-semibold text-zinc-900 dark:text-zinc-50 bg-zinc-100 dark:bg-zinc-800 rounded px-2 py-0.5 text-sm outline-none ring-2 ring-primary w-48"
                   />
                 </div>
               ) : (
@@ -228,7 +232,7 @@ export default function ChatPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 rounded-full text-xs"
+                  className="gap-1.5 rounded-full text-xs"
                   disabled={!activeChatId}
                 >
                   <BarChart2 className="h-3.5 w-3.5" />
@@ -274,7 +278,7 @@ export default function ChatPage() {
                   recentMessages: ctx,
                 });
               }}
-              className="gap-1.5 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/50 rounded-full text-xs"
+              className="gap-1.5 rounded-full text-xs"
               title="Відкрити AI з контекстом цього чату"
             >
               <Sparkles className="h-3.5 w-3.5" />
@@ -284,10 +288,11 @@ export default function ChatPage() {
             <Button
               onClick={handleDeleteChat}
               variant="ghost"
-              size="icon"
-              className="text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+              size="icon-sm"
+              className="text-zinc-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
               disabled={!activeChatId}
-              title="Видалити чат"
+              title={lang === 'ua' ? 'Видалити чат' : 'Delete chat'}
+              aria-label={lang === 'ua' ? 'Видалити чат' : 'Delete chat'}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -308,15 +313,15 @@ export default function ChatPage() {
                 }`}
               >
                 <Avatar className="h-8 w-8 mt-auto flex-shrink-0">
-                  <AvatarFallback className={msg.sender === "user" ? "bg-indigo-500 text-white" : "bg-zinc-200 text-zinc-600 dark:bg-zinc-800"}>
+                  <AvatarFallback className={msg.sender === "user" ? "bg-primary text-primary-foreground" : "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"}>
                     {msg.sender === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                   </AvatarFallback>
                 </Avatar>
                 <div
                   className={`p-3 rounded-2xl text-sm shadow-sm ${
                     msg.sender === "user"
-                      ? "bg-indigo-500 text-white rounded-br-sm"
-                      : "bg-white border border-zinc-200 text-zinc-900 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100 rounded-bl-sm"
+                      ? "bg-primary text-primary-foreground rounded-br-sm"
+                      : "bg-white border-2 border-zinc-200 text-zinc-900 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100 rounded-bl-sm"
                   }`}
                 >
                   {msg.text}
@@ -342,9 +347,9 @@ export default function ChatPage() {
               placeholder={tr.chatPage.inputPlaceholder}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              className="flex-1 rounded-full px-4"
+              className="flex-1 rounded-full px-4 min-h-11"
             />
-            <Button type="submit" size="icon" className="rounded-full shrink-0">
+            <Button type="submit" size="icon" className="rounded-full shrink-0" aria-label={lang === 'ua' ? 'Надіслати' : 'Send'}>
               <Send className="h-4 w-4" />
             </Button>
           </form>
