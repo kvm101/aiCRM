@@ -7,6 +7,7 @@ vasyl\karpliak\aiCRM\attachments\service\FileAttachmentService.class
 vasyl\karpliak\aiCRM\communications\enums\ChannelType.class
 vasyl\karpliak\aiCRM\shared\config\DatabaseSeeder.class
 vasyl\karpliak\aiCRM\communications\domain\Bot.class
+vasyl\karpliak\aiCRM\shared\config\PendingToolRegistry.class
 vasyl\karpliak\aiCRM\shared\config\WebSocketConfig.class
 vasyl\karpliak\aiCRM\ai\dto\TaskResponse.class
 vasyl\karpliak\aiCRM\attachments\domain\FileAttachment.class
@@ -35,6 +36,7 @@ vasyl\karpliak\aiCRM\communications\config\RabbitMQConfig.class
 vasyl\karpliak\aiCRM\attachments\service\FileTextExtractor.class
 vasyl\karpliak\aiCRM\ai\dto\ChatRequest.class
 vasyl\karpliak\aiCRM\shared\config\ChatWebSocketHandler.class
+vasyl\karpliak\aiCRM\shared\config\ConfirmableToolCallback.class
 vasyl\karpliak\aiCRM\attachments\controller\FileController.class
 vasyl\karpliak\aiCRM\communications\service\MailService.class
 vasyl\karpliak\aiCRM\iam\controller\OAuth2Controller.class
@@ -89,6 +91,7 @@ vasyl\karpliak\aiCRM\iam\service\UserService.class
 vasyl\karpliak\aiCRM\ai\dto\DealResponse.class
 vasyl\karpliak\aiCRM\communications\adapter\ChannelAdapter.class
 vasyl\karpliak\aiCRM\sales\dto\ClientDTO.class
+vasyl\karpliak\aiCRM\shared\config\ConfirmableToolCallbackProvider.class
 vasyl\karpliak\aiCRM\sales\domain\Client.class
 vasyl\karpliak\aiCRM\ai\repository\AiChatMessageRepository.class
 vasyl\karpliak\aiCRM\sales\dto\ClientNoteDTO.class

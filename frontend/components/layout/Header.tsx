@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, Search, Sparkles, Check, Menu } from "lucide-react";
+import { ConsistentHelpButton } from "@/components/layout/ConsistentHelpButton";
 import { useSidebarStore } from "@/store/useSidebarStore";
 import { useAuthStore, Role } from "@/store/useAuthStore";
 import { useProjectStore } from "@/store/useProjectStore";
@@ -17,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUnreadNotifications, useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/useNotifications";
 import {
@@ -68,8 +70,8 @@ function ProjectSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2 px-2 hover:bg-zinc-100 dark:hover:bg-zinc-900">
-          <div className="flex items-center justify-center h-8 w-8 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400">
-            <Building2 className="h-4 w-4" />
+          <div className="flex items-center justify-center h-8 w-8 rounded bg-primary text-primary-foreground">
+            <Building2 className="h-4 w-4 stroke-[2px]" />
           </div>
           <div className="flex flex-col items-start text-sm">
             <span className="font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">
@@ -95,7 +97,7 @@ function ProjectSwitcher() {
                   <FolderGit2 className="h-4 w-4 text-zinc-400" />
                   <span className={activeProjectId === proj.id ? "font-medium" : ""}>{proj.name}</span>
                 </div>
-                {activeProjectId === proj.id && <Check className="h-4 w-4 text-indigo-600" />}
+                {activeProjectId === proj.id && <Check className="h-4 w-4 text-primary" />}
               </DropdownMenuItem>
             ))}
             
@@ -115,7 +117,7 @@ function ProjectSwitcher() {
                 <Button size="sm" onClick={handleCreateProj} className="h-8">OK</Button>
               </div>
             ) : (
-              <DropdownMenuItem onClick={(e) => { e.preventDefault(); setIsCreatingProj(true); }} className="cursor-pointer text-indigo-600">
+              <DropdownMenuItem onClick={(e) => { e.preventDefault(); setIsCreatingProj(true); }} className="cursor-pointer text-primary">
                 <Plus className="h-4 w-4 mr-2" /> Створити проєкт
               </DropdownMenuItem>
             )}
@@ -141,7 +143,7 @@ function ProjectSwitcher() {
                 <Button size="sm" onClick={handleCreateOrg} className="h-8">OK</Button>
               </div>
             ) : (
-              <DropdownMenuItem onClick={(e) => { e.preventDefault(); setIsCreatingOrg(true); }} className="cursor-pointer text-indigo-600">
+              <DropdownMenuItem onClick={(e) => { e.preventDefault(); setIsCreatingOrg(true); }} className="cursor-pointer text-primary">
                 <Plus className="h-4 w-4 mr-2" /> Створити організацію
               </DropdownMenuItem>
             )}
@@ -186,40 +188,46 @@ export function Header() {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950">
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-background px-4 sm:px-6">
       <div className="flex flex-1 items-center gap-2 sm:gap-4">
         <button
+          type="button"
           onClick={toggleSidebar}
-          className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-950 dark:hover:text-white md:hidden hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+          className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-md text-muted-foreground hover:text-foreground md:hidden hover:bg-accent transition-colors"
           title="Toggle Menu"
+          aria-label="Toggle Menu"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-5 w-5 stroke-[2px]" />
         </button>
         <ProjectSwitcher />
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <ConsistentHelpButton />
+
         <Button 
           onClick={toggleOpen}
-          variant="outline" 
+          variant="default" 
           size="sm" 
-          className="gap-2 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 rounded-full"
+          className="gap-2 rounded-full text-primary-foreground"
         >
-          <Sparkles className="h-4 w-4" />
+          <Sparkles className="h-4 w-4 stroke-[2px]" />
           {tr.header.askAI}
         </Button>
 
         {/* Language toggle */}
         <button
+          type="button"
           onClick={toggle}
-          className="flex items-center gap-1 rounded-full border border-zinc-200 dark:border-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors select-none"
+          className="inline-flex min-h-10 items-center gap-1 rounded-full border-2 border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-accent transition-colors select-none"
           title={lang === 'ua' ? 'Switch to English' : 'Перемкнути на українську'}
+          aria-label={lang === 'ua' ? 'Switch to English' : 'Перемкнути на українську'}
         >
-          <span className={lang === 'ua' ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-400'}>
+          <span className={lang === 'ua' ? 'text-primary font-bold' : 'text-muted-foreground'}>
             UA
           </span>
-          <span className="text-zinc-300 dark:text-zinc-600">/</span>
-          <span className={lang === 'en' ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-400'}>
+          <span className="text-muted-foreground/50">/</span>
+          <span className={lang === 'en' ? 'text-primary font-bold' : 'text-muted-foreground'}>
             EN
           </span>
         </button>
@@ -241,7 +249,7 @@ export function Header() {
               {unreadNotifications.length > 0 && (
                 <button 
                   onClick={() => markAllAsRead.mutate()}
-                  className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center"
+                  className="text-xs text-primary hover:text-primary/80 font-medium flex items-center min-h-8"
                 >
                   <Check className="h-3 w-3 mr-1" />
                   {tr.header.markRead}
@@ -261,17 +269,21 @@ export function Header() {
                       key={notif.id} 
                       className={cn(
                         "p-4 flex flex-col gap-1 transition-colors cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900",
-                        !notif.read ? "bg-indigo-50/50 dark:bg-indigo-900/10" : ""
+                        !notif.read ? "bg-accent" : ""
                       )}
                       onClick={() => {
                         if (!notif.read) markAsRead.mutate(notif.id);
                       }}
                     >
-                      <div className="flex justify-between items-start">
-                        <span className={cn("text-sm font-medium", !notif.read ? "text-indigo-900 dark:text-indigo-100" : "text-zinc-900 dark:text-zinc-100")}>
+                      <div className="flex justify-between items-start gap-2">
+                        <span className={cn("text-sm font-medium", !notif.read ? "text-foreground font-semibold" : "text-zinc-900 dark:text-zinc-100")}>
                           {notif.title}
                         </span>
-                        {!notif.read && <span className="h-2 w-2 rounded-full bg-indigo-500 shrink-0 mt-1" />}
+                        {!notif.read && (
+                          <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0 shrink-0">
+                            {lang === 'ua' ? 'Нове' : 'New'}
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-xs text-zinc-500 line-clamp-2">{notif.message}</p>
                       <span className="text-[10px] text-zinc-400 mt-1">
@@ -289,7 +301,7 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                <AvatarFallback className="bg-primary text-primary-foreground">
                   {currentUser ? getInitials(currentUser.name) : "?"}
                 </AvatarFallback>
               </Avatar>

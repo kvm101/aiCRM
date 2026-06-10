@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { ConsistentHelpButton } from "@/components/layout/ConsistentHelpButton";
 
 export default function LoginPage() {
   const handleGoogleLogin = () => {
@@ -9,21 +10,22 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-      <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-lg dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md space-y-8 rounded-2xl bg-card p-8 shadow-lg border-2 border-border">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Вхід в систему
-          </h2>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Використовуйте свій обліковий запис Google для входу або реєстрації.
+          </h1>
+          <p className="mt-2 text-base leading-normal text-muted-foreground">
+            Увійдіть через Google. Паролі не потрібні — без капчі та з підтримкою менеджера паролів браузера для OAuth.
           </p>
         </div>
 
-        <div className="mt-8 space-y-6">
-          <Button 
+        <div className="mt-8 space-y-4">
+          <Button
+            type="button"
             onClick={handleGoogleLogin}
-            className="w-full h-12 text-base font-medium flex items-center justify-center gap-3 bg-white text-zinc-800 hover:bg-zinc-50 border border-zinc-200 shadow-sm dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-700"
+            className="w-full min-h-12 text-base font-medium flex items-center justify-center gap-3 bg-card text-foreground hover:bg-muted border-2 border-border shadow-sm"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
               <path d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27028 9.70498C6.21525 6.86002 8.87028 4.75 12.0003 4.75Z" fill="#EA4335"/>
@@ -33,6 +35,10 @@ export default function LoginPage() {
             </svg>
             Увійти через Google
           </Button>
+
+          <div className="flex justify-center">
+            <ConsistentHelpButton />
+          </div>
         </div>
       </div>
     </div>

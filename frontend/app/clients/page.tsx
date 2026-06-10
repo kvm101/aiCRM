@@ -14,6 +14,7 @@ import { Search, Plus, Trash2, Mail, Phone, Loader2 } from "lucide-react";
 import { useClients, useCreateClient, useDeleteClient } from "@/hooks/useSales";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { t } from "@/lib/i18n";
+import { ClientStatusBadge } from "@/components/ui/status-badge";
 
 export default function ClientsPage() {
   const { lang } = useLanguageStore();
@@ -56,7 +57,7 @@ export default function ClientsPage() {
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
               {tr.clientsPage.title}
             </h1>
-            <Badge variant="secondary" className="text-sm rounded-full px-3 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">
+            <Badge variant="secondary" className="text-sm rounded-full px-3 bg-primary text-primary-foreground">
               {tr.clientsPage.total}: {clients.length}
             </Badge>
           </div>
@@ -74,7 +75,7 @@ export default function ClientsPage() {
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-indigo-600 hover:bg-indigo-700">
+              <Button>
                 <Plus className="mr-2 h-4 w-4" /> {tr.clientsPage.addButton}
               </Button>
             </DialogTrigger>
@@ -120,28 +121,29 @@ export default function ClientsPage() {
                   <TableRow key={client.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900">
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
+                        <div className="flex h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shrink-0">
                           {client.name.charAt(0).toUpperCase()}
                         </div>
                         {client.name}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1 text-xs text-zinc-500">
-                        {client.email && <div className="flex items-center gap-1.5"><Mail className="h-3 w-3" /> {client.email}</div>}
-                        {client.phone && <div className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {client.phone}</div>}
+                      <div className="flex flex-col gap-1 text-xs text-muted-foreground font-data">
+                        {client.email && <div className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 stroke-[2px]" /> {client.email}</div>}
+                        {client.phone && <div className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 stroke-[2px]" /> {client.phone}</div>}
                         {!client.email && !client.phone && <span>—</span>}
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">{client.company || "—"}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="font-normal text-xs">
-                        {tr.clientsPage.statusMap[client.status as keyof typeof tr.clientsPage.statusMap] || client.status}
-                      </Badge>
+                      <ClientStatusBadge
+                        status={client.status}
+                        label={tr.clientsPage.statusMap[client.status as keyof typeof tr.clientsPage.statusMap] || client.status}
+                      />
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(client.id)} className="h-8 w-8 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30">
-                        <Trash2 className="h-4 w-4" />
+                      <Button variant="ghost" size="icon-sm" onClick={() => handleDelete(client.id)} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10" aria-label={tr.clientsPage.deleteConfirm}>
+                        <Trash2 className="h-4 w-4 stroke-[2px]" />
                       </Button>
                     </TableCell>
                   </TableRow>

@@ -29,7 +29,7 @@ export async function GET(
   }
 
   const buf = await res.arrayBuffer();
-  const contentType = res.headers.get("content-type") || "text/csv";
+  const contentType = res.headers.get("content-type") || "text/csv; charset=UTF-8";
   const contentDisposition = res.headers.get("content-disposition");
 
   const outHeaders = new Headers();

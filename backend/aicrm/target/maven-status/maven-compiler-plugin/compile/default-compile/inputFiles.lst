@@ -118,8 +118,12 @@ C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl
 C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\search\service\SemanticSearchService.java
 C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\BotSetupRunner.java
 C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\ChatWebSocketHandler.java
+C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\ConfirmableToolCallback.java
+C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\ConfirmableToolCallbackProvider.java
 C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\DatabaseSeeder.java
+C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\McpConfig.java
 C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\OpenApiConfig.java
+C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\PendingToolRegistry.java
 C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\PgVectorExtensionInitializer.java
 C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\WebConfig.java
 C:\Users\vasyl\OneDrive\Documents\GitHub\aiCRM\backend\aicrm\src\main\java\vasyl\karpliak\aiCRM\shared\config\WebSocketConfig.java

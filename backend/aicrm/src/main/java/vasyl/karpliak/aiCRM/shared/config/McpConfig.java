@@ -12,14 +12,22 @@ import vasyl.karpliak.aiCRM.ai.tools.SearchAITools;
 @Configuration
 public class McpConfig {
 
+    private final PendingToolRegistry pendingToolRegistry;
+
+    public McpConfig(PendingToolRegistry pendingToolRegistry) {
+        this.pendingToolRegistry = pendingToolRegistry;
+    }
+
     @Bean
     public ToolCallbackProvider mcpTools(
             SalesAITools salesAITools,
             CommunicationsAITools communicationsAITools,
             SearchAITools searchAITools) {
         
-        return MethodToolCallbackProvider.builder()
+        ToolCallbackProvider delegate = MethodToolCallbackProvider.builder()
                 .toolObjects(salesAITools, communicationsAITools, searchAITools)
                 .build();
+                
+        return new ConfirmableToolCallbackProvider(delegate, pendingToolRegistry);
     }
 }

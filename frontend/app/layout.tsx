@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileSidebar } from "@/components/layout/MobileSidebar";
 import { Header } from "@/components/layout/Header";
 import { GlobalAIChat } from "@/components/ai/GlobalAIChat";
+import { PendingToolModal } from "@/components/ai/PendingToolModal";
 import { GlobalWSProvider } from "@/components/providers/GlobalWSProvider";
 import { AuthGuard } from "@/components/providers/AuthGuard";
 
@@ -31,10 +32,10 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="uk"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <QueryProvider>
           <GlobalWSProvider />
           <div className="flex h-screen overflow-hidden">
@@ -49,6 +50,7 @@ export default function RootLayout({
               </main>
             </div>
             <GlobalAIChat />
+            <PendingToolModal />
           </div>
         </QueryProvider>
       </body>

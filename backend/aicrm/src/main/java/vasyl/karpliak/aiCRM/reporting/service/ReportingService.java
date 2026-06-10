@@ -19,6 +19,8 @@ import vasyl.karpliak.aiCRM.sales.repository.DealRepository;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +34,12 @@ public class ReportingService {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
     private static final String REPORT_DIR = System.getProperty("user.home") + "/aicrm-reports/";
+
+    /** UTF-8 BOM + «;» — Excel (UA/EU) коректно відкриває кирилицю та колонки. */
+    private static final CSVFormat EXCEL_CSV_FORMAT = CSVFormat.DEFAULT.builder()
+            .setDelimiter(';')
+            .setRecordSeparator("\r\n")
+            .build();
 
     private final ReportTaskRepository reportTaskRepository;
     private final DealRepository dealRepository;
@@ -101,8 +109,11 @@ public class ReportingService {
         String fileName = task.getType().name() + "_" + LocalDateTime.now().format(FMT) + ".csv";
         Path filePath = Paths.get(REPORT_DIR + fileName);
 
-        try (BufferedWriter writer = Files.newBufferedWriter(filePath);
-             CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
+        try (var os = Files.newOutputStream(filePath);
+             var writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+             CSVPrinter printer = new CSVPrinter(writer, EXCEL_CSV_FORMAT)) {
+            // BOM: Excel на Windows розпізнає UTF-8 і не ламає кирилицю
+            writer.write('\uFEFF');
             switch (task.getType()) {
                 case SALES_FUNNEL -> writeSalesFunnelCsv(printer, task.getProjectId());
                 case REVENUE_GROWTH -> writeRevenueGrowthCsv(printer, task.getProjectId());
