@@ -136,8 +136,7 @@ public class FileAttachmentService {
 
     Files.createDirectories(Paths.get(UPLOAD_DIR));
     String rawFilename = file.getOriginalFilename();
-    String original =
-        StringUtils.hasText(rawFilename) ? rawFilename : "upload.bin";
+    String original = StringUtils.hasText(rawFilename) ? rawFilename : "upload.bin";
     String storedName = UUID.randomUUID() + "_" + original.replaceAll("[^a-zA-Z0-9._-]", "_");
     Path target = Paths.get(UPLOAD_DIR, storedName);
     file.transferTo(target);
