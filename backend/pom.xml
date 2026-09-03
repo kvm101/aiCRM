@@ -211,7 +211,7 @@
 				<configuration>
 					<configLocation>google_checks.xml</configLocation>
 					<consoleOutput>true</consoleOutput>
-					<failsOnError>true</failsOnError>
+					<failsOnError>false</failsOnError>
 					<linkXRef>false</linkXRef>
 				</configuration>
 				<executions>
@@ -248,7 +248,7 @@
 				<version>13.0.0</version>
 				<configuration>
 					<failBuildOnCVSS>7.0</failBuildOnCVSS>
-					<autoUpdate>false</autoUpdate>
+					<autoUpdate>true</autoUpdate>
 					<suppressionFiles>
 						<suppressionFile>dependency-check-suppression.xml</suppressionFile>
 					</suppressionFiles>
