@@ -21,8 +21,7 @@ public class FileTextExtractor {
   public String extract(Path path) throws IOException {
     Metadata metadata = new Metadata();
     Path fileName = path.getFileName();
-    metadata.set(
-        TikaCoreProperties.RESOURCE_NAME_KEY, fileName != null ? fileName.toString() : "");
+    metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, fileName != null ? fileName.toString() : "");
     try (InputStream stream = Files.newInputStream(path)) {
       BodyContentHandler handler = new BodyContentHandler(-1);
       try {
