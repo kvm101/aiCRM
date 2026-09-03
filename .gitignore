@@ -1,1 +1,8 @@
 /backend/.idea/
+.idea/
+target/
+**/target/
+.env
+.env.*
+!.env.example
+node_modules/

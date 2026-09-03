@@ -1,0 +1,139 @@
+spring:
+  application:
+    name: aiCRM
+
+  autoconfigure:
+    exclude:
+      # OpenAI starter тягне EmbeddingModel; для pgvector лишаємо лише Google GenAI embeddings
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+      # Тимчасово вимикаємо PgVectorStore, щоб при attach файлів не йшли embeddings/LLM виклики назовні
+      # - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+
+  threads:
+    virtual:
+      enabled: true # Важливо для масштабування SSE-з'єднань MCP-сервера
+
+  servlet:
+    multipart:
+      max-file-size: 32MB
+      max-request-size: 36MB
+
+  ai:
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 768
+        initialize-schema: true
+
+    mcp:
+      server:
+        enabled: true
+        name: aicrm-mcp-server
+        version: 1.0.0
+        transport: SSE
+        sse-endpoint: /mcp/sse
+        message-endpoint: /mcp/message
+
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:}
+        embedding:
+          api-key: ${GEMINI_API_KEY:}
+          text:
+            options:
+              model: gemini-embedding-2
+              output-dimensionality: 768
+        chat:
+          options:
+            model: gemini-2.5-flash
+
+    # OpenAI auto-config вимкнено — ми керуємо бінами вручну (Groq, GitHub, Mistral)
+    openai:
+      api-key: "disabled"
+      chat:
+        enabled: false
+      embedding:
+        enabled: false
+
+    retry:
+      max-attempts: 2
+      initial-interval: 3000
+      multiplier: 2.0
+      max-interval: 10000
+
+    # Ключ для Groq (безкоштовний провайдер)
+    groq:
+      api-key: ${GROQ_API_KEY:}
+      
+    github:
+      api-key: ${GITHUB_TOKEN:}
+      
+    mistralai:
+      api-key: ${MISTRAL_API_KEY:}
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mydatabase}
+    username: ${SPRING_DATASOURCE_USERNAME:myuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    imap:
+      host: ${SPRING_MAIL_IMAP_HOST:imap.gmail.com}
+      port: ${SPRING_MAIL_IMAP_PORT:993}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:user}
+    password: ${SPRING_RABBITMQ_PASSWORD:}
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+google:
+  client:
+    id: ${GOOGLE_CLIENT_ID:}
+    secret: ${GOOGLE_CLIENT_SECRET:}
+  redirect:
+    uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/iam/oauth2/google/callback}
+    system-uri: ${GOOGLE_SYSTEM_REDIRECT_URI:http://localhost:8080/auth/oauth2/google/callback}
+
+facebook:
+  messenger:
+    verify-token: ${FACEBOOK_VERIFY_TOKEN:}
+
+aicrm:
+  attachments:
+    vector-indexing:
+      enabled: true
