@@ -64,6 +64,7 @@ jobs:
           -DfailBuildOnCVSS=7.0 
           -DnvdApiKey=${{ secrets.NVD_API_KEY }} 
           -DdataDirectory=owasp-data
+          -Ddependency-check.autoUpdate=true
 
       - name: Build and Test with Maven
         run: mvn clean package
