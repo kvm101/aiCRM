@@ -1,11 +1,9 @@
 package vasyl.karpliak.aiCRM.iam.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.*;
 import vasyl.karpliak.aiCRM.iam.domain.User;
 import vasyl.karpliak.aiCRM.iam.enums.UserRoles;
-import vasyl.karpliak.aiCRM.sales.dto.TaskDTO;
 
 @Data
 @NoArgsConstructor

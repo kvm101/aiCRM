@@ -123,8 +123,7 @@ public class InboundEmailService {
           emailMsg.setSender(from);
           emailMsg.setRecipient(mailUsername);
           emailMsg.setSubject(subject);
-          emailMsg.setBody(
-              body.length() > 5000 ? body.substring(0, 5000) : body);
+          emailMsg.setBody(body.length() > 5000 ? body.substring(0, 5000) : body);
           emailMsg.setFolder("INBOX");
           emailMsg.setRead(false);
           emailMsg.setTimestamp(timestamp);
