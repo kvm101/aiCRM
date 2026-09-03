@@ -1,0 +1,14 @@
+project:
+  name: aicrm-backend
+
+release:
+  github:
+    overwrite: true
+    sign: false
+    changelog:
+      formatted: ALWAYS
+      preset: conventional-commits
+
+files:
+  artifacts:
+    - path: target/*.jar
