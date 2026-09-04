@@ -2,8 +2,10 @@ package vasyl.karpliak.aiCRM.communications.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vasyl.karpliak.aiCRM.sales.service.SalesIntegrationService;
@@ -11,6 +13,8 @@ import vasyl.karpliak.aiCRM.sales.service.SalesIntegrationService;
 @RestController
 @RequestMapping("/api/webhooks/facebook")
 public class FacebookWebhookController {
+
+  private static final Pattern CHALLENGE_PATTERN = Pattern.compile("^[A-Za-z0-9_-]{1,200}$");
 
   @Value("${facebook.messenger.verify-token}")
   private String verifyToken;
@@ -29,8 +33,11 @@ public class FacebookWebhookController {
       @RequestParam("hub.challenge") String challenge) {
 
     if ("subscribe".equals(mode) && verifyToken.equals(token)) {
+      if (challenge == null || !CHALLENGE_PATTERN.matcher(challenge).matches()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+      }
       System.out.println("WEBHOOK_VERIFIED");
-      return ResponseEntity.ok(challenge);
+      return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(challenge);
     } else {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
