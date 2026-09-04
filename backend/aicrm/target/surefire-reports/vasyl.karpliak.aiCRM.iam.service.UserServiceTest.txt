@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: vasyl.karpliak.aiCRM.iam.service.UserServiceTest
--------------------------------------------------------------------------------
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.391 s -- in vasyl.karpliak.aiCRM.iam.service.UserServiceTest
