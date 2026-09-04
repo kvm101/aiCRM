@@ -111,7 +111,12 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "health, info, prometheus"
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
 
 springdoc:
   api-docs:
@@ -137,3 +142,4 @@ aicrm:
   attachments:
     vector-indexing:
       enabled: true
+
