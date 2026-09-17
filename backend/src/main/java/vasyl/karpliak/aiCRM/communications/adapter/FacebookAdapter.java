@@ -1,54 +1,23 @@
 package vasyl.karpliak.aiCRM.communications.adapter;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import vasyl.karpliak.aiCRM.communications.enums.ChannelType;
 
+/**
+ * Placeholder for the Facebook Messenger adapter.
+ *
+ * <p>Facebook Messenger integration is not yet implemented. This stub exists so that the {@link
+ * ChannelType#FACEBOOK} enum value is registered in the adapter map without causing a startup
+ * failure. Both methods throw {@link UnsupportedOperationException} until the real integration is
+ * built.
+ */
 @Component
 public class FacebookAdapter implements ChannelAdapter {
 
-  private final RestTemplate restTemplate;
-  private static final String FACEBOOK_API_URL = "https://graph.facebook.com/v20.0/me/messages";
-
-  public FacebookAdapter() {
-    this.restTemplate = new RestTemplate();
-  }
-
   @Override
   public void sendMessage(String externalChatId, String text, String botToken) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-
-    // Prepare the payload according to Facebook Messenger API
-    Map<String, Object> payload = new HashMap<>();
-
-    Map<String, String> recipient = new HashMap<>();
-    recipient.put("id", externalChatId);
-    payload.put("recipient", recipient);
-
-    Map<String, String> message = new HashMap<>();
-    message.put("text", text);
-    payload.put("message", message);
-
-    payload.put("messaging_type", "RESPONSE");
-
-    HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
-
-    String url = FACEBOOK_API_URL + "?access_token=" + botToken;
-
-    try {
-      restTemplate.exchange(url, HttpMethod.POST, request, String.class);
-      System.out.println("Message sent successfully to Facebook user: " + externalChatId);
-    } catch (Exception e) {
-      System.err.println("Failed to send message to Facebook: " + e.getMessage());
-      e.printStackTrace();
-    }
+    throw new UnsupportedOperationException(
+        "Facebook Messenger integration is not implemented yet.");
   }
 
   @Override

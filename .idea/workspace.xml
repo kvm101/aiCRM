@@ -5,13 +5,242 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="70c722d5-8f33-4829-ae8b-106602825ff8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/application-dev.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/backend-ci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/backend-ci.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/compose.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.env.example" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/HELP.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/dependency-check-suppression.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/jreleaser.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/spotbugs-exclude.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/AiCrmApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/config/AiModelConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/controller/AIChatController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/domain/AiChatMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/dto/ChatRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/dto/ChatSessionResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/dto/ClientResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/dto/DealResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/dto/MessageResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/dto/TaskResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/dto/UserResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/repository/AiChatMessageRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/service/AIChatService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/service/AiOrchestrator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/tools/CommunicationsAITools.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/tools/SalesAITools.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/ai/tools/SearchAITools.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/analytics/controller/AnalyticsController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/analytics/service/AnalyticsService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/attachments/config/FileProcessingRabbitConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/attachments/controller/FileController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/attachments/domain/FileAttachment.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/attachments/dto/FileAttachmentDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/attachments/enums/FileAttachmentStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/attachments/listener/FileProcessingListener.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/attachments/repository/FileAttachmentRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/attachments/service/FileAttachmentService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/attachments/service/FileTextExtractor.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/adapter/ChannelAdapter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/adapter/FacebookAdapter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/config/RabbitMQConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/controller/ChatController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/controller/FacebookWebhookController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/controller/MailController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/controller/NotificationController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/domain/Bot.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/domain/ChatSession.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/domain/EmailMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/domain/MailData.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/domain/Message.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/domain/Notification.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/dto/EmailMessageDto.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/dto/NotificationDto.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/dto/UnifiedMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/enums/ChannelType.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/enums/SenderType.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/enums/SessionStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/repository/BotRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/repository/ChatSessionRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/repository/EmailMessageRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/repository/MessageRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/repository/NotificationRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/service/InboundEmailService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/service/InboundMessageEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/service/MailService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/service/MessageDispatcherService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/service/MessageOutboundListener.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/communications/service/NewNotificationEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/controller/AuthController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/controller/OAuth2Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/controller/OrganizationController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/controller/ProjectController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/controller/SystemOAuth2Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/controller/UserController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/domain/Organization.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/domain/Project.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/domain/User.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/dto/LoginDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/dto/RegistrationDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/dto/UserDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/enums/UserRoles.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/repository/OrganizationRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/repository/ProjectRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/repository/UserRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/iam/service/UserService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/config/ReportingRabbitConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/controller/ReportDownloadController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/controller/ReportRequestController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/domain/ReportTask.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/dto/ReportRequestDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/dto/ReportTaskDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/enums/ReportStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/enums/ReportType.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/listener/ReportGenerationListener.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/repository/ReportTaskRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/reporting/service/ReportingService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/controller/ClientController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/controller/DealController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/controller/IntegrationController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/controller/TaskController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/domain/Client.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/domain/Deal.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/domain/DealEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/domain/Task.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/dto/ClientDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/dto/ClientNoteDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/dto/DealCreateRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/dto/DealEventDto.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/dto/DealUpdateRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/dto/ProjectDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/dto/TaskDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/enums/ClientStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/enums/DealStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/enums/TaskStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/enums/TaskType.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/repository/ClientRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/repository/DealEventRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/repository/DealRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/repository/TaskRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/service/ClientService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/service/DealService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/service/SalesIntegrationService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/sales/service/TaskService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/search/controller/SemanticSearchController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/search/dto/SemanticSearchHitDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/search/dto/SemanticSearchRequestDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/search/dto/SemanticSearchResponseDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/search/service/SemanticSearchService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/BotSetupRunner.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/ChatWebSocketHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/ConfirmableToolCallback.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/ConfirmableToolCallbackProvider.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/DatabaseSeeder.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/McpConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/OpenApiConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/PendingToolRegistry.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/PgVectorExtensionInitializer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/WebConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/config/WebSocketConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/context/RequestContextHelper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/controller/DashboardController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/controller/GlobalExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/vasyl/karpliak/aiCRM/shared/controller/HealthController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application-dev.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/vasyl/karpliak/aiCRM/ClientControllerTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/vasyl/karpliak/aiCRM/ai/service/AIChatServiceTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/vasyl/karpliak/aiCRM/communications/controller/FacebookWebhookControllerIT.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/vasyl/karpliak/aiCRM/iam/controller/AuthControllerTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/vasyl/karpliak/aiCRM/iam/service/UserServiceTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/vasyl/karpliak/aiCRM/sales/controller/DealControllerTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/vasyl/karpliak/aiCRM/sales/service/ClientServiceTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/vasyl/karpliak/aiCRM/sales/service/DealServiceTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/vasyl/karpliak/aiCRM/sales/service/SalesIntegrationServiceTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/vasyl/karpliak/aiCRM/sales/service/TaskServiceTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/resources/application-test.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/AGENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/AGENTS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/ARCHITECTURE.md" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/ARCHITECTURE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/CLAUDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/CLAUDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/api/files/[id]/download/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/api/files/[id]/download/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/api/files/[id]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/api/files/[id]/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/api/reports/[id]/download/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/api/reports/[id]/download/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/api/reports/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/api/reports/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/chat/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/chat/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/clients/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/clients/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/deals/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/deals/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/favicon.ico" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/favicon.ico" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/kanban/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/kanban/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/login/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/login/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/mailing/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/mailing/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/reports/actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/reports/actions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/reports/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/app/reports/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components.json" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/DashboardGreeting.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/DashboardGreeting.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ai/GlobalAIChat.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ai/GlobalAIChat.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ai/PendingToolModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ai/PendingToolModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/attachments/DeleteAttachmentDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/attachments/DeleteAttachmentDialog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/dashboard/DashboardCharts.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/dashboard/DashboardCharts.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/dashboard/DashboardStatTiles.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/dashboard/DashboardStatTiles.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/dashboard/TimelineAnalytics.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/dashboard/TimelineAnalytics.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/kanban/KanbanBoard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/kanban/KanbanBoard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/layout/ConsistentHelpButton.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/layout/ConsistentHelpButton.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/layout/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/layout/Header.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/layout/MobileSidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/layout/MobileSidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/layout/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/layout/Sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/providers/AuthGuard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/providers/AuthGuard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/providers/GlobalWSProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/providers/GlobalWSProvider.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/avatar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/avatar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/badge.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/badge.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/button.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/button.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/card.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/dialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/dialog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/dropdown-menu.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/dropdown-menu.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/input.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/input.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/label.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/label.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/popover.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/popover.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/scroll-area.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/scroll-area.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/select.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/select.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/sheet.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/sheet.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/status-badge.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/status-badge.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/table.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/table.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/tabs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/tabs.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/textarea.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/components/ui/textarea.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/eslint.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/eslint.config.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/hooks/useAISuggestions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/hooks/useAISuggestions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/hooks/useChatWS.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/hooks/useChatWS.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/hooks/useMail.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/hooks/useMail.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/hooks/useNotifications.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/hooks/useNotifications.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/hooks/useSales.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/hooks/useSales.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/i18n.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/lib/i18n.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/status-config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/lib/status-config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/lib/utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/postcss.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/postcss.config.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/providers/QueryProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/providers/QueryProvider.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/public/file.svg" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/public/file.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/public/globe.svg" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/public/globe.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/public/next.svg" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/public/next.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/public/vercel.svg" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/public/vercel.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/public/window.svg" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/public/window.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/services/apiClient.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/services/apiClient.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/services/dashboard.server.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/services/dashboard.server.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/services/serverApiClient.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/services/serverApiClient.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/store/useAIStore.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/store/useAIStore.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/store/useAuthStore.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/store/useAuthStore.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/store/useLanguageStore.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/store/useLanguageStore.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/store/useProjectStore.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/store/useProjectStore.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/store/useSidebarStore.ts" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/store/useSidebarStore.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/legacy_frontend/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,37 +281,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Maven.aiCRM [clean].executor": "Run",
-    "Maven.aiCRM [com.diffplug.spotless:spotless-maven-plugin:2.43.0:apply].executor": "Run",
-    "Maven.aiCRM [com.diffplug.spotless:spotless-maven-plugin:2.43.0:check].executor": "Run",
-    "Maven.aiCRM [com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:check].executor": "Run",
-    "Maven.aiCRM [com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:spotbugs].executor": "Run",
-    "Maven.aiCRM [com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:verify].executor": "Run",
-    "Maven.aiCRM [install].executor": "Run",
-    "Maven.aiCRM [org.apache.maven.plugins:maven-checkstyle-plugin:3.3.1:check].executor": "Run",
-    "Maven.aiCRM [org.apache.maven.plugins:maven-checkstyle-plugin:3.3.1:checkstyle].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "Spring Boot.AiCrmApplication.executor": "Run",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "dev",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/vasyl/Documents/GitHubRepo/aiCRM/backend/aicrm",
-    "node.js.detected.package.jshint": "true",
-    "node.js.selected.package.jshint": "",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "Docker"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.aiCRM [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.aiCRM [com.diffplug.spotless:spotless-maven-plugin:2.43.0:apply].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.aiCRM [com.diffplug.spotless:spotless-maven-plugin:2.43.0:check].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.aiCRM [com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:check].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.aiCRM [com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:spotbugs].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.aiCRM [com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:verify].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.aiCRM [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.aiCRM [org.apache.maven.plugins:maven-checkstyle-plugin:3.3.1:check].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.aiCRM [org.apache.maven.plugins:maven-checkstyle-plugin:3.3.1:checkstyle].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Spring Boot.AiCrmApplication.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/monitoring-logging&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/vasyl/Documents/GitHubRepo/aiCRM/backend/aicrm&quot;,
+    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;Docker&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />

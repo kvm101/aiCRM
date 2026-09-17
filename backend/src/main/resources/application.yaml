@@ -9,6 +9,9 @@ spring:
       # Тимчасово вимикаємо PgVectorStore, щоб при attach файлів не йшли embeddings/LLM виклики назовні
       # - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
 
+  config:
+    import: optional:file:../.env[.properties]
+
   threads:
     virtual:
       enabled: true # Важливо для масштабування SSE-з'єднань MCP-сервера
@@ -80,7 +83,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
     show-sql: true
 
   mail:
